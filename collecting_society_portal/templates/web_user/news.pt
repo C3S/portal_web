@@ -1,0 +1,27 @@
+<!-- For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+     Repository: https://github.com/C3S/collecting_society -->
+
+<tal:block metal:use-macro="backend">
+
+    <!-- content left -->
+    <tal:block metal:fill-slot="content-left"></tal:block>
+
+    <!-- content middle -->
+    <tal:block metal:fill-slot="content-middle">
+
+        <!-- static site -->
+        <h1>News</h1>
+
+        <ul class="list-group"
+            tal:define="news context.registry['content']['news']">
+            <li tal:repeat="article news" class="list-group-item">
+                <a tal:attributes="href request.resource_path(context, article)">${news[article].header}</a>
+            </li>
+        </ul>
+
+    </tal:block>
+
+    <!-- content right -->
+    <tal:block metal:fill-slot="content-right"></tal:block>
+
+</tal:block>

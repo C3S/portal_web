@@ -1,0 +1,54 @@
+<!-- For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+     Repository: https://github.com/C3S/collecting_society -->
+
+<tal:block metal:use-macro="frontend">
+
+    <!-- top -->
+    <tal:block metal:fill-slot="top">
+
+        <!-- menue page -->
+        <tal:block metal:use-macro="m['navbar']"
+                   tal:define="name 'page'; style 'navbar-fixed-top'">
+            <tal:block metal:fill-slot="links">
+                <a tal:attributes="href '#'+menu.name">${menu.name}</a>
+            </tal:block>
+        </tal:block>
+
+    </tal:block>
+
+    <!-- content left -->
+    <tal:block metal:fill-slot="content-left"></tal:block>
+
+    <!-- content middle -->
+    <tal:block metal:fill-slot="content-middle">
+
+        <!-- form register -->
+        <div tal:replace="structure RegisterWebuser"></div>
+
+        <!-- static content -->
+        <div class="row">
+            <div class="cs-widget col-md-6">
+                Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
+            </div>
+            <div class="cs-widget col-md-6">
+                Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
+            </div>
+        </div>
+
+        <!-- static sites -->
+        <tal:block tal:repeat="menu context.registry['menues']['page']|None">
+            <a name="${menu.name}"></a>
+            <div metal:use-macro="load: ${menu.page}.pt"></div>
+        </tal:block>
+
+    </tal:block>
+
+    <!-- content right -->
+    <tal:block metal:fill-slot="content-right">
+
+        <!-- form login -->
+        <div tal:replace="structure LoginWebuser"></div>
+
+    </tal:block>
+
+</tal:block>

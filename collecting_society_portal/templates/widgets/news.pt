@@ -1,0 +1,8 @@
+<!-- For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+     Repository: https://github.com/C3S/collecting_society -->
+
+<ul class="cs-widget-news list-group">
+    <li tal:repeat="article news" class="list-group-item">
+        <a tal:attributes="href request.resource_path(request.root['news'], article)">${news[article].header}</a>
+    </li>
+</ul>

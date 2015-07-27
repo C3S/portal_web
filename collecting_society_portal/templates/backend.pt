@@ -1,0 +1,133 @@
+<!-- For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+     Repository: https://github.com/C3S/collecting_society -->
+
+<tal:block metal:extend-macro="base">
+
+    <!-- css -->
+    <tal:block metal:fill-slot="css">
+        <link href="${request.static_path('collecting_society_portal:static/css/backend.css')}"
+                  type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
+        <link tal:condition="context.registry['static']['css']|False"
+              tal:repeat="css context.registry['static']['css']"
+              tal:attributes="href css"
+              type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
+    </tal:block>
+
+    <!-- js -->
+    <tal:block metal:fill-slot="js-head">
+        <script tal:condition="context.registry['static']['js-head']|False"
+                tal:repeat="js context.registry['static']['js-head']"
+                tal:attributes="src js"></script>
+    </tal:block>
+    <tal:block metal:fill-slot="js-body">
+        <script tal:condition="context.registry['static']['js-body']|False"
+                tal:repeat="js context.registry['static']['js-body']"
+                tal:attributes="src js"></script>
+    </tal:block>
+
+    <!-- content -->
+    <tal:block metal:fill-slot="content">
+
+        <!-- columns -->
+        <div class="cs-content cs-backend container">
+            <div class="row equal">
+
+                <!-- column right -->
+                <div class="cs-content-right col-md-3 col-md-push-9">
+                    <div class="col-md-12">
+
+                        <!-- logo -->
+                        <img tal:attributes="src context.registry['static']['logo']"
+                             class="cs-logo img-responsive" />
+
+                        <!-- sidebar widgets -->
+                        <div class="cs-sidebar-widgets" tal:define="group 'sidebar-widgets'">
+                            <tal:block tal:condition="context.registry['widgets']['content-right']|None"
+                                       tal:repeat="widget context.registry['widgets']['content-right']">
+                                <tal:block metal:use-macro="m['panel-collapsed']"
+                                           tal:define="panel widget(request);
+                                                       heading panel.heading;
+                                                       body structure: panel.body;
+                                                       id repeat.widget.number;
+                                                       visible True" />
+                            </tal:block>
+                        </div>
+
+                        <!-- slot: content right -->
+                        <tal:block metal:define-slot="content-right" />
+
+                    </div>
+                </div>
+
+                <!-- column left -->
+                <div class="cs-content-left col-md-3 col-md-pull-3">
+                    <div class="col-md-12">
+
+                        <!-- menue roles -->
+                        <tal:block metal:use-macro="m['nav']"
+                                   tal:define="name 'roles'; style 'nav-tabs nav-justified'" />
+
+                        <!-- menue main -->
+                        <tal:block metal:use-macro="m['navbar']"
+                                   tal:define="name 'main'; style 'navbar-stacked'">
+                            <tal:block metal:fill-slot="links">
+                                <a tal:attributes="href menu.url" class="clearfix">
+                                    <img tal:attributes="src menu.icon" class="cs-icon img-responsive" />
+                                    <div class="cs-title">${menu.name}</div>
+                                </a>
+                            </tal:block>
+                        </tal:block>
+
+                        <!-- slot: content left -->
+                        <tal:block metal:define-slot="content-left" />
+
+                    </div>
+                </div>
+
+                <!-- column middle -->
+                <div class="cs-content-middle col-md-6 col-md-pull-3">
+                    <div class="col-md-12">
+
+                        <!-- menue portal -->
+                        <tal:block metal:use-macro="m['navbar']"
+                                   tal:define="name 'portal'" />
+
+                        <!-- alerts -->
+                        <div tal:condition="request.session.peek_flash('main-alert-success')"
+                             class="alert alert-success" role="alert">
+                            <p tal:repeat="message request.session.pop_flash('main-alert-success')">
+                                ${message}
+                            </p>
+                        </div>
+                        <div tal:condition="request.session.peek_flash('main-alert-info')"
+                             class="alert alert-info" role="alert">
+                            <p tal:repeat="message request.session.pop_flash('main-alert-info')">
+                                ${message}
+                            </p>
+                        </div>
+                        <div tal:condition="request.session.peek_flash('main-alert-warning')"
+                             class="alert alert-warning" role="alert">
+                            <p tal:repeat="message request.session.pop_flash('main-alert-warning')">
+                                ${message}
+                            </p>
+                        </div>
+                        <div tal:condition="request.session.peek_flash('main-alert-danger')"
+                            class="alert alert-danger" role="alert">
+                            <p tal:repeat="message request.session.pop_flash('main-alert-danger')">
+                                ${message}
+                            </p>
+                        </div>
+
+                        <!-- slot: content middle -->
+                        <tal:block metal:define-slot="content-middle" />
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </tal:block>
+
+
+</tal:block>

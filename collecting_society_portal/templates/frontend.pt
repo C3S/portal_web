@@ -1,0 +1,97 @@
+<!-- For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+     Repository: https://github.com/C3S/collecting_society -->
+
+<tal:block metal:extend-macro="base">
+
+    <!-- css -->
+    <tal:block metal:fill-slot="css">
+        <link href="${request.static_path('collecting_society_portal:static/css/frontend.css')}"
+                  type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
+    </tal:block>
+
+    <!-- js -->
+    <tal:block metal:fill-slot="js-head" />
+    <tal:block metal:fill-slot="js-body">
+        <script src="${request.static_path('collecting_society_portal:static/js/navbar-collapse-onclick.js')}"></script>
+    </tal:block>
+
+    <!-- content -->
+    <tal:block metal:fill-slot="content">
+
+        <!-- slot: top -->
+        <tal:block metal:define-slot="top" />
+
+        <!-- columns -->
+        <div class="cs-content cs-frontend container">
+
+            <!-- column left -->
+            <div class="cs-content-left col-sm-4 col-md-3">
+                <div class="fixed-col-3">
+
+                    <!-- logo -->
+                    <a href="${request.resource_path(context)}">
+                        <img tal:attributes="src context.registry['static']['logo']"
+                             class="cs-logo img-responsive" />
+                    </a>
+
+                    <!-- slot: content left-->
+                    <tal:block metal:define-slot="content-left" />
+
+                    <!-- static content -->
+                    <div class="cs-widget hidden-xs hidden-sm">
+                        Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- column right -->
+            <div class="cs-content-right col-sm-8 col-md-3 col-md-push-6">
+                <div class="fixed-col-3">
+
+                    <!-- slot: content right -->
+                    <tal:block metal:define-slot="content-right" />
+
+                </div>
+            </div>
+
+            <!-- column middle -->
+            <div class="cs-content-middle col-sm-12 col-md-6 col-md-pull-3">
+
+                <!-- alerts -->
+                <div tal:condition="request.session.peek_flash('main-alert-success')"
+                     class="alert alert-success" role="alert">
+                    <p tal:repeat="message request.session.pop_flash('main-alert-success')">
+                        ${message}
+                    </p>
+                </div>
+                <div tal:condition="request.session.peek_flash('main-alert-info')"
+                     class="alert alert-info" role="alert">
+                    <p tal:repeat="message request.session.pop_flash('main-alert-info')">
+                        ${message}
+                    </p>
+                </div>
+                <div tal:condition="request.session.peek_flash('main-alert-warning')"
+                     class="alert alert-warning" role="alert">
+                    <p tal:repeat="message request.session.pop_flash('main-alert-warning')">
+                        ${message}
+                    </p>
+                </div>
+                <div tal:condition="request.session.peek_flash('main-alert-danger')"
+                    class="alert alert-danger" role="alert">
+                    <p tal:repeat="message request.session.pop_flash('main-alert-danger')">
+                        ${message}
+                    </p>
+                </div>
+
+                <!-- slot: content middle -->
+                <tal:block metal:define-slot="content-middle" />
+
+            </div>
+
+        </div>
+
+    </tal:block>
+
+
+</tal:block>

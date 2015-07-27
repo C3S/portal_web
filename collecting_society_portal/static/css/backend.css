@@ -1,0 +1,120 @@
+/*******************************************************************************
+
+    For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+    Repository: https://github.com/C3S/collecting_society.portal
+
+*******************************************************************************/
+
+
+/*******************************************************************************
+
+    Extra small devices (phones, less than 768px)
+
+*******************************************************************************/
+
+/* Main */
+
+html { height:100%; }
+body { height:100%; }
+
+h1, .h1 {}
+h2, .h2 {}
+h3, .h3 {}
+h4, .h4 {}
+h5, .h5 {}
+h6, .h6 {}
+
+/* Content Left */
+
+.cs-content-left { background-color:#eee; }
+
+.cs-menue-main { background-color:#fff; padding:20px; border:1px solid #ddd; border-top:none; }
+
+.cs-menue-main .navbar-nav a .cs-icon { width:40px; height:40px; display:inline-block; vertical-align:middle; }
+.cs-menue-main .navbar-nav a .cs-title { width:65%; margin-left:10px; display:inline-block; vertical-align:middle; }
+
+/* Content Middle */
+
+.cs-menue-portal { background-color:transparent; border:none; font-size:90%; }
+
+/* Content Right */
+
+.cs-content-right { background-color:#eee; }
+
+.cs-logo { max-width:130px; margin-top:10px; margin:0 auto; padding:25px 0; }
+
+
+/*******************************************************************************
+
+   Small devices (tablets, 768px and up)
+
+*******************************************************************************/
+
+@media (min-width: 768px) {
+
+    /* Main */
+
+    /* Content Left */
+
+    /* Content Middle */
+
+    /* Content Right */
+
+}
+
+
+/*******************************************************************************
+
+   Medium devices (desktops, 992px and up)
+
+*******************************************************************************/
+
+@media (min-width: 992px) {
+
+    /* Main */
+
+    .cs-content { min-height:100%; height:100% }
+    .cs-content .row { min-height:100%; }
+
+    /* Content Left */
+
+    .cs-content-left { min-height:100%; }
+
+    .cs-menue-main .navbar-nav a .cs-icon { width:30px; height:30px; }
+    .cs-menue-main .navbar-nav a .cs-title { width:60%; }
+
+    /* Content Middle */
+
+    .cs-menue-portal { font-size:90%; }
+
+    /* Content Right */
+
+    .cs-content-right { min-height:100%; }
+
+    .cs-logo { margin:20px 0; padding:0; }
+    
+}
+
+
+/*******************************************************************************
+
+   Large devices (large desktops, 1200px and up)
+
+*******************************************************************************/
+
+@media (min-width: 1200px) {
+
+    /* Main */
+
+    /* Content Left */
+
+    .cs-menue-main .navbar-nav a .cs-icon { width:40px; height:40px; }
+    .cs-menue-main .navbar-nav a .cs-title { width:65%; }
+
+    /* Content Middle */
+
+    .cs-menue-portal { font-size:100%; }
+
+    /* Content Right */
+    
+}

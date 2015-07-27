@@ -1,0 +1,111 @@
+/*******************************************************************************
+
+    For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+    Repository: https://github.com/C3S/collecting_society.portal
+
+*******************************************************************************/
+
+
+/*******************************************************************************
+
+    Extra small devices (phones, less than 768px)
+
+*******************************************************************************/
+
+/* Main */
+
+html { height:100%; }
+body { height:100%; padding-top:50px; background-color:#ddd; }
+
+h1, .h1 { margin-top:50px; }
+h2, .h2 {}
+h3, .h3 {}
+h4, .h4 {}
+h5, .h5 {}
+h6, .h6 {}
+
+.cs-widget { margin-top:40px; }
+
+/* Content Left */
+
+.cs-logo { max-width:200px; margin-top:40px; }
+
+/* Content Middle */
+
+.cs-content-middle { background-color:#fff; margin-top:40px; padding-top:40px; padding-bottom:40px; }
+
+.cs-menue-page { background-color:transparent; border:none; }
+.cs-menue-page .container > div { background-color:#fff; }
+
+/* Content Right */
+
+
+/*******************************************************************************
+
+   Small devices (tablets, 768px and up)
+
+*******************************************************************************/
+
+@media (min-width: 768px) {
+
+    /* Main */
+
+    /* Content Left */
+
+    /* Content Middle */
+
+    /* Content Right */
+
+}
+
+
+/*******************************************************************************
+
+   Medium devices (desktops, 992px and up)
+
+*******************************************************************************/
+
+@media (min-width: 992px) {
+
+    /* Main */
+
+    body { background: #ddd url('../img/bg.png') no-repeat right bottom fixed; }
+
+    .cs-content { min-height:100%; height:100%; }
+
+    /* Content Left */
+
+    .cs-content-left { min-height:100%; height:100%; }
+
+    .cs-logo { max-width:175px; margin-bottom:150px; }
+
+    /* Content Middle */
+
+    .cs-content-middle { min-height:100%; margin-top:0; }
+
+    /* Content Right */
+    
+    .cs-content-right { min-height:100%; height:100%; }
+    
+}
+
+
+/*******************************************************************************
+
+   Large devices (large desktops, 1200px and up)
+
+*******************************************************************************/
+
+@media (min-width: 1200px) {
+
+    /* Main */
+
+    /* Content Left */
+
+    /* Content Middle */
+
+    .cs-logo { max-width:200px; }
+
+    /* Content Right */
+    
+}
