@@ -40,7 +40,7 @@ License Text
 
 You should have received copies of the licenses along with this program:
 
-- GNU Affero General Public License (version 3): ``./LICENCE-AGPLv3.txt``
-- GNU General Public License (version 2): ``./LICENCE-GPLv2.txt``
-- GNU General Public License (version 3): ``./LICENCE-GPLv3.txt``
-- MIT License: ``./LICENCE-MIT.txt``
+- GNU Affero General Public License (version 3): ``./LICENSE-AGPLv3.txt``
+- GNU General Public License (version 2): ``./LICENSE-GPLv2.txt``
+- GNU General Public License (version 3): ``./LICENSE-GPLv3.txt``
+- MIT License: ``./LICENSE-MIT.txt``

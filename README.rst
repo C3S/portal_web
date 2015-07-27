@@ -83,7 +83,7 @@ Logging
 The logging configuration of plugins will spawn new logger
 
 
-Copyright / Licence
+Copyright / License
 -------------------
 
 For infos on copyright and licenses, see ``./COPYRIGHT.rst``
