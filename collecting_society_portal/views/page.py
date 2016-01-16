@@ -14,6 +14,7 @@ from . import ViewBase
 from .forms import (
     LoginWebuser,
     RegisterWebuser,
+    RegisterMailinglist
 )
 
 log = logging.getLogger(__name__)
@@ -30,18 +31,9 @@ class PagePortalViews(ViewBase):
     def home(self):
         self.register_form(LoginWebuser)
         self.register_form(RegisterWebuser)
+        self.register_form(RegisterMailinglist)
         return self.process_forms()
 
-    @view_config(
-        name='help',
-        renderer='../templates/page/page.pt')
-    def help(self):
-        page = render('../templates/page/help.pt', {}, request=self.request)
-        return {'page': page}
-
-    @view_config(
-        name='privacy',
-        renderer='../templates/page/page.pt')
     @view_config(
         name='privacy',
         context='..resources.BackendResource',
@@ -50,9 +42,6 @@ class PagePortalViews(ViewBase):
         page = render('../templates/page/privacy.pt', {}, request=self.request)
         return {'page': page}
 
-    @view_config(
-        name='imprint',
-        renderer='../templates/page/page.pt')
     @view_config(
         name='imprint',
         context='..resources.BackendResource',

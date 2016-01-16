@@ -171,15 +171,23 @@ class FrontendResource(ResourceBase):
         # menue page
         reg['menues']['page'] = [
             {
-                'name': _(u'Help'),
-                'page': 'help'
+                'name': _(u'overview'),
+                'page': 'overview'
             },
             {
-                'name': _(u'Privacy'),
-                'page': 'privacy'
+                'name': _(u'details'),
+                'page': 'details'
             },
             {
-                'name': _(u'Imprint'),
+                'name': _(u'about c3s'),
+                'page': 'aboutc3s'
+            },
+            {
+                'name': _(u'contact'),
+                'page': 'contact'
+            },
+            {
+                'name': _(u'imprint'),
                 'page': 'imprint'
             }
         ]

@@ -10,6 +10,7 @@ from .base import (
 # form controller
 from .login_web_user import LoginWebuser
 from .register_web_user import RegisterWebuser
+from .register_mailinglist import RegisterMailinglist
 
 # deform translator
 from pkg_resources import resource_filename

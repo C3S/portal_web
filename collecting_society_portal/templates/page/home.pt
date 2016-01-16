@@ -23,15 +23,26 @@
     <tal:block metal:fill-slot="content-middle">
 
         <!-- form register -->
-        <div tal:replace="structure RegisterWebuser"></div>
+        <!--<div tal:replace="structure RegisterWebuser"></div>-->
+
+        <!-- mailinglist registration -->
+        <h1 class="cs-txt-center cs-mainheader">
+            <span i18n:translate="">Welcome to adore</span>!<br />
+            <span i18n:translate="">Join our community</span>.
+        </h1>
+        <div tal:replace="structure RegisterMailinglist"></div>
 
         <!-- static content -->
         <div class="row">
             <div class="cs-widget col-md-6">
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
+                <img src="${request.static_path('collecting_society_portal:static/img/logo-fan.png')}" class="img-responsive cs-img-center" />
+                <h3 class="cs-fan cs-txt-center">FAN</h3>
+                <span i18n:translate="">Donate even smallest amounts to all the artists you like – you decide how much to spend per month. It is your sign telling them how awesome their music is – show it everytime you are dancing, headbanging and grooving to their tunes. If you are a musician yourself, or you are remixing tunes – why not take the opportunity to join</span> <span class="cs-red">adore</span> <span i18n:translate="">as an artist as well?</span> 
             </div>
             <div class="cs-widget col-md-6">
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
+                <img src="${request.static_path('collecting_society_portal:static/img/logo-musiker.png')}" class="img-responsive cs-img-center" />
+                <h3 class="cs-musician cs-txt-center">ARTIST</h3>
+                <span class="cs-red">adore</span> <span i18n:translate="">keeps track of your songs across all players we are developing plugins for. You can literally play any street in the world without traveling there. Sharing music worldwide, receiving donations from everywhere. Don‘t miss out on revenues, however small they may be in the start. We are pretty sure you prefer some cents over one thumbs up, don‘t ya?</span>
             </div>
         </div>
 
@@ -47,7 +58,13 @@
     <tal:block metal:fill-slot="content-right">
 
         <!-- form login -->
-        <div tal:replace="structure LoginWebuser"></div>
+        <!--<div tal:replace="structure LoginWebuser"></div>-->
+
+        <!-- content -->
+        <span class="cs-red">adore </span><span i18n:translate="">is based on a prototype project co-funded by EFRE funds within the Operational Programme "Target2: Regional Competitiveness and Employment" of the Federal State of North-Rhine Westphalia (NRW) and crowdfunding campaigns of the C3S community.</span>
+        <br /><br />
+        <img src="${request.static_path('collecting_society_portal:static/img/logo-eu.jpg')}" class="img-responsive" />
+        
 
     </tal:block>
 

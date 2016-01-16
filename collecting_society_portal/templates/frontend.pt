@@ -31,7 +31,7 @@
                     <!-- logo -->
                     <a href="${request.resource_path(context)}">
                         <img tal:attributes="src context.registry['static']['logo']"
-                             class="cs-logo img-responsive" />
+                             class="cs-logo img-responsive cs-img-center" />
                     </a>
 
                     <!-- slot: content left-->
@@ -39,8 +39,10 @@
 
                     <!-- static content -->
                     <div class="cs-widget hidden-xs hidden-sm">
-                        Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
+                        <h4 class="cs-red" i18n:translate="">adore Plugin*</h4>
+                        <span i18n:translate="">The beta version will be based on the</span> <b i18n:translate="">Clementine music player</b>. <span i18n:translate="">As soon as the news for the beta launch is out, please</span> <a href="https://www.clementine-player.org/en/" i18n:translate="">download it here</a>. <span i18n:translate="">Instructions on where to get and how to seamlessly install the</span> <span class="cs-red">adore</span> <span i18n:translate="">plugin will be available right here on this site</span>.
                     </div>
+                    <img src="${request.static_path('collecting_society_portal:static/img/plugin-clementine.png')}" class="img-responsive hidden-xs hidden-sm"></img>
 
                 </div>
             </div>
@@ -54,6 +56,8 @@
 
                 </div>
             </div>
+
+            <div class="clear hidden-md hidden-lg"></div>
 
             <!-- column middle -->
             <div class="cs-content-middle col-sm-12 col-md-6 col-md-pull-3">

@@ -28,6 +28,7 @@ install_requires = [
     'pyramid_chameleon',
     'pyramid_debugtoolbar',
     'pyramid_mailer',
+    'requests',
     'trytond<3.6',
     'waitress',
 ]
