@@ -34,6 +34,7 @@ Redistributes works are copyright and licensed as follows:
 - jQuery -- Copyright (c) 2005, 2014 jQuery Foundation, Inc. Licensed under MIT (https://jquery.org/license/).
 - Bootstrap -- Copyright (c) 2011-2015 Twitter, Inc. Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE).
 - iban.py -- Copyright (C) 2002-2010, Thomas Günther Licensed under GPLv2 or later (http://toms-cafe.de/iban/iban.py).
+- signika font -- Copyright (c) 2011 by Anna Giedryś (http://ancymonic.com)
 
 
 License Text
@@ -45,3 +46,4 @@ You should have received copies of the licenses along with this program:
 - GNU General Public License (version 2): ``./LICENSE-GPLv2.txt``
 - GNU General Public License (version 3): ``./LICENSE-GPLv3.txt``
 - MIT License: ``./LICENSE-MIT.txt``
+- SIL OPEN FONT LICENSE (version 1.1): ``./LICENSE-SILv1.1.txt``
