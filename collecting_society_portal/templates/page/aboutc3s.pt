@@ -26,5 +26,12 @@
     <span i18n:translate="">Become a member</span> <a i18n:translate="" href="https://yes.c3s.cc/?en">here</a>.
 </p>
 
-<p i18n:translate="">Visit the <a i18n:translate="" href="https://www.c3s.cc/en">C3S website</a><br />
+<p i18n:translate="">Follow us on your favorite channels:</p>
+
+<p>
+    <a i18n:translate="" href="https://www.c3s.cc/en">website</a><br />
+    <a i18n:translate="" href="http://url.c3s.cc/facebook">facebook</a><br />
+    <a i18n:translate="" href="http://url.c3s.cc/twitter">twitter</a><br />
+    <a i18n:translate="" href="http://url.c3s.cc/gplus">google+</a><br />
+    <a i18n:translate="" href="http://url.c3s.cc/youtube">youtube</a>
 </p>
