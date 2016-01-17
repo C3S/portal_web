@@ -24,13 +24,23 @@
 </p>
 
 <p i18n:translate="">
-    We aim at starting a beta test till end of 2016. Join our newsletter to be the first to know. You will be updated on any feature news and more
+    We aim at starting a beta test till end of 2016. Join our newsletter at the top of this page to be the first to know. You will be updated on any feature news and more.
 </p>
 
-FORM
+<p>
+    <span> i18n:translate="">Or follow</span> <span class="cs-red">adore</span> <span>i18n:translate="">usin alternative channels:</span>
 
 <p>
-    <span i18n:translate="">If you have any questions regarding</span> <span class="cs-red">adore</span>, <span i18n:translate="">please e-mail us at</span><br />
+    <a i18n:translate="" href="https://ello.co/adoremusic">wiki</a><br />
+    <a i18n:translate="" href="https://www.facebook.com/AdoreMyMusic">facebook</a><br />
+    <a i18n:translate="" href="https://twitter.com/AdoreC3S">twitter</a><br />
+    <a i18n:translate="" href="https://plus.google.com/u/0/112719388011773177559/posts">google+</a><br />
+    <a i18n:translate="" href="https://ello.co/adoremusic">ello</a><br />
+    <a i18n:translate="" href="https://pod.geraspora.de/people?q=adore+muse">diaspora</a>
+</p>
+
+<p>
+    <span i18n:translate="">If you have any questions regarding</span> <span class="cs-red">adore</span>, <span i18n:translate="">please e-mail us to</span><br />
     ( info )at( c3s.cc ).<br />
     <span i18n:translate="">For business inquiries, please contact </span><br />
     ( thomas )dot( mielke )at( c3s.cc ).
