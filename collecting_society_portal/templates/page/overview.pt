@@ -28,10 +28,10 @@
 </p>
 
 <p>
-    <span> i18n:translate="">Or follow</span> <span class="cs-red">adore</span> <span>i18n:translate="">usin alternative channels:</span>
+    <span i18n:translate="">Or follow</span> <span class="cs-red">adore</span> <span i18n:translate="">using alternative channels:</span>
 
 <p>
-    <a i18n:translate="" href="https://ello.co/adoremusic">wiki</a><br />
+    <a i18n:translate="" href="https://redmine.c3s.cc/projects/adore/wiki">wiki</a><br />
     <a i18n:translate="" href="https://www.facebook.com/AdoreMyMusic">facebook</a><br />
     <a i18n:translate="" href="https://twitter.com/AdoreC3S">twitter</a><br />
     <a i18n:translate="" href="https://plus.google.com/u/0/112719388011773177559/posts">google+</a><br />
