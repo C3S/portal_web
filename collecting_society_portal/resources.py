@@ -166,7 +166,7 @@ class FrontendResource(ResourceBase):
         reg = self.dict()
         # logo
         reg['static']['logo'] = self.request.static_path(
-            'collecting_society_portal:static/img/logo.png'
+            'collecting_society_portal:static/img/logo200x175.png'
         )
         # menue page
         reg['menues']['page'] = [
@@ -204,7 +204,7 @@ class BackendResource(ResourceBase):
         reg = self.dict()
         # logo
         reg['static']['logo'] = self.request.static_path(
-            'collecting_society_portal:static/img/logo.png'
+            'collecting_society_portal:static/img/logo200x175.png'
         )
         # menue portal
         reg['menues']['portal'] = [
