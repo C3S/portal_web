@@ -26,8 +26,6 @@ def include_web_views(config):
 
 def include_api_views(config):
     settings = config.get_settings()
-
-    # views
     if settings['env'] == 'development':
         config.add_static_view('static/portal', 'static', cache_max_age=3600)
     config.scan('.views.api')
@@ -135,3 +133,16 @@ def debug_request(event):
     p = event.request.path
     if not p.startswith('/static/') and not p.startswith('/_debug_toolbar/'):
         log.debug("ENVIRON:\n %s" % event.request.environ)
+
+
+class Environment(object):
+    def __init__(self, val, config):
+        self.val = val
+
+    def text(self):
+        return 'environment = %s' % (self.val,)
+
+    phash = text
+
+    def __call__(self, context, request):
+        return request.registry.settings['env'] == self.val

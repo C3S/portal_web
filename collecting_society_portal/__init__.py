@@ -83,6 +83,18 @@ def main(global_config, **settings):
             iface='pyramid.events.NewRequest'
         )
 
+    # route predicates
+    config.add_route_predicate(
+        name='environment',
+        factory='.config.Environment'
+    )
+
+    # view predicates
+    config.add_view_predicate(
+        name='environment',
+        factory='.config.Environment'
+    )
+
     # request methods
     config.add_request_method(
         callable=WebUser.current_web_user,

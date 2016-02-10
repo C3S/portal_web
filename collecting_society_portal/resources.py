@@ -27,8 +27,11 @@ log = logging.getLogger(__name__)
 
 
 def include_web_resources(config):
+    settings = config.get_settings()
+    if settings['env'] == 'development':
+        BackendResource.add_child(DebugResource)
+        FrontendResource.add_child(DebugResource)
     BackendResource.add_child(NewsResource)
-    BackendResource.add_child(DebugResource)
 
 
 class ResourceBase(object):

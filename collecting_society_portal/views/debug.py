@@ -19,17 +19,16 @@ from ..views import ViewBase
 log = logging.getLogger(__name__)
 
 
-@view_defaults(permission=NO_PERMISSION_REQUIRED)
+@view_defaults(
+    context='..resources.DebugResource',
+    permission=NO_PERMISSION_REQUIRED,
+    environment="development")
 class DebugViews(ViewBase):
-
-    def development(context, request):
-        return request.registry.settings['env'] == 'development'
 
     @view_config(
         name='tryton',
         renderer='../templates/debug/tryton.pt',
-        decorator=Tdb.transaction(),
-        custom_predicates=[development])
+        decorator=Tdb.transaction())
     def check_tryton(request):
         '''
         This view should display some useful information
