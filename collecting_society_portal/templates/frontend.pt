@@ -55,6 +55,8 @@
                 </div>
             </div>
 
+            <div class="clear hidden-md hidden-lg"></div>
+
             <!-- column middle -->
             <div class="cs-content-middle col-sm-12 col-md-6 col-md-pull-3">
 

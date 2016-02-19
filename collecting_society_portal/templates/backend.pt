@@ -7,10 +7,6 @@
     <tal:block metal:fill-slot="css">
         <link href="${request.static_path('collecting_society_portal:static/css/backend.css')}"
                   type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
-        <link tal:condition="context.registry['static']['css']|False"
-              tal:repeat="css context.registry['static']['css']"
-              tal:attributes="href css"
-              type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
     </tal:block>
 
     <!-- js -->

@@ -24,6 +24,10 @@ h4, .h4 {}
 h5, .h5 {}
 h6, .h6 {}
 
+.cs-img-center { margin:0 auto; }
+.cs-txt-center { text-align:center; }
+.cs-red { color:#fc2a00; }
+
 /* Content Left */
 
 .cs-content-left { background-color:#eee; }
@@ -91,7 +95,7 @@ h6, .h6 {}
 
     .cs-content-right { min-height:100%; }
 
-    .cs-logo { margin:20px 0; padding:0; }
+    .cs-logo { margin-top:20px; margin-bottom:20px; padding:0; }
     
 }
 

@@ -35,6 +35,11 @@
         <!-- slot: css -->
         <tal:block metal:define-slot="css" />
 
+        <link tal:condition="context.registry['static']['css']|False"
+              tal:repeat="css context.registry['static']['css']"
+              tal:attributes="href css"
+              type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
+
         <script src="${request.static_path('deform:static/scripts/jquery-2.0.3.min.js')}"></script>
 
         <script src="${request.static_path('deform:static/scripts/bootstrap.min.js')}"></script>

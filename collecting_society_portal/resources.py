@@ -17,11 +17,9 @@ from pyramid.security import (
     ALL_PERMISSIONS
 )
 
-from .services import _
 from .models import (
     WebUser
 )
-from .views.widgets import news_widget
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +29,6 @@ def include_web_resources(config):
     if settings['env'] == 'development':
         BackendResource.add_child(DebugResource)
         FrontendResource.add_child(DebugResource)
-    BackendResource.add_child(NewsResource)
 
 
 class ResourceBase(object):
@@ -164,99 +161,11 @@ class FrontendResource(ResourceBase):
     __parent__ = None
     __children__ = {}
 
-    @property
-    def __registry__(self):
-        reg = self.dict()
-        # logo
-        reg['static']['logo'] = self.request.static_path(
-            'collecting_society_portal:static/img/logo.png'
-        )
-        # menue page
-        reg['menues']['page'] = [
-            {
-                'name': _(u'Help'),
-                'page': 'help'
-            },
-            {
-                'name': _(u'Privacy'),
-                'page': 'privacy'
-            },
-            {
-                'name': _(u'Imprint'),
-                'page': 'imprint'
-            }
-        ]
-        return reg
-
 
 class BackendResource(ResourceBase):
     __name__ = ""
     __parent__ = None
     __children__ = {}
-
-    @property
-    def __registry__(self):
-        reg = self.dict()
-        # logo
-        reg['static']['logo'] = self.request.static_path(
-            'collecting_society_portal:static/img/logo.png'
-        )
-        # menue portal
-        reg['menues']['portal'] = [
-            {
-                'name': _(u'Profile'),
-                'url': None
-            },
-            {
-                'name': _(u'News'),
-                'url': self.request.resource_path(
-                    BackendResource(self.request), 'news'
-                )
-            },
-            {
-                'name': _(u'FAQ'),
-                'url': self.request.resource_path(
-                    BackendResource(self.request), 'faq'
-                )
-            },
-            {
-                'name': _(u'Privacy'),
-                'url': self.request.resource_path(
-                    BackendResource(self.request), 'privacy'
-                )
-            },
-            {
-                'name': _(u'Imprint'),
-                'url': self.request.resource_path(
-                    BackendResource(self.request), 'imprint'
-                )
-            },
-            {
-                'name': _(u'Logout'),
-                'url': self.request.resource_path(
-                    BackendResource(self.request), 'logout'
-                )
-            }
-        ]
-        # news
-        reg['content']['news'] = OrderedDict()
-        reg['content']['news']['1'] = {
-            'header': _(u'News Article 1'),
-            'template': '../content/news/news1'
-        }
-        reg['content']['news']['2'] = {
-            'header': _(u'News Article 2'),
-            'template': '../content/news/news2'
-        }
-        reg['content']['news']['3'] = {
-            'header': _(u'News Article 3'),
-            'template': '../content/news/news3'
-        }
-        # widgets content-right
-        reg['widgets']['content-right'] = [
-            news_widget
-        ]
-        return reg
 
     @property
     def __acl__(self):
@@ -269,6 +178,15 @@ class BackendResource(ResourceBase):
     def __init__(self, request):
         super(BackendResource, self).__init__(request)
         self.web_user = WebUser.current_web_user(self.request)
+
+
+class DebugResource(ResourceBase):
+    __name__ = "debug"
+    __parent__ = BackendResource
+    __registry__ = {}
+    __acl__ = [
+        (Allow, Authenticated, 'authenticated')
+    ]
 
 
 class NewsResource(ResourceBase):
@@ -301,12 +219,3 @@ class ArticleResource(ResourceBase):
     def __init__(self, request, id):
         super(ArticleResource, self).__init__(request)
         self.article = self.registry['content']['news'][id]
-
-
-class DebugResource(ResourceBase):
-    __name__ = "debug"
-    __parent__ = BackendResource
-    __registry__ = {}
-    __acl__ = [
-        (Allow, Authenticated, 'authenticated')
-    ]
