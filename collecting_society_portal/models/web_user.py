@@ -145,6 +145,101 @@ class WebUser(Tdb):
         return result[0] if result else None
 
     @classmethod
+    @Tdb.transaction(readonly=True)
+    def search_by_id(cls, uid):
+        """
+        Searches a web_user by opt_in_uuid
+
+        Args:
+          uuid (string): uuid of web_user
+
+        Returns:
+          obj: web.user
+          None: if no match is found
+        """
+        if uid is None:
+            return None
+        result = cls.get().search([('id', '=', uid)])
+        return result[0] if result else None
+
+    @classmethod
+    @Tdb.transaction(readonly=True)
+    def get_opt_in_uuid_by_id(cls, uid):
+        """
+        Searches a web_user by opt_in_uuid
+
+        Args:
+          uuid (string): uuid of web_user
+
+        Returns:
+          obj: web.user
+          None: if no match is found
+        """
+        if uid is None:
+            return None
+        result = cls.get().search([('id', '=', uid)])
+        return result[0].opt_in_uuid if result else None
+
+    @classmethod
+    @Tdb.transaction(readonly=True)
+    def search_by_uuid(cls, uuid):
+        """
+        Searches a web_user by opt_in_uuid
+
+        Args:
+          uuid (string): uuid of web_user
+
+        Returns:
+          obj: web.user
+          None: if no match is found
+        """
+        if uuid is None:
+            return None
+        result = cls.get().search([('opt_in_uuid', '=', uuid)])
+        return result[0] if result else None
+
+    @classmethod
+    @Tdb.transaction(readonly=True)
+    def get_opt_in_state_by_email(cls, email):
+        """
+        Searches the opt_in_state for web_user by email
+
+        Args:
+          email (string): email of web_user
+
+        Returns:
+          obj: web.user
+          None: if no match is found
+        """
+        if email is None:
+            return None
+        result = cls.get().search([('email', '=', email)])
+        return result[0].opt_in_state if result else None
+
+    @classmethod
+    @Tdb.transaction(readonly=False)
+    def update_opt_in_state_by_uuid(cls, uuid, state):
+        """
+        Sets the opt_in_state to 'opted_in' for the web_user
+
+        Args:
+          uuid (string): uuid of web_user
+
+        Returns:
+          obj: web.user
+          None: if no match is found
+        """
+        if uuid is None or state is None:
+            return None
+        result = cls.get().search([('opt_in_uuid', '=', uuid)])
+        if result:
+            result[0].opt_in_state = state
+            result[0].save()
+            return True
+        else:
+            return None
+
+    @classmethod
     @Tdb.transaction(readonly=False)
     def create(cls, vlist):
         """

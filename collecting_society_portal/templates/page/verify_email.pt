@@ -1,0 +1,9 @@
+<!-- For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+     Repository: https://github.com/C3S/collecting_society -->
+
+<h1>E-Mail verification</h1>
+
+<dl>
+    <dd>Your verification was ${yesno}successful</dd>
+    <dd>${error}</dd>
+</dl>
