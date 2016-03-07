@@ -106,6 +106,9 @@ def main(global_config, **settings):
         config.set_root_factory(factory=WebRootFactory)
         # resources
         config.include('.resources.include_web_resources')
+        config.include('pyramid_mailer')
+        # uncomment this for not sending mails but showing the content in debug output
+        config.include('pyramid_mailer.testing')
         for priority in sorted(plugins):
             config.include(plugins[priority]['name']+'.include_web_resources')
         # views
