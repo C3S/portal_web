@@ -110,7 +110,7 @@ def add_locale(event):
     locale = locale_default
 
     # cookie locale
-    cookie = event.request.cookies['_LOCALE_']
+    cookie = event.request.cookies.get('_LOCALE_')
     if cookie:
         locale = cookie
 
