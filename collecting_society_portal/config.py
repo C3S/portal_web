@@ -6,6 +6,7 @@ import logging
 from pkgutil import iter_modules
 import ConfigParser
 
+from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import get_renderer
 from pyramid.i18n import (
     default_locale_negotiator,
@@ -112,7 +113,7 @@ def add_locale(event):
     # cookie locale
     cookie = event.request.cookies.get('_LOCALE_')
     if cookie:
-        locale = cookie
+        event.request._LOCALE_ = cookie
 
     # check browser for language, if no cookie present
     browser = event.request.accept_language
@@ -128,7 +129,7 @@ def add_locale(event):
             )
         )
         locale = LANGUAGE_MAPPING.get(locale_matched)
-        # set cookie
+        event.request._LOCALE_ = locale
         event.request.response.set_cookie('_LOCALE_', value=locale)
 
     # language request
@@ -142,10 +143,9 @@ def add_locale(event):
                 locale
             )
         )
-        # set cookie
+        event.request._LOCALE_ = locale
+        event.request.response = HTTPFound(location=event.request.path_url)
         event.request.response.set_cookie('_LOCALE_', value=locale)
-
-    event.request._LOCALE_ = locale
 
 
 def debug_request(event):
