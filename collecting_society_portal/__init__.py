@@ -1,6 +1,7 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
 # Repository: https://github.com/C3S/collecting_society.portal
 
+import os
 from logging.config import fileConfig
 
 from pyramid.config import Configurator
@@ -101,6 +102,21 @@ def main(global_config, **settings):
         name='user',
         reify=True
     )
+
+    # translation directories
+    config.add_translation_dirs(
+        'colander:locale/',
+        'deform:locale/',
+        'collecting_society_portal:locale/'
+    )
+    for priority in sorted(plugins):
+        translation_dir = os.path.join(
+            plugins[priority]['path'],
+            plugins[priority]['name'],
+            'locale'
+        )
+        if os.path.isdir(translation_dir):
+            config.add_translation_dirs(translation_dir)
 
     config.commit()
 

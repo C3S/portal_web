@@ -104,25 +104,44 @@ def add_locale(event):
         'de': 'de',
         'en': 'en',
     }
+    locale_default = 'en'
 
-    locale = default_locale_negotiator(event.request)
-    if locale is None:
-        # default language
-        locale = 'en'
-        # check browser for language
-        browser = event.request.accept_language
-        if browser:
-            locale_matched = browser.best_match(LANGUAGE_MAPPING, 'en')
-            log.debug(
-                (
-                    "creating cookie for locale:\n"
-                    "- locale of browser: %s\n"
-                    "- locale matched: %s"
-                ) % (
-                    browser, locale_matched
-                )
+    # default locale
+    locale = locale_default
+
+    # cookie locale
+    cookie = event.request.cookies['_LOCALE_']
+    if cookie:
+        locale = cookie
+
+    # check browser for language, if no cookie present
+    browser = event.request.accept_language
+    if not cookie and browser:
+        locale_matched = browser.best_match(LANGUAGE_MAPPING, locale_default)
+        log.debug(
+            (
+                "setting locale according to browser language:\n"
+                "- locale of browser: %s\n"
+                "- locale matched: %s"
+            ) % (
+                browser, locale_matched
             )
-            locale = LANGUAGE_MAPPING.get(locale_matched)
+        )
+        locale = LANGUAGE_MAPPING.get(locale_matched)
+        # set cookie
+        event.request.response.set_cookie('_LOCALE_', value=locale)
+
+    # language request
+    request = event.request.params.get('_LOCALE_')
+    if request and request in LANGUAGE_MAPPING:
+        locale = LANGUAGE_MAPPING.get(request)
+        log.debug(
+            (
+                "setting locale according to request: %s"
+            ) % (
+                locale
+            )
+        )
         # set cookie
         event.request.response.set_cookie('_LOCALE_', value=locale)
 
