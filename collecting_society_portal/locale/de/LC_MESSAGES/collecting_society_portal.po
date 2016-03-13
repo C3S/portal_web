@@ -5,14 +5,14 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE 1.0\n"
-"POT-Creation-Date: 2016-03-12 12:06+0100\n"
-"PO-Revision-Date: 2016-03-12 12:15+0100\n"
-"Last-Translator: thomas <thomas.mielke@c3s.cc>\n"
+"POT-Creation-Date: 2016-03-12 16:42+0100\n"
+"PO-Revision-Date: 2016-03-12 15:41+0100\n"
+"Last-Translator: Thomas Mielke <thomas.mielke@c3s.cc>\n"
 "Language-Team: German\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: de\n"
 "Generated-By: Lingua 4.8.1\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.5.4\n"
@@ -50,13 +50,17 @@ msgid "Login"
 msgstr "Login"
 
 #: collecting_society_portal/views/widgets/news.py:10
+#: collecting_society_portal/templates/web_user/news.pt:13
 msgid "News"
 msgstr "News"
 
-#. Default: Collecting Society Portal
 #: collecting_society_portal/templates/base.pt:14
-msgid "base-title"
-msgstr "base-title"
+msgid "Collecting Society Portal"
+msgstr ""
+
+#: collecting_society_portal/templates/macros.pt:18
+msgid "Toggle navigation"
+msgstr ""
 
 #: collecting_society_portal/templates/deform/form.pt:35
 msgid ""
@@ -64,3 +68,6 @@ msgid ""
 msgstr ""
 "Es gab ein Problem mit Deinen Daten. Bitte überprüfe die untenstehenden "
 "Felder."
+
+#~ msgid "base-title"
+#~ msgstr "base-title"

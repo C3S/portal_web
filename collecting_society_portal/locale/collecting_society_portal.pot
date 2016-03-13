@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE 1.0\n"
-"POT-Creation-Date: 2016-03-12 12:06+0100\n"
+"POT-Creation-Date: 2016-03-12 16:42+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,12 +49,16 @@ msgid "Login"
 msgstr ""
 
 #: ./collecting_society_portal/views/widgets/news.py:10
+#: ./collecting_society_portal/templates/web_user/news.pt:13
 msgid "News"
 msgstr ""
 
-#. Default: Collecting Society Portal
 #: ./collecting_society_portal/templates/base.pt:14
-msgid "base-title"
+msgid "Collecting Society Portal"
+msgstr ""
+
+#: ./collecting_society_portal/templates/macros.pt:18
+msgid "Toggle navigation"
 msgstr ""
 
 #: ./collecting_society_portal/templates/deform/form.pt:35
