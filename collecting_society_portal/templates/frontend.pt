@@ -44,6 +44,15 @@
             <div class="cs-content-right col-sm-8 col-md-3 col-md-push-6">
                 <div class="fixed-col-3">
 
+                    <div class="cs-langflags">
+                        <a href='?_LOCALE_=en'>
+                            <img src="${request.static_path('collecting_society_portal:static/img/en.png')}"/>    
+                        </a>
+                        <a href='?_LOCALE_=de'>
+                            <img src="${request.static_path('collecting_society_portal:static/img/de.png')}"/>
+                        </a>
+                    </div>
+                    
                     <!-- slot: content right -->
                     <tal:block metal:define-slot="content-right" />
 
