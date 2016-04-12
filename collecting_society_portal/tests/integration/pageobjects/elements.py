@@ -42,6 +42,18 @@ class PasswordWidgetElement(TextInputWidgetElement):
     pass
 
 
+class CheckedPasswordWidgetElement(TextInputWidgetElement):
+    '''Deform TextAreaWidget'''
+
+    def set(self, val):
+        password = self()
+        password.clear()
+        password.send_keys(val)
+        confirm = self.cli.find_element_by_id(self.locator + '-confirm')
+        confirm.clear()
+        confirm.send_keys(val)
+
+
 class RadioChoiceWidgetElement(BasePageElement):
     '''Deform RadioChoiceWidget'''
 

@@ -9,6 +9,7 @@ from .elements import (
     TextAreaWidgetElement,
     HiddenWidgetElement,
     PasswordWidgetElement,
+    CheckedPasswordWidgetElement,
     RadioChoiceWidgetElement,
     CheckboxChoiceWidgetElement,
     ButtonElement
@@ -31,7 +32,7 @@ class DeformFormObject(object):
         # parse fields
         for child in form.children:
             if not isinstance(child, deform.field.Field):
-                raise NotImplementedError(child + ' parser not implemented')
+                raise NotImplementedError('parser not implemented')
             self._parse_field(child)
         # parse buttons
         for button in self._form.buttons:
@@ -43,6 +44,7 @@ class DeformFormObject(object):
                                      deform.widget.TextAreaWidget,
                                      deform.widget.HiddenWidget,
                                      deform.widget.PasswordWidget,
+                                     deform.widget.CheckedPasswordWidget,
                                      deform.widget.RadioChoiceWidget,
                                      deform.widget.CheckboxChoiceWidget)):
             cls = getattr(
@@ -51,4 +53,4 @@ class DeformFormObject(object):
             )
             setattr(self, field.oid, cls(self._cli, field.oid))
         else:
-            raise NotImplementedError(field + ' parser not implemented')
+            raise NotImplementedError('parser not implemented')
