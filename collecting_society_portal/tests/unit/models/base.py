@@ -1,12 +1,13 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
 # Repository: https://github.com/C3S/collecting_society.portal
 
+from ...base import UnitTestBase
+
 from trytond.pool import Pool
-# from trytond.modules.WebUser import User
-from ..models import Tdb, WebUser
+from ....models import Tdb, WebUser
 
 
-class Test01:
+class TestTdb(UnitTestBase):
 
     def setUp(self):
         Tdb._db = "c3s"
@@ -30,7 +31,6 @@ class Test01:
         """
 
         webu = WebUser.authenticate("alf_imp@c3s.cc", "cc")
-        # print("%s" % auth)
         assert (webu is not None)
 
     @Tdb.transaction()
@@ -40,5 +40,4 @@ class Test01:
         """
 
         webu = WebUser.authenticate("alf_pimp@c3s.cc", "cc")
-        # print("%s" % auth)
         assert (webu is None)
