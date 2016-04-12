@@ -13,8 +13,7 @@ from collections import (
 from pyramid.security import (
     Allow,
     Authenticated,
-    Everyone,
-    ALL_PERMISSIONS
+    Everyone
 )
 
 from .models import (
@@ -147,33 +146,25 @@ class ApiRootFactory(ResourceBase):
     __name__ = ""
     __parent__ = None
     __children__ = {}
-
-    @property
-    def __acl__(self):
-        return [
-            (Allow, Everyone, 'authenticated'),
-            (Allow, 'group:administrator', ALL_PERMISSIONS)
-        ]
+    __acl__ = [
+        (Allow, Everyone, 'authenticated')
+    ]
 
 
 class FrontendResource(ResourceBase):
     __name__ = ""
     __parent__ = None
     __children__ = {}
+    __acl__ = []
 
 
 class BackendResource(ResourceBase):
     __name__ = ""
     __parent__ = None
     __children__ = {}
-
-    @property
-    def __acl__(self):
-        return [
-            (Allow, self.request.unauthenticated_userid, 'read'),
-            (Allow, Authenticated, 'authenticated'),
-            (Allow, 'group:administrator', ALL_PERMISSIONS)
-        ]
+    __acl__ = [
+        (Allow, Authenticated, 'read')
+    ]
 
     def __init__(self, request):
         super(BackendResource, self).__init__(request)
@@ -184,9 +175,7 @@ class DebugResource(ResourceBase):
     __name__ = "debug"
     __parent__ = BackendResource
     __registry__ = {}
-    __acl__ = [
-        (Allow, Authenticated, 'authenticated')
-    ]
+    __acl__ = []
 
 
 class NewsResource(ResourceBase):
@@ -194,9 +183,7 @@ class NewsResource(ResourceBase):
     __parent__ = BackendResource
     __children__ = {}
     __registry__ = {}
-    __acl__ = [
-        (Allow, Authenticated, 'authenticated')
-    ]
+    __acl__ = []
 
     def __getitem__(self, key):
         if key in self.registry['content']['news']:
@@ -212,9 +199,7 @@ class ArticleResource(ResourceBase):
     __parent__ = NewsResource
     __children__ = {}
     __registry__ = {}
-    __acl__ = [
-        (Allow, Authenticated, 'authenticated')
-    ]
+    __acl__ = []
 
     def __init__(self, request, id):
         super(ArticleResource, self).__init__(request)

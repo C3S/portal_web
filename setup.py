@@ -36,6 +36,7 @@ test_requires = [
     'coverage',
     'nose',
     'webtest',
+    'selenium',
 ]
 
 setup(
