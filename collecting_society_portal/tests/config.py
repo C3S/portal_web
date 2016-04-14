@@ -8,7 +8,7 @@ testconfig = {
         # port for StopableWSGIServer
         'port': '6544',
         # environment file without '.ini'
-        'environment': "development",
+        'environment': "testing",
         # settings overriding the environment settings
         'settings': {},
         # print debug messages to stdout (use nosetests -s to display)

@@ -10,7 +10,10 @@ class TestLogin(FunctionalTestBase):
         self.session()
 
     def test_required_fields(self):
-        '''Functional / Login: email and password are required'''
+        '''
+        email and password are required
+        '''
+
         res1 = self.url('login', status=200)
         form = res1.form
         res2 = form.submit('WebUsersubmit')
@@ -24,7 +27,10 @@ class TestLogin(FunctionalTestBase):
         )
 
     def test_email_validator(self):
-        '''Functional / Login: email has to be well formed'''
+        '''
+        email has to be well formed
+        '''
+
         res1 = self.url('login', status=200)
         form = res1.form
         form['email'] = 'notanemail'
@@ -35,7 +41,10 @@ class TestLogin(FunctionalTestBase):
         )
 
     def test_login_with_wrong_email(self):
-        '''Functional / Login: login fails with unregistered email'''
+        '''
+        login fails with unregistered email
+        '''
+
         res1 = self.url('login', status=200)
         form = res1.form
         form['email'] = 'wrong@username.test'
@@ -44,7 +53,10 @@ class TestLogin(FunctionalTestBase):
         self.assertIn('<p class="errorMsg">Login failed</p>', res2.body)
 
     def test_login_with_wrong_password(self):
-        '''Functional / Login: login fails with wrong password'''
+        '''
+        login fails with wrong password
+        '''
+
         res1 = self.url('login', status=200)
         form = res1.form
         form['email'] = 'meik@c3s.cc'
@@ -53,7 +65,10 @@ class TestLogin(FunctionalTestBase):
         self.assertIn('<p class="errorMsg">Login failed</p>', res2.body)
 
     def test_login_with_right_credentials(self):
-        '''Functional / Login: login succeeds with right credentials'''
+        '''
+        login succeeds with right credentials
+        '''
+
         res1 = self.url('login', status=200)
         form = res1.form
         form['email'] = 'meik@c3s.cc'

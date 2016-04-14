@@ -3,6 +3,7 @@
 
 import os
 from datetime import datetime
+from functools import wraps
 
 import unittest
 from webtest import TestApp
@@ -11,6 +12,7 @@ from selenium import webdriver
 from paste.deploy.loadwsgi import appconfig
 from pyramid import testing
 
+from ..models import Tdb
 from ..config import get_plugins
 from .. import main
 from .config import testconfig
@@ -78,10 +80,24 @@ class TestBase(unittest.TestCase):
     cfg = testconfig
     net = Net()
 
+    def __init__(self, methodName='runTest'):
+        super(TestBase, self).__init__(methodName)
+        self._shortDescription = self.shortDescription
+        self.shortDescription = self.customShortDescription
+
     # overload: configuration of individual appsettings for test class
     @classmethod
     def settings(cls):
         return {}
+
+    def customShortDescription(self):
+        typ = self.__module__.split('.')[2].capitalize()
+        if typ == "Unit":
+            typ += " | " + self.__module__.split('.')[3].capitalize()
+        plugin = self.__module__.split('.')[0].split('_')[-1].capitalize()
+        classname = self.__class__.__name__[4:].capitalize()
+        return plugin + " | " + typ + " | " + classname + " | " +\
+            self._shortDescription()
 
     def debug(self, msg=''):
         if self.cfg['server']['debug']:

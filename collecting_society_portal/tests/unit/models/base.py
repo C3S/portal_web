@@ -18,7 +18,7 @@ class TestTdb(UnitTestBase):
 
     def test_is_pool_a_pool_object(self):
         """
-        Unit / Models / Tdb: Is pool a Pool object?
+        Is pool a Pool object?
         """
 
         pool = Tdb.pool()
@@ -27,7 +27,7 @@ class TestTdb(UnitTestBase):
     @Tdb.transaction()
     def test_autenticate_user(self):
         """
-        Unit / Models / Tdb: Can standard user be authenticated?
+        Can standard user be authenticated?
         """
 
         webu = WebUser.authenticate("alf_imp@c3s.cc", "cc")
@@ -36,7 +36,7 @@ class TestTdb(UnitTestBase):
     @Tdb.transaction()
     def test_autenticate_wrong_user(self):
         """
-        Unit / Models / Tdb: Does wrong authentication throw an error?
+        Does wrong authentication throw an error?
         """
 
         webu = WebUser.authenticate("alf_pimp@c3s.cc", "cc")
