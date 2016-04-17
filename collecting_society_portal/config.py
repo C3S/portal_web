@@ -104,6 +104,7 @@ def add_locale(event):
     LANGUAGE_MAPPING = {
         'de': 'de',
         'en': 'en',
+        'es': 'es',
     }
     locale_default = 'en'
 

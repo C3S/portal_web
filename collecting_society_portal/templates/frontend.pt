@@ -51,6 +51,9 @@
                         <a href='?_LOCALE_=de'>
                             <img src="${request.static_path('collecting_society_portal:static/img/de.png')}"/>
                         </a>
+                        <a href='?_LOCALE_=es'>
+                            <img src="${request.static_path('collecting_society_portal:static/img/es.gif')}"/>
+                        </a>
                     </div>
                     
                     <!-- slot: content right -->
