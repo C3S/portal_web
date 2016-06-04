@@ -1,6 +1,10 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
 # Repository: https://github.com/C3S/collecting_society.portal
 
+"""
+Helper functions for the creation of the pyramid app.
+"""
+
 import os
 import logging
 from pkgutil import iter_modules
@@ -8,39 +12,32 @@ import ConfigParser
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import get_renderer
-from pyramid.i18n import (
-    default_locale_negotiator,
-)
 
 from . import helpers
 
 log = logging.getLogger(__name__)
 
 
-def include_web_views(config):
-    config.add_static_view('static/portal', 'static', cache_max_age=3600)
-    config.add_static_view(
-        'static/deform', 'deform:static', cache_max_age=3600
-    )
-    config.scan(ignore='.views.api')
-
-
-def include_api_views(config):
-    settings = config.get_settings()
-    if settings['env'] == 'development':
-        config.add_static_view('static/portal', 'static', cache_max_age=3600)
-    config.scan('.views.api')
-
-
 def replace_environment_vars(settings):
     """
-    Substitues placeholder with environment variables in a settings dictionary.
+    Substitues placeholders in app settings with environment variables.
+
+    Values in the app settings with the syntax `${ENVIRONMENT_VARIABLE}` are
+    substituted with the respective value of the key ENVIRONMENT_VARIABLE in
+    the environment variables.
 
     Args:
-      settings: Settings configured in .ini file
+        settings (dict): Parsed [app:main] section of .ini file.
 
     Returns:
-      dict: updated settings
+        dict: substituted settings.
+
+    Examples:
+        >>> import os
+        >>> os.environ['PYRAMID_SERVICE'] = 'portal'
+        >>> settings = { 'service': '${PYRAMID_SERVICE}' }
+        >>> print(replace_environment_vars(settings))
+        { 'service' = 'portal' }
     """
     return dict(
         (key, os.path.expandvars(value)) for key, value in settings.iteritems()
@@ -49,14 +46,36 @@ def replace_environment_vars(settings):
 
 def get_plugins(settings):
     """
-    Fetches plugins based on module name pattern matching.
+    Fetches plugin settings based on module name pattern matching.
+
+    The module name pattern needs to be configured in the portal app settings
+    as key `plugins.pattern`. All modules starting with this pattern will be
+    treated as portal plugins.
+
+    Note:
+        Dots in module names get substituted by an underscore.
 
     Args:
-      settings: Settings configured in .ini file
+        settings (dict): Parsed [app:main] section of .ini file.
 
     Returns:
-      dict: priority of plugin as the key; name, settings and path of plugins
-        as values
+        dict: plugin settings.
+
+    Examples:
+        >>> settings = { 'plugins.pattern': 'collecting_society_portal_' }
+        >>> print(get_plugins(settings))
+        {
+            200: {
+                'path': '/ado/src/collecting_society.portal.imp',
+                'name': 'collecting_society_portal_imp',
+                'settings': {}
+            },
+            100: {
+                'path': '/ado/src/collecting_society.portal.creative',
+                'name': 'collecting_society_portal_creative',
+                'settings': {}
+            }
+        }
     """
     plugins = {}
     modules = [
@@ -81,35 +100,64 @@ def get_plugins(settings):
 
 
 def add_templates(event):
-    base = get_renderer('templates/base.pt').implementation()
-    frontend = get_renderer('templates/frontend.pt').implementation()
-    backend = get_renderer('templates/backend.pt').implementation()
-    macros = get_renderer('templates/macros.pt').implementation()
+    """
+    Adds base templates and macros as top-level name in temlating system.
+
+    Args:
+        event (pyramid.events.BeforeRender): BeforeRender event.
+
+    Returns:
+        None.
+    """
     event.update({
-        'base': base,
-        'frontend': frontend,
-        'backend': backend,
-        'm': macros
+        'base':     get_renderer('templates/base.pt').implementation(),
+        'frontend': get_renderer('templates/frontend.pt').implementation(),
+        'backend':  get_renderer('templates/backend.pt').implementation(),
+        'm':        get_renderer('templates/macros.pt').implementation()
     })
 
 
 def add_helpers(event):
+    """
+    Adds helper functions as top-level name in temlating system.
+
+    Args:
+        event (pyramid.events.BeforeRender): BeforeRender event.
+
+    Returns:
+        None.
+    """
     event['h'] = helpers
 
 
 def add_locale(event):
     """
-    add a cookie for the language to display (fallback to english).
+    Sets the language of the app.
+
+    Considers several sources in the following, descending order:
+
+    1. request: manual choice of language using GET parameter `_LOCALE_`
+    2. cookie: formerly chosen or detected language using cookie `_LOCALE_`
+    3. browser: browser language using HTTP header `Accept-Language`
+    4. default: en
+
+    The chosen or detected language will be saved in a cookie `_LOCALE_`.
+
+    Args:
+        event (pyramid.events.NewRequest): NewRequest event.
+
+    Returns:
+        None.
     """
     LANGUAGE_MAPPING = {
         'de': 'de',
         'en': 'en',
         'es': 'es',
     }
-    locale_default = 'en'
+    default = 'en'
 
     # default locale
-    locale = locale_default
+    current = default
 
     # cookie locale
     cookie = event.request.cookies.get('_LOCALE_')
@@ -119,43 +167,49 @@ def add_locale(event):
     # check browser for language, if no cookie present
     browser = event.request.accept_language
     if not cookie and browser:
-        locale_matched = browser.best_match(LANGUAGE_MAPPING, locale_default)
-        log.debug(
-            (
-                "setting locale according to browser language:\n"
-                "- locale of browser: %s\n"
-                "- locale matched: %s"
-            ) % (
-                browser, locale_matched
-            )
-        )
-        locale = LANGUAGE_MAPPING.get(locale_matched)
-        event.request._LOCALE_ = locale
-        event.request.response.set_cookie('_LOCALE_', value=locale)
+        match = browser.best_match(LANGUAGE_MAPPING, default)
+        current = LANGUAGE_MAPPING.get(match)
+        event.request._LOCALE_ = current
+        event.request.response.set_cookie('_LOCALE_', value=current)
 
     # language request
     request = event.request.params.get('_LOCALE_')
     if request and request in LANGUAGE_MAPPING:
-        locale = LANGUAGE_MAPPING.get(request)
-        log.debug(
-            (
-                "setting locale according to request: %s"
-            ) % (
-                locale
-            )
-        )
-        event.request._LOCALE_ = locale
+        current = LANGUAGE_MAPPING.get(request)
+        event.request._LOCALE_ = current
         event.request.response = HTTPFound(location=event.request.path_url)
-        event.request.response.set_cookie('_LOCALE_', value=locale)
+        event.request.response.set_cookie('_LOCALE_', value=current)
 
 
 def debug_request(event):
+    """
+    Prints request environment to debug log.
+
+    Args:
+        event (pyramid.events.NewRequest): NewRequest event.
+
+    Returns:
+        None.
+    """
     p = event.request.path
     if not p.startswith('/static/') and not p.startswith('/_debug_toolbar/'):
         log.debug("ENVIRON:\n %s" % event.request.environ)
 
 
 class Environment(object):
+    """
+    View predicate factory for restricting views to environments.
+
+    Args:
+        val (str): value for comparison.
+        config (pyramid.config.Configurator): App config.
+
+    Classattributes:
+        phash (str): hash for view predicate.
+
+    Attributes:
+        val (str): value for comparison.
+    """
     def __init__(self, val, config):
         self.val = val
 
@@ -165,4 +219,15 @@ class Environment(object):
     phash = text
 
     def __call__(self, context, request):
+        '''
+        Compares the value of the key `env` in registry settings with the value
+        of the view predicate key `environment`.
+
+        Args:
+            context (object): Current resource.
+            request (pyramid.request): Current request.
+
+        Returns:
+            True if val is equal to the current environment, False otherwise.
+        '''
         return request.registry.settings['env'] == self.val

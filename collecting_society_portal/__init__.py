@@ -1,7 +1,12 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
 # Repository: https://github.com/C3S/collecting_society.portal
 
+"""
+Main module for the pyramid app.
+"""
+
 import os
+import logging
 from logging.config import fileConfig
 
 from pyramid.config import Configurator
@@ -22,39 +27,59 @@ from .resources import (
     ApiRootFactory
 )
 
+log = logging.getLogger(__name__)
+
 
 def main(global_config, **settings):
     """
-    Configures and creates the app
+    Configures and creates the app.
+
+    Handles configuration of
+
+    - app config
+    - tryton database
+    - session
+    - policies
+    - subscribers
+    - route predicates
+    - view predicates
+    - request methods
+    - translation directories
+    - logging
+    - root factory
+    - resources
+    - views
 
     Args:
-      global_config: Global configuration
-      **settings (dict): Settings configured in .ini file
+        global_config (dict): Parsed [DEFAULT] section of .ini file.
+        **settings (dict): Parsed [app:main] section of .ini file.
 
     Returns:
-      obj: a Pyramid WSGI application
+        obj: a Pyramid WSGI application.
     """
 
-    # plugins
+    # get plugin configuration
     plugins = get_plugins(settings)
 
-    # config
+    # update portal settings with plugin settings and replace environment vars
     for priority in sorted(plugins, reverse=True):
         settings.update(plugins[priority]['settings'])
     settings = replace_environment_vars(settings)
+
+    # init app config
     config = Configurator(settings=settings)
 
-    # db
+    # configure tryton database
     Tdb._db = settings['tryton.database']
     Tdb._company = settings['tryton.company']
     Tdb._user = settings['tryton.user']
     Tdb._configfile = settings['tryton.configfile']
     Tdb.init()
 
-    # session
+    # configure session
     config.set_session_factory(factory=session_factory_from_settings(settings))
 
-    # policies
+    # configure policies
     config.set_authorization_policy(policy=ACLAuthorizationPolicy())
     config.set_authentication_policy(
         policy=AuthTktAuthenticationPolicy(
@@ -65,7 +90,7 @@ def main(global_config, **settings):
     )
     config.set_default_permission('administrator')
 
-    # subscribers
+    # configure subscribers
     config.add_subscriber(
         subscriber='.config.add_templates',
         iface='pyramid.events.BeforeRender'
@@ -84,26 +109,26 @@ def main(global_config, **settings):
             iface='pyramid.events.NewRequest'
         )
 
-    # route predicates
+    # configure route predicates
     config.add_route_predicate(
         name='environment',
         factory='.config.Environment'
     )
 
-    # view predicates
+    # configure view predicates
     config.add_view_predicate(
         name='environment',
         factory='.config.Environment'
     )
 
-    # request methods
+    # configure request methods
     config.add_request_method(
         callable=WebUser.current_web_user,
         name='user',
         reify=True
     )
 
-    # translation directories
+    # configure translation directories for portal and plugins
     config.add_translation_dirs(
         'colander:locale/',
         'deform:locale/',
@@ -118,49 +143,61 @@ def main(global_config, **settings):
         if os.path.isdir(translation_dir):
             config.add_translation_dirs(translation_dir)
 
-    config.commit()
-
-    # logging
+    # configure logging for portal and plugins
     for priority in sorted(plugins):
         fileConfig(
             plugins[priority]['path'] + '/' + settings['env'] + '.ini',
             disable_existing_loggers=False
         )
 
-    # webfrontend
-    api_in_web = False
-    if settings['service'] == 'portal':
-        # root factory
-        config.set_root_factory(factory=WebRootFactory)
-        # resources
-        config.include('.resources.include_web_resources')
-        for priority in sorted(plugins):
-            config.include(plugins[priority]['name']+'.include_web_resources')
-        # views
-        for priority in sorted(plugins, reverse=True):
-            config.include(plugins[priority]['name'] + '.include_web_views')
-        config.include('.config.include_web_views')
+    # commit config with basic settings
+    config.commit()
 
-        if api_in_web:
-            # modules
+    # configure webfrontend for portal and plugins
+    if settings['service'] == 'portal':
+        # web root factory
+        config.set_root_factory(factory=WebRootFactory)
+        # web resources
+        config.include('.includes.web_resources')
+        for priority in sorted(plugins):
+            config.include(
+                plugins[priority]['name']+'.includes.web_resources'
+            )
+        # web registry
+        config.include('.includes.web_registry')
+        for priority in sorted(plugins):
+            config.include(
+                plugins[priority]['name']+'.includes.web_registry'
+            )
+        # web views
+        for priority in sorted(plugins, reverse=True):
+            config.include(
+                plugins[priority]['name'] + '.includes.web_views'
+            )
+        config.include('.includes.web_views')
+        # api views
+        if settings['api.in_web'] == 'true':
             config.include('cornice')
-            # views
             for priority in sorted(plugins, reverse=True):
                 config.include(
-                    plugins[priority]['name'] + '.config.include_api_views',
-                    route_prefix='/api'
+                    plugins[priority]['name'] + '.includes.api_views',
+                    route_prefix=settings['api.in_web_path']
                 )
-            config.include('.config.include_api_views', route_prefix='/api')
+            config.include(
+                '.includes.api_views',
+                route_prefix=settings['api.in_web_path']
+            )
 
-    # api
+    # configure api for portal and plugins
     if settings['service'] == 'api':
-        # modules
         config.include('cornice')
-        # root factory
+        # api root factory
         config.set_root_factory(factory=ApiRootFactory)
-        # views
+        # api views
         for priority in sorted(plugins, reverse=True):
-            config.include(plugins[priority]['name'] + '.include_api_views')
-        config.include('.config.include_api_views')
+            config.include(
+                plugins[priority]['name'] + '.includes.api_views'
+            )
+        config.include('.includes.api_views')
 
     return config.make_wsgi_app()

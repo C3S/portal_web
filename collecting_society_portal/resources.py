@@ -1,6 +1,10 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
 # Repository: https://github.com/C3S/collecting_society.portal
 
+'''
+Base resources including base, web-/apirootfactory, back-/frontend, debug
+'''
+
 import logging
 from copy import deepcopy
 
@@ -23,14 +27,54 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
-def include_web_resources(config):
-    settings = config.get_settings()
-    if settings['env'] == 'development':
-        BackendResource.add_child(DebugResource)
-        FrontendResource.add_child(DebugResource)
-
-
 class ResourceBase(object):
+    '''
+    Base class for `traversal`_ based resources providing a content registry.
+
+    Resources are used to form flexible, hierarchical parent-child structures
+    to reflect the url. In the first step of traversal, the URL is mapped to a
+    resource and in the second step the resource is mapped to a pyramid view.
+
+    Children may be added to resources via the `add_child()` function.
+
+    The content registry may be used to assign different types of content to a
+    resource, which is provided to pyramid views and the template engine as
+    `context`. Different types might be:
+
+    - content (e.g. page content, news articles, etc.)
+    - static (e.g. css files, logo images, etc.)
+    - menues (e.g. top navigation, sidebar navigation, etc.)
+    - widgets (dynamic content elements used in different locations)
+
+    The registry of a parent class is inherited to and may be extended by its
+    children. This allows for content elements to be present on a
+    whole branch of resources, like logos or menues.
+
+    The registry may be extended by the `extend_registry` decorator function.
+
+    Note:
+        In later versions, the content of the registry might be stored in and
+        retrieved from a database, to provide CMS features.
+
+    Args:
+        request (pyramid.request.Request): Current request.
+
+    Classattributes:
+        __name__ (str): URL path segment.
+        __parent__ (obj): Instance of parent resource.
+        __children__ (dict): Children resources.
+        __registry__ (dict): Content registry
+            (dictionary or property function returning a dictionary).
+        __acl__ (list): Access control list
+            (list of tupels or property function returning a list of tupels).
+
+    Attributes:
+        _registry_cache (dict): Cached content registry.
+        request (pyramid.request.Request): Current request.
+
+    .. _traversal:
+       http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/traversal.html
+    '''
     __name__ = None
     __parent__ = None
     __children__ = {}
@@ -42,21 +86,36 @@ class ResourceBase(object):
     }
     __acl__ = []
 
-    _parentclass = None
-
     def __init__(self, request):
         if self.__parent__:
             instance = self.__parent__(request)
             self.__parent__ = instance
         self.request = request
-        self.data = None
 
     def __getitem__(self, key):
+        '''
+        Gets the next child resource.
+
+        Args:
+            key (str): Next URL path segment.
+
+        Returns:
+            obj: Instance of a child resource, which matches the key.
+
+        Raises:
+            KeyError: if no child resource is found.
+        '''
         if key in self.__children__:
             return self.__children__[key](self.request)
         raise KeyError(key)
 
     def __str__(self):
+        '''
+        Renders the resource as a string.
+
+        Returns:
+            str: Resource string.
+        '''
         name = 'None'
         if hasattr(self.__parent__, '__name__'):
             name = self.__parent__.__name__
@@ -64,26 +123,69 @@ class ResourceBase(object):
             "context: %s.%s\n"
             "context.__parent__: %s\n"
             "context.__children__: %s\n"
-            "context.data: %s\n"
             "context.registry:\n%s"
         ) % (
             self.__class__.__module__, self.__class__.__name__,
             name,
             self.__children__,
-            self.data,
             self.registry,
         )
 
     @classmethod
     def add_child(cls, val):
+        '''
+        Adds a child resource to this resource.
+
+        Args:
+            val (class): Class of child resource.
+
+        Returns:
+            None.
+
+        Examples:
+            >>> ParentResource.add_child(ChildResource)
+        '''
         val.__parent__ = cls
         cls.__children__[val.__dict__['__name__']] = val
 
     @classmethod
     def merge_registry(cls, orig_dict, new_dict):
         """
-        Recursively merge dict-like objects.
-        If a value in new_dict is {}, the key is removed in orig_dict
+        Recursively merges dict-like objects.
+
+        Note:
+            If a value in new_dict is `{}`, the key is removed in orig_dict
+
+        Args:
+            orig_dict (dict): Original dictionary to be merged with.
+            new_dict (dict): New dictionary to be merged.
+
+        Returns:
+            dict: Merged dict.
+
+        Examples:
+            >>> orig_dict = {
+            ...     'A': {
+            ...         'A1': 'A1',
+            ...         'A2': 'A2'
+            ...     },
+            ...     'B': 'B'
+            ... }
+            >>> new_dict = {
+            ...     'A': {
+            ...         'A2': 'XX'
+            ...     },
+            ...     'B': {},
+            ...     'C': 'C'
+            ... }
+            >>> print(cls.merge_registry(orig_dict, new_dict))
+            {
+                'A': {
+                    'A1': 'A1',
+                    'A2': 'XX'
+                },
+                'C': 'C'
+            }
         """
         for key, val in new_dict.iteritems():
             # delete key if val == {}
@@ -109,6 +211,21 @@ class ResourceBase(object):
 
     @classmethod
     def extend_registry(cls, func):
+        '''
+        Decorator function to extend the registry.
+
+        The `__registry__` class attribute might contain a dictionary or a
+        property function returning a dictionary. By extending the registry,
+        the original class attribute is replaced by a property function, which
+        merges the original registry with a new registry returned by `func`.
+        Registries might be extended several times.
+
+        Args:
+            func (function): Function extending the registry.
+
+        Returns:
+            None
+        '''
         _orig_reg = cls.__registry__
 
         def _registry_extension(self):
@@ -120,6 +237,17 @@ class ResourceBase(object):
 
     @property
     def registry(self):
+        '''
+        Gets the current registry of the resource.
+
+        The registry is retrieved by merging the (possibly extended) registry
+        with all (possibly extended) registries of the current resource branch
+        back to the root parent once and is cached. Additional calls will
+        return the cached registry.
+
+        Returns:
+            dict: Current registry
+        '''
         if not hasattr(self, '_registry_cache'):
             orig_dict = ResourceBase.__registry__
             if self.__parent__:
@@ -132,6 +260,23 @@ class ResourceBase(object):
         return self._registry_cache
 
     def dict(self):
+        '''
+        Returns an autovivid dictionary for easy extension of the registry.
+
+        Returns:
+            dict: Autovivid dictionary
+
+        Examples:
+            >>> reg = self.dict()
+            >>> print(reg['create']['key']['path'] = 'onthefly')
+            {
+                'create': {
+                    'key': {
+                        path': 'onthefly'
+                    }
+                }
+            }
+        '''
         return defaultdict(self.dict)
 
 
