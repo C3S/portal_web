@@ -39,7 +39,7 @@ h6, .h6 {}
 
 /* Content Middle */
 
-.cs-menue-portal { background-color:transparent; border:none; font-size:90%; }
+.cs-menue-top { background-color:transparent; border:none; font-size:90%; }
 
 /* Content Right */
 
@@ -89,7 +89,7 @@ h6, .h6 {}
 
     /* Content Middle */
 
-    .cs-menue-portal { font-size:90%; }
+    .cs-menue-top { font-size:90%; }
 
     /* Content Right */
 
@@ -117,7 +117,7 @@ h6, .h6 {}
 
     /* Content Middle */
 
-    .cs-menue-portal { font-size:100%; }
+    .cs-menue-top { font-size:100%; }
 
     /* Content Right */
     

@@ -62,8 +62,6 @@ h6, .h6 { font-family: "Signika", "Arial"; }
     .navbar-stacked ul:not { display: block; }
     .navbar-stacked li { float: none; display: block; }
     .navbar-stacked li a { padding-top: 12px; padding-bottom: 12px; }
-    
-    .cs-langflags { position:relative; top:20px; }
 
 }
 
@@ -83,8 +81,6 @@ h6, .h6 { font-family: "Signika", "Arial"; }
     /* equal height of columns 
      * cf. http://stackoverflow.com/questions/19695784/how-can-i-make-bootstrap-columns-all-the-same-height */
     .equal, .equal > div { display: -webkit-box; display: -webkit-flex; display: flex; flex:1 0 auto; }
-    
-    .cs-langflags { position:relative; top:-37px; }
     
 }
 
