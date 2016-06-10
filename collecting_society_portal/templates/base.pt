@@ -11,9 +11,9 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title i18n:translate="">Collecting Society Portal</title>
-        <meta name="keywords" content="" />
-        <meta name="description" content="" />
+        <title>${context.registry['meta']['title']|''}</title>
+        <meta name="keywords" content="${context.registry['meta']['keywords']|''}">
+        <meta name="description" content="${context.registry['meta']['description']|''}" />
 
         <link href="${request.static_path('deform:static/css/bootstrap.min.css')}"
               type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
@@ -58,8 +58,6 @@
             <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
         <![endif]-->
 
-        
-
         <!-- slot: js head -->
         <tal:block metal:define-slot="js-head" />
 
@@ -69,8 +67,6 @@
 
         <!-- slot: content -->
         <tal:block metal:define-slot="content" />
-
-        
 
         <!-- slot: js body -->
         <tal:block metal:define-slot="js-body" />
