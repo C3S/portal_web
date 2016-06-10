@@ -11,10 +11,15 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
+        <!-- registry: metadata -->
         <title>${context.registry['meta']['title']|''}</title>
         <meta name="keywords" content="${context.registry['meta']['keywords']|''}">
         <meta name="description" content="${context.registry['meta']['description']|''}" />
 
+        <!-- registry: favicon -->
+        <link href="${context.registry['static']['favicon']|''}" rel="icon" />
+
+        <!-- css -->
         <link href="${request.static_path('deform:static/css/bootstrap.min.css')}"
               type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
         <link href="${request.static_path('deform:static/css/form.css')}"
@@ -28,18 +33,19 @@
         <link href="${request.static_path('deform:static/pickadate/themes/default.time.css')}"
               type="text/css" rel="stylesheet" />
 
-        <link href="${request.static_path('collecting_society_portal:static/img/favicon.ico')}" rel="icon" />
         <link href="${request.static_path('collecting_society_portal:static/css/base.css')}"
               type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
 
         <!-- slot: css -->
         <tal:block metal:define-slot="css" />
 
+        <!-- registry: css -->
         <link tal:condition="context.registry['static']['css']|False"
               tal:repeat="css context.registry['static']['css']"
               tal:attributes="href css"
               type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
 
+        <!-- js -->
         <script src="${request.static_path('deform:static/scripts/jquery-2.0.3.min.js')}"></script>
 
         <script src="${request.static_path('deform:static/scripts/bootstrap.min.js')}"></script>
@@ -61,6 +67,11 @@
         <!-- slot: js head -->
         <tal:block metal:define-slot="js-head" />
 
+        <!-- registry: js head -->
+        <script tal:condition="context.registry['static']['js']['head']|False"
+                tal:repeat="js context.registry['static']['js']['head']"
+                tal:attributes="href js"></script>
+
     </head>
 
     <body>
@@ -70,6 +81,11 @@
 
         <!-- slot: js body -->
         <tal:block metal:define-slot="js-body" />
+
+        <!-- registry: js body -->
+        <script tal:condition="context.registry['static']['js']['body']|False"
+                tal:repeat="js context.registry['static']['js']['body']"
+                tal:attributes="href js"></script>
 
     </body>
 
