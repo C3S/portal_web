@@ -25,29 +25,32 @@ def format_currency(value, places=None, curr=None, sep=None, dp=None, pos=None,
 
     Defaults to currency of tryton company.
 
-    places:  required number of places after the decimal point
-    curr:    optional currency symbol before the sign (may be blank)
-    sep:     optional grouping separator (comma, period, space, or blank)
-    dp:      decimal point indicator (comma or period)
-             only specify as blank when places is zero
-    pos:     optional sign for positive numbers: '+', space or blank
-    neg:     optional sign for negative numbers: '-', '(', space or blank
-    trailneg:optional trailing minus indicator:  '-', ')', space or blank
+    Args:
+        places:  required number of places after the decimal point
+        curr:    optional currency symbol before the sign (may be blank)
+        sep:     optional grouping separator (comma, period, space, or blank)
+        dp:      decimal point indicator (comma or period)
+                 only specify as blank when places is zero
+        pos:     optional sign for positive numbers: '+', space or blank
+        neg:     optional sign for negative numbers: '-', '(', space or blank
+        trailneg:optional trailing minus indicator:  '-', ')', space or blank
 
-    >>> d = Decimal('-1234567.8901')
-    >>> format_currency(d, curr='$')
-    '-$1,234,567.89'
-    >>> format_currency(d, places=0, sep='.', dp='', neg='', trailneg='-')
-    '1.234.568-'
-    >>> format_currency(d, curr='$', neg='(', trailneg=')')
-    '($1,234,567.89)'
-    >>> format_currency(Decimal(123456789), sep=' ')
-    '123 456 789.00'
-    >>> format_currency(Decimal('-0.02'), neg='<', trailneg='>')
-    '<0.02>'
+    Returns:
+        str: Formatted money value.
 
+    Examples:
+        >>> d = Decimal('-1234567.8901')
+        >>> format_currency(d, curr='$')
+        '-$1,234,567.89'
+        >>> format_currency(d, places=0, sep='.', dp='', neg='', trailneg='-')
+        '1.234.568-'
+        >>> format_currency(d, curr='$', neg='(', trailneg=')')
+        '($1,234,567.89)'
+        >>> format_currency(Decimal(123456789), sep=' ')
+        '123 456 789.00'
+        >>> format_currency(Decimal('-0.02'), neg='<', trailneg='>')
+        '<0.02>'
     """
-    # context = Tdb.context()
     currency = Company.search_by_id(Tdb._company).currency
 
     _places = places or currency.digits
@@ -58,7 +61,7 @@ def format_currency(value, places=None, curr=None, sep=None, dp=None, pos=None,
     _neg = neg or currency.negative_sign
     _trailneg = trailneg or currency.n_cs_precedes
 
-    q = Decimal(10) ** -_places      # 2 _places --> '0.01'
+    q = Decimal(10) ** -_places
     sign, digits, exp = value.quantize(q).as_tuple()
     result = []
     digits = map(str, digits)

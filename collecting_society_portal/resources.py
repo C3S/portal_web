@@ -41,6 +41,7 @@ class ResourceBase(object):
     resource, which is provided to pyramid views and the template engine as
     `context`. Different types might be:
 
+    - meta (e.g. browser title, keywords, desciption, etc.)
     - content (e.g. page content, news articles, etc.)
     - static (e.g. css files, logo images, etc.)
     - menues (e.g. top navigation, sidebar navigation, etc.)
@@ -53,8 +54,8 @@ class ResourceBase(object):
     The registry may be extended by the `extend_registry` decorator function.
 
     Note:
-        In later versions, the content of the registry might be stored in and
-        retrieved from a database, to provide CMS features.
+        In later versions the content of the registry might be stored in and
+        retrieved from a database to provide CMS features.
 
     Args:
         request (pyramid.request.Request): Current request.
@@ -79,6 +80,7 @@ class ResourceBase(object):
     __parent__ = None
     __children__ = {}
     __registry__ = {
+        'meta': {},
         'content': {},
         'static': {},
         'menues': {},
@@ -281,6 +283,16 @@ class ResourceBase(object):
 
 
 class WebRootFactory(object):
+    """
+    Root resource factory for web service.
+
+    Args:
+        request (pyramid.request.Request): Current request.
+
+    Returns:
+        BackendResource: If user is logged in
+        FrontendResource: If user is not logged in
+    """
     def __new__(cls, request):
         if request.user:
             return BackendResource(request)
@@ -288,15 +300,31 @@ class WebRootFactory(object):
 
 
 class ApiRootFactory(ResourceBase):
+    """
+    Root resource factory for api service.
+
+    Args:
+        request (pyramid.request.Request): Current request.
+
+    Access:
+        No permissions (not needed for api views)
+    """
     __name__ = ""
     __parent__ = None
     __children__ = {}
-    __acl__ = [
-        (Allow, Everyone, 'authenticated')
-    ]
+    __acl__ = []
 
 
 class FrontendResource(ResourceBase):
+    """
+    Root resource for users not logged in ("frontend").
+
+    Args:
+        request (pyramid.request.Request): Current request.
+
+    Access:
+        No permissions (not needed for page views)
+    """
     __name__ = ""
     __parent__ = None
     __children__ = {}
@@ -304,6 +332,15 @@ class FrontendResource(ResourceBase):
 
 
 class BackendResource(ResourceBase):
+    """
+    Root resource for users logged in ("backend").
+
+    Args:
+        request (pyramid.request.Request): Current request.
+
+    Access:
+        Authenticated: read
+    """
     __name__ = ""
     __parent__ = None
     __children__ = {}
@@ -311,12 +348,20 @@ class BackendResource(ResourceBase):
         (Allow, Authenticated, 'read')
     ]
 
-    def __init__(self, request):
-        super(BackendResource, self).__init__(request)
-        self.web_user = WebUser.current_web_user(self.request)
-
 
 class DebugResource(ResourceBase):
+    """
+    Root resource for debug views.
+
+    Note:
+        To be included in the resource tree in development environment only.
+
+    Args:
+        request (pyramid.request.Request): Current request.
+
+    Access:
+        No permissions (not needed for debug views)
+    """
     __name__ = "debug"
     __parent__ = BackendResource
     __registry__ = {}
@@ -324,6 +369,15 @@ class DebugResource(ResourceBase):
 
 
 class NewsResource(ResourceBase):
+    """
+    Example for a news resource for news content provided by the registry.
+
+    Args:
+        request (pyramid.request.Request): Current request.
+
+    Access:
+        No permissions
+    """
     __name__ = "news"
     __parent__ = BackendResource
     __children__ = {}
@@ -340,6 +394,16 @@ class NewsResource(ResourceBase):
 
 
 class ArticleResource(ResourceBase):
+    """
+    Example for an article resource for news content provided by the registry.
+
+    Args:
+        request (pyramid.request.Request): Current request.
+        id (int): Article id.
+
+    Access:
+        No permissions
+    """
     __name__ = "article"
     __parent__ = NewsResource
     __children__ = {}

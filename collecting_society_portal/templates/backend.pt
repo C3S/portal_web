@@ -1,25 +1,48 @@
-<!-- For copyright / license terms, see COPYRIGHT.rst (top level of repository)
-     Repository: https://github.com/C3S/collecting_society -->
+<!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+      Repository: https://github.com/C3S/collecting_society.portal -->
+<!--!
 
+    Bootstrap based, responsive template for the backend.
+
+    Structure:
+
+    - Three columns (3-6-3)
+
+    Slots filled (base):
+
+    - css
+    - content
+
+    Slots defined:
+
+    - content-left
+    - content-right
+    - content-middle
+
+    Content defined:
+
+    - css               (static:   static/css/backend.css)
+    - logo              (registry: static/logo)
+    - sidebar widgets   (registry: widgets/content-right/*)
+    - main menue tabs   (registry: menues/roles)
+    - main menue        (registry: menues/main)
+    - top menue         (registry: menues/top)
+    - flashmessages     (request)
+
+-->
 <tal:block metal:extend-macro="base" i18n:domain="collecting_society_portal">
 
     <!-- css -->
     <tal:block metal:fill-slot="css">
-        <link href="${request.static_path('collecting_society_portal:static/css/backend.css')}"
-                  type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
+        <link href="${request.static_path(
+                  'collecting_society_portal:static/css/backend.css'
+              )}"
+              type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
     </tal:block>
 
     <!-- js -->
-    <tal:block metal:fill-slot="js-head">
-        <script tal:condition="context.registry['static']['js-head']|False"
-                tal:repeat="js context.registry['static']['js-head']"
-                tal:attributes="src js"></script>
-    </tal:block>
-    <tal:block metal:fill-slot="js-body">
-        <script tal:condition="context.registry['static']['js-body']|False"
-                tal:repeat="js context.registry['static']['js-body']"
-                tal:attributes="src js"></script>
-    </tal:block>
+    <tal:block metal:fill-slot="js-head" />
+    <tal:block metal:fill-slot="js-body" />
 
     <!-- content -->
     <tal:block metal:fill-slot="content">
@@ -32,11 +55,11 @@
                 <div class="cs-content-right col-md-3 col-md-push-9">
                     <div class="col-md-12">
 
-                        <!-- logo -->
+                        <!-- registry: logo -->
                         <img tal:attributes="src context.registry['static']['logo']"
                              class="cs-logo img-responsive" />
 
-                        <!-- sidebar widgets -->
+                        <!-- registry: sidebar widgets -->
                         <div class="cs-sidebar-widgets" tal:define="group 'sidebar-widgets'">
                             <tal:block tal:condition="context.registry['widgets']['content-right']|None"
                                        tal:repeat="widget context.registry['widgets']['content-right']">
@@ -59,16 +82,18 @@
                 <div class="cs-content-left col-md-3 col-md-pull-3">
                     <div class="col-md-12">
 
-                        <!-- menue roles -->
+                        <!-- registry: main menue tabs -->
                         <tal:block metal:use-macro="m['nav']"
-                                   tal:define="name 'roles'; style 'nav-tabs nav-justified'" />
+                                   tal:define="name 'roles';
+                                               style 'nav-tabs nav-justified'" />
 
-                        <!-- menue main -->
+                        <!-- registry: main menue -->
                         <tal:block metal:use-macro="m['navbar']"
                                    tal:define="name 'main'; style 'navbar-stacked'">
                             <tal:block metal:fill-slot="links">
                                 <a tal:attributes="href menu.url" class="clearfix">
-                                    <img tal:attributes="src menu.icon" class="cs-icon img-responsive" />
+                                    <img tal:attributes="src menu.icon"
+                                         class="cs-icon img-responsive" />
                                     <div class="cs-title">${menu.name}</div>
                                 </a>
                             </tal:block>
@@ -84,32 +109,40 @@
                 <div class="cs-content-middle col-md-6 col-md-pull-3">
                     <div class="col-md-12">
 
-                        <!-- menue portal -->
+                        <!-- registry: top menue -->
                         <tal:block metal:use-macro="m['navbar']"
-                                   tal:define="name 'portal'" />
+                                   tal:define="name 'top'" />
 
-                        <!-- alerts -->
-                        <div tal:condition="request.session.peek_flash('main-alert-success')"
-                             class="alert alert-success" role="alert">
-                            <p tal:repeat="message request.session.pop_flash('main-alert-success')">
+                        <!-- request: flashmessages -->
+                        <div class="alert alert-success" role="alert"
+                             tal:condition="request.session.peek_flash(
+                                 'main-alert-success')" >
+                            <p tal:repeat="message request.session.pop_flash(
+                                   'main-alert-success')" >
                                 ${message}
                             </p>
                         </div>
-                        <div tal:condition="request.session.peek_flash('main-alert-info')"
-                             class="alert alert-info" role="alert">
-                            <p tal:repeat="message request.session.pop_flash('main-alert-info')">
+                        <div class="alert alert-info" role="alert"
+                             tal:condition="request.session.peek_flash(
+                                 'main-alert-info')" >
+                            <p tal:repeat="message request.session.pop_flash(
+                                   'main-alert-info')" >
                                 ${message}
                             </p>
                         </div>
-                        <div tal:condition="request.session.peek_flash('main-alert-warning')"
-                             class="alert alert-warning" role="alert">
-                            <p tal:repeat="message request.session.pop_flash('main-alert-warning')">
+                        <div class="alert alert-warning" role="alert"
+                             tal:condition="request.session.peek_flash(
+                                'main-alert-warning')" >
+                            <p tal:repeat="message request.session.pop_flash(
+                                   'main-alert-warning')" >
                                 ${message}
                             </p>
                         </div>
-                        <div tal:condition="request.session.peek_flash('main-alert-danger')"
-                            class="alert alert-danger" role="alert">
-                            <p tal:repeat="message request.session.pop_flash('main-alert-danger')">
+                        <div class="alert alert-danger" role="alert"
+                             tal:condition="request.session.peek_flash(
+                                'main-alert-danger')" >
+                            <p tal:repeat="message request.session.pop_flash(
+                                   'main-alert-danger')" >
                                 ${message}
                             </p>
                         </div>

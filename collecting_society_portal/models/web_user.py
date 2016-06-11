@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 class WebUser(Tdb):
     """
-    Model wrapper for Tryton model object 'web.user'
+    Model wrapper for Tryton model object 'web.user'.
     """
 
     __name__ = 'web.user'
@@ -19,14 +19,14 @@ class WebUser(Tdb):
     @Tdb.transaction(readonly=True)
     def current_web_user(cls, request):
         """
-        Fetches the currently logged in web_user
+        Gets the currently logged in web user.
 
         Args:
-          request (obj): request object of pyramid
+            request (pyramid.request.Request): Current request.
 
         Returns:
-          obj: web.user
-          None: if no web_user is logged in
+            obj (web.user): Web user.
+            None: If no web user is logged in.
         """
         return cls.search_by_email(request.unauthenticated_userid)
 
@@ -34,29 +34,32 @@ class WebUser(Tdb):
     @Tdb.transaction(readonly=True)
     def current_party(cls, request):
         """
-        Fetches the party of currently logged web_user
+        Gets the party of the currently logged in web user.
 
         Args:
-          request (obj): request object of pyramid
+            request (pyramid.request.Request): Current request.
 
         Returns:
-          obj: web.user.party
-          None: if no party is logged in
+            obj (web.user.party): Party of the web user.
+            None: If no web user is logged in
         """
-        return cls.current_web_user(request).party
+        current = cls.current_web_user(request)
+        if current:
+            return cls.current_web_user(request).party
+        return None
 
     @classmethod
     @Tdb.transaction(readonly=True)
     def current_roles(cls, request):
         """
-        Fetches the roles of currently logged in web_user
+        Gets the roles of the currently logged in web user.
 
         Args:
-          request (obj): request object of pyramid
+            request (pyramid.request.Request): Current request.
 
         Returns:
-          list: list of roles of current web_user
-          None: if no web_user is logged in
+            list: List of roles of the current web user.
+            None: If no web user is logged in.
         """
         current = cls.current_web_user(request)
         if current:
@@ -67,15 +70,15 @@ class WebUser(Tdb):
     @Tdb.transaction(readonly=True)
     def groupfinder(cls, email, request):
         """
-        Fetches roles of a web_user for effective principals
+        Gets the roles of a web user for effective principals.
 
         Args:
-          email (str): email of web_user
-          request (obj): request object of pyramid
+            email (str): Email of the web user.
+            request (pyramid.request.Request): Current request.
 
         Returns:
-          list: list of roles of current web_user
-          None: if no web_user is logged in
+            list: List of roles of the current web user.
+            None: If no web user is logged in.
         """
         if not email:
             return cls.current_roles(request)
@@ -88,13 +91,13 @@ class WebUser(Tdb):
     @Tdb.transaction(readonly=True)
     def roles(cls, web_user):
         """
-        Fetches the roles of web_user
+        Gets the roles of a web user.
 
         Args:
-          web_user (obj): web.user
+            web_user (obj[web.user]): Web user.
 
         Returns:
-          list: roles of web_user
+            list: List of roles of the web user.
         """
         return [role.name for role in web_user.roles]
 
@@ -102,15 +105,15 @@ class WebUser(Tdb):
     @Tdb.transaction(readonly=True)
     def authenticate(cls, email, password):
         """
-        Checks authentication of web_user with email and password
+        Checks authentication of a web user with email and password.
 
         Args:
-          email (string): email of web_user
-          password (string): password of web_user
+            email (str): Email of the web user.
+            password (str): Password of the web user.
 
         Returns:
-          obj: web.user
-          None: if authentication check failed
+            obj (web.user): Web user.
+            None: If authentication check failed.
         """
         return cls.get().authenticate(email, password)
 
@@ -118,11 +121,11 @@ class WebUser(Tdb):
     @Tdb.transaction(readonly=True)
     def search_all(cls):
         """
-        Fetches all web_user
+        Gets all web users.
 
         Returns:
-          list: web.user
-          None: if no match is found
+            list (obj[web.user]): List of web users.
+            None: if no match is found.
         """
         return cls.get().search([])
 
@@ -130,14 +133,14 @@ class WebUser(Tdb):
     @Tdb.transaction(readonly=True)
     def search_by_email(cls, email):
         """
-        Searches a web_user by email
+        Searches a web user by email.
 
         Args:
-          email (string): email of web_user
+            email (str): Email of the web_user
 
         Returns:
-          obj: web.user
-          None: if no match is found
+            obj (web.user): Web user.
+            None: If no match is found.
         """
         if email is None:
             return None
@@ -148,27 +151,26 @@ class WebUser(Tdb):
     @Tdb.transaction(readonly=False)
     def create(cls, vlist):
         """
-        Creates web_user
+        Creates web users.
 
         Args:
-          vlist (list): list of dicts with attributes to create web_user::
-
-            [
-                {
-                    'email': str (required),
-                    'password': str (required)
-                },
-                {
-                    ...
-                }
-            ]
-
-        Raises:
-          KeyError: if required field is missing
+            vlist (list): List of dictionaries with attributes of a web user.
+                [
+                    {
+                        'email': str (required),
+                        'password': str (required)
+                    },
+                    {
+                        ...
+                    }
+                ]
 
         Returns:
-          list: created web.user
-          None: if no object was created
+            list (obj[web.user]): List of created web users.
+            None: If no object was created.
+
+        Raises:
+            KeyError: If required field is missing.
         """
         for values in vlist:
             if 'email' not in values:

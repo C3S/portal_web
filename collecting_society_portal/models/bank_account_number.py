@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 class BankAccountNumber(Tdb):
     """
-    Model wrapper for Tryton model object 'bank.account.number'
+    Model wrapper for Tryton model object 'bank.account.number'.
     """
 
     __name__ = 'bank.account.number'
@@ -19,14 +19,14 @@ class BankAccountNumber(Tdb):
     @Tdb.transaction(readonly=True)
     def search_by_number(cls, number):
         """
-        Searches a bank account number by number
+        Searches a bank account number by number.
 
         Args:
-          number (string): number of bank account number
+            number (str): Number of bank account number.
 
         Returns:
-          obj: bank.account.number
-          None: if no match is found
+            obj: Bank account number.
+            None: If no match is found.
         """
         if number is None:
             return None
@@ -36,6 +36,38 @@ class BankAccountNumber(Tdb):
     @classmethod
     @Tdb.transaction(readonly=False)
     def create(cls, party, vlist):
+        """
+        Creates bank account numbers.
+
+        Currently only the type IBAN is implemented.
+
+        2DO: Implement other types.
+
+        Cascades:
+            Creates a bank with the bic as name if not existant.
+
+        Args:
+            vlist (list): List of dictionaries with attributes of a web user.
+                [
+                    {
+                        'type': str (required),
+                        'bic': str (required),
+                        'number': str (required)
+                    },
+                    {
+                        ...
+                    }
+                ]
+
+        Returns:
+            list (obj[bank.account.number]): List of created bank account
+                numbers.
+            None: If no object was created.
+
+        Raises:
+            KeyError: If required field is missing.
+            NotImplementedError: If type is not implemented.
+        """
         _Party = cls.get('party.party')
         _Bank = cls.get('bank')
         _BankAccount = cls.get('bank.account')
@@ -43,7 +75,7 @@ class BankAccountNumber(Tdb):
         cvlist = []
         for values in vlist:
             if 'bic' not in values:
-                    raise KeyError('bic is missing')
+                raise KeyError('bic is missing')
             if 'type' not in values:
                 raise KeyError('type is missing')
 
@@ -58,13 +90,19 @@ class BankAccountNumber(Tdb):
                 )
                 bank.save()
 
-            # iban
+            # type: iban
             if values['type'] == 'iban':
                 if 'number' not in values:
                     raise KeyError('number is missing')
                 bank_account_numbers = cls.search_by_number(values['number'])
+                # skip creation if number already exists
                 if bank_account_numbers:
-                    raise KeyError('number already exists')
+                    log.debug(
+                        'bank account number already exists:\n{}'.format(
+                            values
+                        )
+                    )
+                    continue
 
                 _bank_account = {
                     'bank': bank.id,
@@ -83,4 +121,11 @@ class BankAccountNumber(Tdb):
                 bank_accounts = _BankAccount.create([_bank_account])
                 bank_account = bank_accounts[0]
                 cvlist.append(bank_account.numbers[-1])
-        return cvlist or []
+
+            # type: not implemented
+            else:
+                raise NotImplementedError(
+                    'bank account number type not implemented.'
+                )
+
+        return cvlist or None

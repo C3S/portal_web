@@ -46,9 +46,14 @@ def main(global_config, **settings):
     - request methods
     - translation directories
     - logging
-    - root factory
+    - root factories
     - resources
+    - registry
     - views
+
+    Contains the main logic of the plugin system by including settings,
+    translation directories, logging configuration, views, ressources and
+    registry information of the plugins in a well defined order.
 
     Args:
         global_config (dict): Parsed [DEFAULT] section of .ini file.

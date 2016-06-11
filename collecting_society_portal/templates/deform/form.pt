@@ -1,6 +1,5 @@
-<!-- For copyright / license terms, see COPYRIGHT.rst (top level of repository)
-     Repository: https://github.com/C3S/collecting_society -->
-
+<!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+      Repository: https://github.com/C3S/collecting_society.portal -->
 <form tal:define="style style|field.widget.style;
                   css_class css_class|string:${field.widget.css_class or field.css_class or ''};
                   item_template item_template|field.widget.item_template;

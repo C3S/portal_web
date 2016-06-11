@@ -12,13 +12,22 @@ from trytond.pool import Pool
 
 class Tdb(object):
     """
-    Base Class for model wrappers and communication handling using Tryton.
+    Base Class for model wrappers and communication handling using trytond.
 
-    Class attributes:
-      _db (str): name of database
-      _configfile (str): Tryton config file
-      _retry (int): number of retries in transactions
-      _user (int): default id of tryton backend user to use in transactions
+    Includes functions to
+
+    - initialize the tryton database
+    - wrap database communication with transaction handling
+
+    Includes helper functions for getting the pool, context and models.
+
+    Classattributes:
+        _db (str): Name of database.
+        _configfile (str): Tryton config file.
+        _retry (int): Number of retries in transactions.
+        _user (int): Default id of tryton backend user for transactions.
+        _company (int): Default company id.
+        __name__ (str): Name of the tryton model to be initialized.
     """
 
     # --- DB ------------------------------------------------------------------
@@ -29,35 +38,74 @@ class Tdb(object):
     _user = None
     _company = None
 
+    @classmethod
+    def init(cls):
+        """
+        Initializes a Tryton database.
+
+        Configuration is done by assigning the desired values to the following
+        class attributes prior to the call:
+
+        - _db
+        - _configfile
+        - _company
+        - _user
+
+        Updates the tryton config and reads out the configured number of
+        retries before initialization.
+
+        Note:
+            This function is expected to be called only once.
+
+        Examples:
+            >>> Tdb._db = 'db'
+            >>> Tdb._configfile = '/path/to/configfile'
+            >>> Tdb._company = 1
+            >>> Tdb._user = 'user'
+            >>> Tdb.init()
+        """
+        config.update_etc(str(cls._configfile))
+        cls._retry = config.getint('database', 'retry')
+        with Transaction().start(str(cls._db), int(cls._user), readonly=True):
+            Pool().init()
+
     def transaction(readonly=None, user=None, context=None, withhold=False):
         """
-        Decorates functions for use within Tryton transactions.
+        Decorater function to wrap database communication with transactions.
 
-        Handles:
+        The wrapping function handles:
+
         - start and stop of transactions
         - caching in case of multithreading environments
         - commit and rollback of cursors on error
         - retries in case of an operational error of Tryton
         - chaining of multiple decorated functions within one transaction
 
+        2DO: Chaining multiple calls to the database could result in different
+        cursors. This works in principle (commented out) but still has a
+        problem with the combination of different rw/ro calls.
+
         Args:
-          readonly (bool): type of transaction.
-            If None and kwargs contains a request object, then the
-            transaction will be readonly except for PUT, POST, DELETE
-            and PATCH request methods.
-            If None and kwargs contains no request object, then
-            the transaction will be readonly.
-          user (int): Tryton backend user id for transaction.
-            If None, then the default user will be used for transaction
-          context (dict): context for transaction.
-            If None, then the context of transaction will be empty.
+            readonly (bool): Type of transaction.
+                If None and kwargs contains a request object, then the
+                transaction will be readonly except for PUT, POST, DELETE
+                and PATCH request methods.
+                If None and kwargs contains no request object, then
+                the transaction will be readonly.
+            user (int): Tryton backend user id for transaction.
+                If None, then the default user will be used for transaction
+            context (dict): Context for transaction.
+                If None, then the context of transaction will be empty.
 
         Raises:
-          DatabaseOperationalError: if Tryton or the database has a problem.
+            DatabaseOperationalError: if Tryton or the database has a problem.
 
         Note:
-          This work is based on work of Cedric Krier <ced@b2ck.com> under GPLv3
-          s.a. https://pypi.python.org/pypi/flask_tryton file flask_tryton.py
+            This work is based on the `flask_tryton`_ package by Cedric Krier
+            <ced@b2ck.com> licensed under GPLv3 (see `flask_tryton.py`)
+
+        .. _flask_tryton:
+            https://pypi.python.org/pypi/flask_tryton
         """
         DatabaseOperationalError = backend.get('DatabaseOperationalError')
 
@@ -125,37 +173,13 @@ class Tdb(object):
         return decorator
 
     @classmethod
-    def init(cls):
-        r"""
-        Initialize a Tryton database.
-
-        Should be called only once. Updates the tryton config and writes the
-        configured number of retries into the class attribute _retry.
-
-        Configuration via class attributes, e.g.::
-
-            >>> Tdb._db = 'db'
-            >>> Tdb._configfile = '/path/to/configfile'
-            >>> Tdb._company = 1
-            >>> Tdb._user = 'user'
-            >>> Tdb.init()
-
-        Expects class attributes _db, _configfile, _company and _user to be
-        set.
-        """
-        config.update_etc(str(cls._configfile))
-        cls._retry = config.getint('database', 'retry')
-        with Transaction().start(str(cls._db), int(cls._user), readonly=True):
-            Pool().init()
-
-    @classmethod
     @transaction(readonly=True)
     def pool(cls):
         """
         Gets the Tryton pool object.
 
         Returns:
-          obj: the Tryton pool.
+            obj: Pool.
         """
         pool = Pool(str(cls._db))
         return pool
@@ -167,7 +191,7 @@ class Tdb(object):
         Gets the Transaction context.
 
         Returns:
-          dict: context
+            dict: Context.
         """
         context = Transaction().context
         return context
@@ -183,13 +207,14 @@ class Tdb(object):
         Gets a Tryton model object.
 
         If no Tryton model descriptor is passed, the class variable __name__ is
-        assumed to be set within a subclass to it's default Tryton model
-        descriptor, which then will be used to get the Tryton model.
+        assumed to be set to it's default Tryton model descriptor, which then
+        will be used to get the Tryton model.
 
         Args:
-          model (str): Tryton model descriptor or None
+            model (str): Tryton model descriptor or None.
+
         Returns:
-          obj: Tryton model
+            obj: Tryton model.
         """
         pool = cls.pool()
         if model:
