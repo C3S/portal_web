@@ -1,5 +1,21 @@
 <!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
       Repository: https://github.com/C3S/collecting_society.portal -->
+<!--!
+
+    Template to show pages on a seperate site in the frontend.
+
+    As the frontend is designed to include several pages on a single site, this
+    template may be used to provide the content on a separate site.
+
+    Slots filled (frontend):
+
+    - content-middle
+
+    Content defined:
+
+    - page
+
+-->
 <tal:block metal:use-macro="frontend" i18n:domain="collecting_society_portal">
 
     <!-- content left -->
@@ -8,7 +24,7 @@
     <!-- content middle -->
     <tal:block metal:fill-slot="content-middle">
 
-        <!-- static site -->
+        <!-- page -->
         ${structure: page}
 
     </tal:block>

@@ -1,8 +1,34 @@
 <!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
       Repository: https://github.com/C3S/collecting_society.portal -->
 
+
 <!--!
-    Bootstrap navbar.
+
+    Macro 'navbar': Bootstrap `navbar`_ element.
+
+    Menue items are fetched from the registry and are expected to contain the
+    following information::
+
+        {
+            'name': str,
+            'url': str
+        }
+
+    Menue items are active, if the request path (full url) starts with the
+    menue url.
+
+    Args:
+        name (str): Sets css class to cs-menue-NAME.
+            Uses menue items from registry: menues/NAME/*.
+        style (Optional[str]): Adds css classes, e.G.
+            navbar-default, navbar-fixed-top, navbar-stacked.
+
+    Slots:
+        links: Rendering of menue items.
+
+    .. _navbar:
+       https://getbootstrap.com/components/#navbar
+
 -->
 <nav metal:define-macro="navbar"
      tal:condition="context.registry['menues'][name]|None"
@@ -43,7 +69,33 @@
 </nav>
 
 
-<!-- nav -->
+<!--!
+
+    Macro 'nav': Bootstrap `nav`_ element.
+
+    Menue items are fetched from the registry and are expected to contain the
+    following information::
+
+        {
+            'name': str,
+            'url': str
+        }
+
+    Menue items are active, if the request path (full url) starts with the
+    menue url.
+
+    Args:
+        name (str): Sets css class to cs-menue-NAME.
+            Uses menue items from registry: menues/NAME/*.
+        style (Optional[str]): Adds css classes, e.G. nav-tabs, nav-justified.
+
+    Slots:
+        links: Rendering of menue items.
+
+    .. _nav:
+       https://getbootstrap.com/components/#nav
+
+-->
 <ul metal:define-macro="nav"
     tal:condition="context.registry['menues'][name]|None"
     class="cs-menue-${name} nav ${style}"
@@ -61,7 +113,25 @@
 </ul>
 
 
-<!-- panel -->
+<!--!
+
+    Macro 'panel': Bootstrap `panel`_ element.
+
+    Args:
+        heading (Optional[str]): Content of panel heading.
+        body (Optional[str]): Content of panel body.
+        footer (Optional[str]): Content of panel footer.
+        style (Optional[str]): Adds css classes.
+
+    Slots:
+        heading: Rendering of panel heading.
+        body: Rendering of panel body.
+        footer: Rendering of panel footer.
+
+    .. _panel:
+       https://getbootstrap.com/components/#panels
+
+-->
 <div metal:define-macro="panel"
      class="panel panel-default ${style|None}"
      i18n:domain="collecting_society_portal">
@@ -79,7 +149,28 @@
 </div>
 
 
-<!-- panel-collapsed -->
+<!--!
+
+    Macro 'panel-collapsed': Customized, collapsable `panel`_ element.
+
+    Args:
+        group (str): Panel group name for unique css ids.
+        id (int): Panel id for unique css ids.
+        heading (Optional[str]): content of panel heading.
+        body (Optional[str]): content of panel body.
+        footer (Optional[str]): content of panel footer.
+        style (Optional[str]): Adds css classes.
+        visible (bool): Starting state of collapse (default: False).
+
+    Slots:
+        heading: rendering of panel heading.
+        body: rendering of panel body.
+        footer: rendering of panel footer.
+
+    .. _panel:
+       https://getbootstrap.com/components/#panels
+
+-->
 <div metal:define-macro="panel-collapsed"
      tal:define="visible visible|False"
      class="panel panel-default panel-collapsed ${style|None}"

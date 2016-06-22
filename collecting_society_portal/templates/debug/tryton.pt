@@ -1,5 +1,10 @@
 <!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
       Repository: https://github.com/C3S/collecting_society.portal -->
+<!--!
+
+    Debugging information about trytond and the database.
+
+-->
 <tal:block metal:use-macro="base">
 
     <!-- content -->

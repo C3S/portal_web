@@ -1,5 +1,18 @@
 <!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
       Repository: https://github.com/C3S/collecting_society.portal -->
+<!--!
+
+    Template to show articles in the backend.
+
+    Slots filled (backend):
+
+    - content-middle
+
+    Content defined:
+
+    - article
+
+-->
 <tal:block metal:use-macro="backend" i18n:domain="collecting_society_portal">
 
     <!-- content left -->
@@ -8,7 +21,7 @@
     <!-- content middle -->
     <tal:block metal:fill-slot="content-middle">
 
-        <!-- static site -->
+        <!-- article -->
         <h1>${context.article.header}</h1>
 
         <div metal:use-macro="load: ${context.article.template}.pt"></div>

@@ -1,5 +1,10 @@
 <!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
       Repository: https://github.com/C3S/collecting_society.portal -->
+<!--!
+
+    Template to list articles in a widget.
+
+-->
 <ul class="cs-widget-news list-group" i18n:domain="collecting_society_portal">
     <li tal:repeat="article news" class="list-group-item">
         <a tal:attributes="href request.resource_path(request.root['news'], article)">${news[article].header}</a>
