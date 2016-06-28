@@ -75,7 +75,6 @@ class CheckedPasswordField(colander.SchemaNode):
 # --- Schemas -----------------------------------------------------------------
 
 class RegisterSchema(colander.MappingSchema):
-    title = _(u"Register")
     email = EmailField(
         title=_(u"Email")
     )

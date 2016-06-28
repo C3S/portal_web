@@ -74,7 +74,6 @@ class PasswordField(colander.SchemaNode):
 # --- Schemas -----------------------------------------------------------------
 
 class LoginSchema(colander.MappingSchema):
-    title = _(u"Login")
     email = EmailField(
         title=_(u"Email")
     )
