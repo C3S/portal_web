@@ -5,16 +5,25 @@ import colander
 import deform
 import logging
 
-from . import LoginWebuser
-from ...models import WebUser
-from ...services import _
+from pyramid_mailer import get_mailer
+from pyramid_mailer.message import Message
+
+from . import FormController
+from ...models import (
+    Tdb,
+    WebUser
+)
+from ...services import (
+    _,
+    send_mail
+)
 
 log = logging.getLogger(__name__)
 
 
 # --- Controller --------------------------------------------------------------
 
-class RegisterWebuser(LoginWebuser):
+class RegisterWebuser(FormController):
     """
     form controller for web_user login
     """
@@ -25,7 +34,6 @@ class RegisterWebuser(LoginWebuser):
 
         if self.submitted() and self.validate():
             self.register()
-            self.login()
 
         return self.response
 
@@ -35,13 +43,48 @@ class RegisterWebuser(LoginWebuser):
 
     # --- Actions -------------------------------------------------------------
 
+    @Tdb.transaction(readonly=False)
     def register(self):
-        web_user = {
+        _web_user = {
             'email': self.appstruct['email'],
             'password': self.appstruct['password']
         }
-        WebUser.create([web_user])
-        log.info("web_user creation successful: %s" % self.appstruct['email'])
+        web_users = WebUser.create([_web_user])
+
+        # check, if web user creation was successful
+        if not web_users:
+            log.info("web_user creation not successful.")
+            return False
+        web_user = web_users[0]
+        log.info("web_user creation successful: %s" % web_user.email)
+
+        # user feedback
+        self.request.session.flash(
+            _(
+                u"Registration was successful. You should recieve an email "
+                u"with further instructions, how to verify your email address."
+            ),
+            'main-alert-success'
+        )
+
+        # send email
+        send_mail(
+            self.request,
+            subject=_(u"Verification Mail"),
+            sender="test@portal.test",
+            recipients=[self.appstruct['email']],
+            body=_(u"Thanks for your registration. Please visit this link to "
+                   u"verify your email address") + ": %s" % (
+                     self.request.resource_url(
+                         self.request.root, 'verify_email',
+                         WebUser.get_opt_in_uuid_by_id(web_user.id)
+                     )
+                 )
+        )
+
+        # reset form
+        self.remove()
+        self.render()
 
 
 # --- Validators --------------------------------------------------------------
