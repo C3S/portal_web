@@ -54,7 +54,8 @@
               content="${context.registry['meta']['description']|''}" />
 
         <!-- registry: favicon -->
-        <link href="${context.registry['static']['favicon']|''}" rel="icon" />
+        <link href="${context.registry['static']['favicon']|''}"
+              rel="shortcut icon" />
 
         <!-- css -->
         <link type="text/css" rel="stylesheet" media="screen" charset="utf-8"
