@@ -10,7 +10,10 @@ import logging
 from pkgutil import iter_modules
 import ConfigParser
 
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import (
+    HTTPFound,
+    HTTPNotFound
+)
 from pyramid.renderers import get_renderer
 
 from . import helpers
@@ -181,6 +184,19 @@ def add_locale(event):
         event.request.response.set_cookie('_LOCALE_', value=current)
 
 
+def notfound(request):
+    """
+    Not Found view (404 Error).
+
+    Args:
+        request (pyramid.request): Current request.
+
+    Returns:
+        pyramid.httpexceptions.HTTPNotFound: 404 Response.
+    """
+    return HTTPNotFound()
+
+
 def debug_request(event):
     """
     Prints request environment to debug log.
@@ -193,7 +209,7 @@ def debug_request(event):
     """
     p = event.request.path
     if not p.startswith('/static/') and not p.startswith('/_debug_toolbar/'):
-        log.debug("ENVIRON:\n %s" % event.request.environ)
+        log.debug("REQUEST:\n %s" % event.request)
 
 
 class Environment(object):

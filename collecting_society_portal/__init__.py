@@ -16,7 +16,8 @@ from pyramid_beaker import session_factory_from_settings
 
 from .config import (
     replace_environment_vars,
-    get_plugins
+    get_plugins,
+    notfound
 )
 from .models import (
     Tdb,
@@ -157,6 +158,9 @@ def main(global_config, **settings):
 
     # commit config with basic settings
     config.commit()
+
+    # not found view (404 Error)
+    config.add_notfound_view(notfound)
 
     # configure webfrontend for portal and plugins
     if settings['service'] == 'portal':
