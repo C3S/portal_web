@@ -3,4 +3,5 @@
 
 # services
 from .translator import translator as _
+from .mailer import send_mail
 from . import iban
