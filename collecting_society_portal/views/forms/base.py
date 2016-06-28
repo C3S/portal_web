@@ -110,7 +110,7 @@ class FormController(object):
 
     def remove(self):
         if self.name in self.request.session['forms']:
-            self.request.session['forms'][self.name] = None
+            del self.request.session['forms'][self.name]
 
 
 @colander.deferred
