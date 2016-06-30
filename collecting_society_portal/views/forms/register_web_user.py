@@ -5,9 +5,6 @@ import colander
 import deform
 import logging
 
-from pyramid_mailer import get_mailer
-from pyramid_mailer.message import Message
-
 from . import FormController
 from ...models import (
     Tdb,
