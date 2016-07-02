@@ -17,16 +17,16 @@ class ViewBase(object):
         self._formcontroller = {}
         self.request = request
         self.context = context
+        self.response = {}
         log.debug(self.context)
 
     def process_forms(self):
-        response = {}
         for name, controller in self._formcontroller.iteritems():
             _response = controller.process(self.context, self.request)
             if isinstance(_response, HTTPException):
                 return _response
-            response.update(_response)
-        return response
+            self.response.update(_response)
+        return self.response
 
     def register_form(self, controller, name=None, persistent=False):
         if self.request.path.startswith('/static'):
