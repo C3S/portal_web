@@ -19,13 +19,33 @@ class FormController(object):
                  context=None, request=None, response=None):
         self._name = name or self.__class__.__name__
         self._form = None
-        self._validationfailure = None
         self._data = {}
         self.stage = stage or self.__stage__
         self.appstruct = appstruct
         self.context = context
         self.request = request
         self.response = response or {}
+        self.validationfailure = None
+
+    def __getstate__(self):
+        return {
+            '__stage__': self.__stage__,
+            '_name': self._name,
+            '_data': self._data,
+            'stage': self.stage,
+            'appstruct': self.appstruct
+        }
+
+    def __setstate__(self, state):
+        self.__stage__ = state['__stage__']
+        self._name = state['_name']
+        self._form = None
+        self._data = state['_data']
+        self.stage = state['stage']
+        self.appstruct = state['appstruct']
+        self.context = None
+        self.request = None
+        self.response = {}
 
     @property
     def name(self):
@@ -102,11 +122,11 @@ class FormController(object):
 
     def clean(self):
         self._form = None
-        self._validationfailure = None
         self._data = {}
         self.appstruct = None
         self.context = None
         self.stage = self.__stage__
+        self.validationfailure = None
 
     def remove(self):
         if self.name in self.request.session['forms']:
