@@ -162,7 +162,7 @@
         <!-- registry: js body -->
         <script tal:condition="context.registry['static']['js']['body']|False"
                 tal:repeat="js context.registry['static']['js']['body']"
-                tal:attributes="href js"></script>
+                tal:attributes="src js"></script>
 
     </body>
 
