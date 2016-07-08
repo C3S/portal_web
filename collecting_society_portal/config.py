@@ -209,7 +209,12 @@ def debug_request(event):
     """
     p = event.request.path
     if not p.startswith('/static/') and not p.startswith('/_debug_toolbar/'):
-        log.debug("REQUEST:\n %s" % event.request)
+        try:
+            log.debug("REQUEST:\n %s" % event.request)
+        except UnicodeDecodeError:
+            request = event.request.copy()
+            request.text = 10*u'01' + u' BINARY DATA ' + 10*u'01'
+            log.debug("REQUEST:\n %s" % request)
 
 
 class Environment(object):
