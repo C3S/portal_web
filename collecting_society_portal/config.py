@@ -199,7 +199,7 @@ def notfound(request):
 
 def debug_request(event):
     """
-    Prints request environment to debug log.
+    Prints request to debug log.
 
     Args:
         event (pyramid.events.NewRequest): NewRequest event.
@@ -210,11 +210,27 @@ def debug_request(event):
     p = event.request.path
     if not p.startswith('/static/') and not p.startswith('/_debug_toolbar/'):
         try:
-            log.debug("REQUEST:\n %s" % event.request)
-        except UnicodeDecodeError:
-            request = event.request.copy()
-            request.text = 10*u'01' + u' BINARY DATA ' + 10*u'01'
-            log.debug("REQUEST:\n %s" % request)
+            log.debug("REQUEST:\n %s" % event.request.as_bytes(skip_body=True))
+        except:
+            pass
+
+
+def debug_response(event):
+    """
+    Prints response to debug log.
+
+    Args:
+        event (pyramid.events.NewRequest): NewRequest event.
+
+    Returns:
+        None.
+    """
+    p = event.request.path
+    if not p.startswith('/static/') and not p.startswith('/_debug_toolbar/'):
+        try:
+            log.debug("RESPONSE:\n %s" % event.response.__str__(skip_body=True))
+        except:
+            pass
 
 
 class Environment(object):

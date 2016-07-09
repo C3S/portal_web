@@ -114,6 +114,10 @@ def main(global_config, **settings):
             subscriber='.config.debug_request',
             iface='pyramid.events.NewRequest'
         )
+        config.add_subscriber(
+            subscriber='.config.debug_response',
+            iface='pyramid.events.NewResponse'
+        )
 
     # configure route predicates
     config.add_route_predicate(
