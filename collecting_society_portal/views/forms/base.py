@@ -1,6 +1,13 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
 # Repository: https://github.com/C3S/collecting_society.portal
 
+import os
+import shutil
+import glob
+import tempfile
+from tempfile import NamedTemporaryFile
+import time
+
 from abc import ABCMeta, abstractmethod
 import logging
 
@@ -133,14 +140,79 @@ class FormController(object):
             del self.request.session['forms'][self.name]
 
 
+class MemoryTmpStore(dict):
+    def preview_url(self, name):
+        return None
+
+
+class TmpFile(object):
+
+    def __init__(self, source, *args, **kwargs):
+        self.file = tempfile.NamedTemporaryFile(*args, **kwargs)
+        shutil.copyfileobj(source, self)
+
+    def __getstate__(self):
+        try:
+            return self.name
+        except:
+            pass
+        return None
+
+    def __setstate__(self, name):
+        self.file = None
+        if name and os.path.isfile(name):
+            self.file = open(name, 'r')
+
+    def __getattr__(self, attr):
+        return getattr(self.file, attr)
+
+    def __iter__(self):
+        return iter(self.file)
+
+    def delete(self):
+        file = self.name
+        if file and os.path.isfile(file):
+            os.unlink(file)
+
+
+class FileTmpStore(dict):
+
+    def __init__(self, path=None, timeout=0):
+        self.path = path
+        self.timeout = timeout
+        self.files = {}
+        self.clear_tmpfiles()
+
+    def clear_tmpfiles(self):
+        if not self.timeout:
+            return
+        path = os.path.join(self.path, 'tmp*')
+        for tmpfile in glob.glob(path):
+            created = os.stat(tmpfile).st_mtime
+            now = time.time()
+            if created < now - self.timeout:
+                os.unlink(tmpfile)
+
+    def __setitem__(self, name, cstruct):
+        tmpfile = TmpFile(source=cstruct['fp'], dir=self.path, delete=False)
+        cstruct['fp'].close()
+        cstruct['fp'] = tmpfile
+        super(FileTmpStore, self).__setitem__(name, cstruct)
+
+    def preview_url(self, name):
+        return None
+
+
 @colander.deferred
 def deferred_file_upload_widget(node, kw):
     request = kw.get('request')
     session = request.session
+    basepath = request.registry.settings.get('session.data_dir', '/tmp')
+    path = os.path.join(basepath, 'file_tmp_store')
+    timeout = int(request.registry.settings.get('session.file_expires', 0))
+    if not os.path.isdir(path):
+        os.makedirs(path)
     if 'file_upload' not in session:
-        class MemoryTmpStore(dict):
-            def preview_url(self, name):
-                return None
-        session['file_upload'] = MemoryTmpStore()
+        session['file_upload'] = FileTmpStore(path=path, timeout=timeout)
     widget = deform.widget.FileUploadWidget(session['file_upload'])
     return widget
