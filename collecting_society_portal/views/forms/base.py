@@ -22,11 +22,12 @@ class FormController(object):
     __metaclass__ = ABCMeta
     __stage__ = None
 
-    def __init__(self, name=None, stage=None, appstruct=None,
+    def __init__(self, name=None, stage=None, persistent=False, appstruct=None,
                  context=None, request=None, response=None):
         self._name = name or self.__class__.__name__
         self._form = None
         self._data = {}
+        self.persistent = persistent
         self.stage = stage or self.__stage__
         self.appstruct = appstruct
         self.context = context
@@ -39,6 +40,7 @@ class FormController(object):
             '__stage__': self.__stage__,
             '_name': self._name,
             '_data': self._data,
+            'persistent': self.persistent,
             'stage': self.stage,
             'appstruct': self.appstruct
         }
@@ -48,6 +50,7 @@ class FormController(object):
         self._name = state['_name']
         self._form = None
         self._data = state['_data']
+        self.persistent = state['persistent']
         self.stage = state['stage']
         self.appstruct = state['appstruct']
         self.context = None

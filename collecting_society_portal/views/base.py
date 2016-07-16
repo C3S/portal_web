@@ -18,6 +18,7 @@ class ViewBase(object):
         self.request = request
         self.context = context
         self.response = {}
+        self.cleanup_forms()
         log.debug(self.context)
 
     def process_forms(self):
@@ -31,31 +32,32 @@ class ViewBase(object):
     def register_form(self, controller, name=None, persistent=False):
         if self.request.path.startswith('/static'):
             return
-        _name = name or controller.__module__
+        _name = name or controller.__name__
 
         # ensure existence of session key
         if 'forms' not in self.request.session:
             self.request.session['forms'] = {}
         _forms = self.request.session['forms']
 
-        # reset form, if not persistent and user left the form controller flow
-        if not persistent and _name in _forms:
-            # name in params
-            _pname = ""
-            if '__formid__' in self.request.params:
-                _pname = self.request.params['__formid__']
-            # name in session
-            _sname = _forms[_name].name
-            # comparison of params name and session name
-            if _pname != _sname:
-                del _forms[_name]
-
         # initialize form
         if _name not in _forms:
-            _forms[_name] = controller()
+            _forms[_name] = controller(name=_name, persistent=persistent)
 
         # register form
         self._formcontroller[_name] = _forms[_name]
+
+    def cleanup_forms(self):
+        """
+        Reset form, if not persistent and user left the controller flow
+        """
+        _forms = self.request.session.get('forms', {})
+        current_form = self.request.params.get('__formid__', '')
+        forms_to_delete = []
+        for form_name in _forms:
+            if not _forms[form_name].persistent and form_name != current_form:
+                forms_to_delete.append(form_name)
+        for form_name in forms_to_delete:
+            del _forms[form_name]
 
     def redirect(self, resource, *args, **kwargs):
         if isinstance(resource, str):
