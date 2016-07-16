@@ -349,6 +349,24 @@ class BackendResource(ResourceBase):
     ]
 
 
+class ProfileResource(ResourceBase):
+    """
+    Profile resource for managing the user profile.
+
+    Args:
+        request (pyramid.request.Request): Current request.
+
+    Access:
+        Authenticated: read
+    """
+    __name__ = "profile"
+    __parent__ = BackendResource
+    __children__ = {}
+    __acl__ = [
+        (Allow, Authenticated, 'read')
+    ]
+
+
 class DebugResource(ResourceBase):
     """
     Root resource for debug views.
