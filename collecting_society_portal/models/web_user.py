@@ -50,6 +50,24 @@ class WebUser(Tdb):
 
     @classmethod
     @Tdb.transaction(readonly=True)
+    def current_user(cls, request):
+        """
+        Gets the party of the currently logged in web user.
+
+        Args:
+            request (pyramid.request.Request): Current request.
+
+        Returns:
+            obj (web.user.party): Party of the web user.
+            None: If no web user is logged in
+        """
+        current = cls.current_web_user(request)
+        if current:
+            return cls.current_web_user(request).user
+        return None
+
+    @classmethod
+    @Tdb.transaction(readonly=True)
     def current_roles(cls, request):
         """
         Gets the roles of the currently logged in web user.
