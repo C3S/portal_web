@@ -15,6 +15,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 class TestResources(UnitTestBase):
 
     def setUp(self):
@@ -30,5 +31,15 @@ class TestResources(UnitTestBase):
         '''
 
         d = Decimal('-1234567.8901')
-        self.assertEqual(format_currency(d, curr='$', sep=',', dp='.'), '-$ 1,234,567.89')
-        self.assertEqual(format_currency(d, curr='$', sep=',', dp='.', neg='(', trailneg=')'), '($ 1,234,567.89)')
+        self.assertEqual(
+            format_currency(
+                d, curr='$', sep=',', dp='.'
+            ),
+            '-$ 1,234,567.89'
+        )
+        self.assertEqual(
+            format_currency(
+                d, curr='$', sep=',', dp='.', neg='(', trailneg=')'
+            ),
+            '($ 1,234,567.89)'
+        )
