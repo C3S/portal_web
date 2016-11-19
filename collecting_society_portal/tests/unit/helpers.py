@@ -29,7 +29,6 @@ class TestResources(UnitTestBase):
         '''
         Does converting a decimal to a money formatted string work?
         '''
-
         d = Decimal('-1234567.8901')
         self.assertEqual(
             format_currency(
