@@ -66,7 +66,6 @@ h6, .h6 {}
 
 }
 
-
 /*******************************************************************************
 
    Medium devices (desktops, 992px and up)
@@ -96,7 +95,10 @@ h6, .h6 {}
     .cs-content-right { min-height:100%; }
 
     .cs-logo { margin-top:20px; margin-bottom:20px; padding:0; }
-    
+    .cs-backend-39 .cs-logo { float:right; margin-right:27px; }
+
+
+
 }
 
 
@@ -120,5 +122,6 @@ h6, .h6 {}
     .cs-menue-top { font-size:100%; }
 
     /* Content Right */
+    .cs-backend-39 .cs-logo { margin-right:52px; }
     
 }

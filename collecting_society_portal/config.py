@@ -113,10 +113,16 @@ def add_templates(event):
         None.
     """
     event.update({
-        'base':     get_renderer('templates/base.pt').implementation(),
-        'frontend': get_renderer('templates/frontend.pt').implementation(),
-        'backend':  get_renderer('templates/backend.pt').implementation(),
-        'm':        get_renderer('templates/macros.pt').implementation()
+        'base': get_renderer(
+            'templates/base.pt').implementation(),
+        'frontend': get_renderer(
+            'templates/frontend.pt').implementation(),
+        'backend363': get_renderer(
+            'templates/backend363.pt').implementation(),
+        'backend39': get_renderer(
+            'templates/backend39.pt').implementation(),
+        'm': get_renderer(
+            'templates/macros.pt').implementation()
     })
 
 

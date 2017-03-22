@@ -48,7 +48,7 @@
     <tal:block metal:fill-slot="content">
 
         <!-- columns -->
-        <div class="cs-content cs-backend container">
+        <div class="cs-content cs-backend cs-backend-363 container">
             <div class="row equal">
 
                 <!-- column right -->
