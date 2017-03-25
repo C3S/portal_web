@@ -1,0 +1,121 @@
+# For copyright and license terms, see COPYRIGHT.rst (top level of repository)
+# Repository: https://github.com/C3S/collecting_society.portal
+
+import logging
+import os
+import time
+import csv
+
+
+log = logging.getLogger(__name__)
+
+benchmark_file = "/ado/tmp/benchmark/benchmark.csv"
+config = {
+    'delimiter': ',',
+    'quotechar': '"',
+    'fieldnames': [
+        'name',
+        'uid',
+        'start',
+        'end',
+        'time',
+        'normalize',
+        'scale',
+        'result'
+    ]
+}
+
+
+class benchmark(object):
+    def __init__(self, request, name, uid, normalize=1.0, scale=1.0,
+                 environment='development'):
+        self.request = request
+        if self.request.registry.settings.get('benchmark.'+name) != 'true':
+            self.skip = True
+            return
+        self.skip = (self.request.registry.settings['env'] != environment)
+        self.name = name
+        self.uid = uid
+        self.normalize = normalize
+        self.scale = scale
+        # file descriptor implies filesize in bytes
+        if hasattr(normalize, 'read'):
+            self.normalize = normalize.tell()
+            normalize.seek(0)
+        # valid path implies filesize in bytes
+        elif isinstance(normalize, basestring) and os.path.isfile(normalize):
+            self.normalize = os.path.getsize(normalize)
+        if not self.normalize or not self.scale:
+            self.skip = True
+        # check paths
+        if not os.path.exists(os.path.dirname(benchmark_file)):
+            os.makedirs(os.path.dirname(benchmark_file))
+        if not os.path.isfile(benchmark_file):
+            with open(benchmark_file, 'w') as csvfile:
+                writer = csv.DictWriter(csvfile, **config)
+                writer.writeheader()
+
+    def __enter__(self):
+        if self.skip:
+            return
+        self.start = time.time()
+
+    def __exit__(self, ty, val, tb):
+        if self.skip:
+            return
+        self.end = time.time()
+        self.time = self.end - self.start
+        if self.time:
+            self.result = self.time / self.normalize * self.scale
+            with open(benchmark_file, 'a') as csvfile:
+                writer = csv.DictWriter(csvfile, **config)
+                writer.writerow({
+                    'name': self.name,
+                    'uid': self.uid,
+                    'start': self.start,
+                    'end': self.end,
+                    'time': self.time,
+                    'normalize': self.normalize,
+                    'scale': self.scale,
+                    'result': self.result
+                })
+        return False
+
+
+def benchmarks():
+    if not os.path.isfile(benchmark_file):
+        return {'config': config, 'benchmarks': None, 'results': None}
+
+    # details
+    benchmarks = {}
+    with open(benchmark_file, 'r') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            if not benchmarks.get(row['name']):
+                benchmarks[row['name']] = {}
+            if not benchmarks[row['name']].get(row['uid']):
+                benchmarks[row['name']][row['uid']] = []
+            benchmarks[row['name']][row['uid']].append({
+                'start': row['start'],
+                'end': row['end'],
+                'time': row['time'],
+                'normalize': row['normalize'],
+                'scale': row['scale'],
+                'result': row['result']
+            })
+
+    # results
+    results = {}
+    for name in benchmarks:
+        benchmark = benchmarks[name]
+        results[name] = {'means': {}}
+        for uid in benchmark:
+            runs = benchmark[uid]
+            uidsum = 0
+            for run in runs:
+                uidsum += float(run['result'])
+            results[name]['means'][uid] = uidsum / float(len(runs))
+        means = results[name]['means']
+        results[name]['mean'] = sum(means.values()) / float(len(means))
+
+    return {'config': config, 'benchmarks': benchmarks, 'results': results}
