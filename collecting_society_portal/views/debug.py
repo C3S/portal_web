@@ -13,6 +13,7 @@ from psycopg2 import (
     OperationalError
 )
 
+from ..services import benchmarks
 from ..models import Tdb
 from ..views import ViewBase
 
@@ -97,3 +98,9 @@ class DebugViews(ViewBase):
             log.debug('hit the KeyError: %s' % ke)
 
         return the_result
+
+    @view_config(
+        name='benchmark',
+        renderer='../templates/debug/benchmark.pt')
+    def benchmark(request):
+        return benchmarks()

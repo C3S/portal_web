@@ -214,11 +214,24 @@ def debug_request(event):
         None.
     """
     p = event.request.path
-    if not p.startswith('/static/') and not p.startswith('/_debug_toolbar/'):
-        try:
-            log.debug("REQUEST:\n %s" % event.request.as_bytes(skip_body=True))
-        except:
-            pass
+    settings = event.request.registry.settings
+
+    # exclude requests
+    if p.startswith('/static/') or p.startswith('/_debug_toolbar/'):
+        return
+    # api
+    if settings['service'] == 'api':
+        if settings['debug.api.request'] == 'false':
+            return
+    # web
+    if settings['service'] == 'web':
+        if settings['debug.web.request']:
+            return
+    # log
+    try:
+        log.debug("REQUEST:\n %s" % event.request.as_bytes(skip_body=True))
+    except:
+        pass
 
 
 def debug_response(event):
@@ -232,11 +245,24 @@ def debug_response(event):
         None.
     """
     p = event.request.path
-    if not p.startswith('/static/') and not p.startswith('/_debug_toolbar/'):
-        try:
-            log.debug("RESPONSE:\n %s" % event.response.__str__(skip_body=True))
-        except:
-            pass
+    settings = event.request.registry.settings
+
+    # exclude requests
+    if p.startswith('/static/') or p.startswith('/_debug_toolbar/'):
+        return
+    # api
+    if settings['service'] == 'api':
+        if settings['debug.api.response'] == 'false':
+            return
+    # web
+    if settings['service'] == 'web':
+        if settings['debug.web.response']:
+            return
+    # log
+    try:
+        log.debug("RESPONSE:\n %s" % event.response.__str__(skip_body=True))
+    except:
+        pass
 
 
 class Environment(object):

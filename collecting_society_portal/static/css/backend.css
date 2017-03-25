@@ -40,6 +40,10 @@ h6, .h6 {}
 /* Content Middle */
 
 .cs-menue-top { background-color:transparent; border:none; font-size:90%; }
+.cs-tabbedform { margin-top:25px; }
+.cs-tabbedform .panel-heading > .nav-tabs { border-bottom: none; margin-bottom: -10px; }
+.cs-tabbedform-title { float:left; margin:7px 25px 0 0; }
+.cs-tabbedform .cs-tabbedform-nav > li > .cs-error { color:#b94a48; font-weight:bold; }
 
 /* Content Right */
 

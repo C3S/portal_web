@@ -3,5 +3,9 @@
 
 # services
 from .translator import translator as _
+from .benchmark import (
+    benchmark,
+    benchmarks
+)
 from .mailer import send_mail
 from . import iban
