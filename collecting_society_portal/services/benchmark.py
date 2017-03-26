@@ -1,16 +1,16 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
 # Repository: https://github.com/C3S/collecting_society.portal
 
-import logging
 import os
 import time
-import csv
+from . import (
+    csv_import,
+    csv_export
+)
 
-
-log = logging.getLogger(__name__)
 
 benchmark_file = "/ado/tmp/benchmark/benchmark.csv"
-config = {
+csv_config = {
     'delimiter': ',',
     'quotechar': '"',
     'fieldnames': [
@@ -30,30 +30,29 @@ class benchmark(object):
     def __init__(self, request, name, uid, normalize=1.0, scale=1.0,
                  environment='development'):
         self.request = request
-        if self.request.registry.settings.get('benchmark.'+name) != 'true':
+        if self.request.registry.settings.get('benchmark.' + name) != 'true':
             self.skip = True
             return
         self.skip = (self.request.registry.settings['env'] != environment)
         self.name = name
+        print(self.name)
         self.uid = uid
-        self.normalize = normalize
         self.scale = scale
-        # file descriptor implies filesize in bytes
         if hasattr(normalize, 'read'):
+            # file descriptor implies filesize in bytes
+            normalize.seek(0, os.SEEK_END)
             self.normalize = normalize.tell()
             normalize.seek(0)
-        # valid path implies filesize in bytes
         elif isinstance(normalize, basestring) and os.path.isfile(normalize):
+            # valid path implies filesize in bytes
             self.normalize = os.path.getsize(normalize)
+        else:
+            self.normalize = normalize
         if not self.normalize or not self.scale:
             self.skip = True
         # check paths
         if not os.path.exists(os.path.dirname(benchmark_file)):
             os.makedirs(os.path.dirname(benchmark_file))
-        if not os.path.isfile(benchmark_file):
-            with open(benchmark_file, 'w') as csvfile:
-                writer = csv.DictWriter(csvfile, **config)
-                writer.writeheader()
 
     def __enter__(self):
         if self.skip:
@@ -67,42 +66,42 @@ class benchmark(object):
         self.time = self.end - self.start
         if self.time:
             self.result = self.time / self.normalize * self.scale
-            with open(benchmark_file, 'a') as csvfile:
-                writer = csv.DictWriter(csvfile, **config)
-                writer.writerow({
-                    'name': self.name,
-                    'uid': self.uid,
-                    'start': self.start,
-                    'end': self.end,
-                    'time': self.time,
-                    'normalize': self.normalize,
-                    'scale': self.scale,
-                    'result': self.result
-                })
+            row = {
+                'name': self.name,
+                'uid': self.uid,
+                'start': self.start,
+                'end': self.end,
+                'time': self.time,
+                'normalize': self.normalize,
+                'scale': self.scale,
+                'result': self.result
+            }
+            csv_export(benchmark_file, row, **csv_config)
         return False
 
 
 def benchmarks():
     if not os.path.isfile(benchmark_file):
-        return {'config': config, 'benchmarks': None, 'results': None}
+        return {'config': csv_config, 'benchmarks': None, 'results': None}
+
+    # import
+    rows = csv_import(benchmark_file, **csv_config)
 
     # details
     benchmarks = {}
-    with open(benchmark_file, 'r') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            if not benchmarks.get(row['name']):
-                benchmarks[row['name']] = {}
-            if not benchmarks[row['name']].get(row['uid']):
-                benchmarks[row['name']][row['uid']] = []
-            benchmarks[row['name']][row['uid']].append({
-                'start': row['start'],
-                'end': row['end'],
-                'time': row['time'],
-                'normalize': row['normalize'],
-                'scale': row['scale'],
-                'result': row['result']
-            })
+    for row in rows:
+        if not benchmarks.get(row['name']):
+            benchmarks[row['name']] = {}
+        if not benchmarks[row['name']].get(row['uid']):
+            benchmarks[row['name']][row['uid']] = []
+        benchmarks[row['name']][row['uid']].append({
+            'start': row['start'],
+            'end': row['end'],
+            'time': row['time'],
+            'normalize': row['normalize'],
+            'scale': row['scale'],
+            'result': row['result']
+        })
 
     # results
     results = {}
@@ -118,4 +117,4 @@ def benchmarks():
         means = results[name]['means']
         results[name]['mean'] = sum(means.values()) / float(len(means))
 
-    return {'config': config, 'benchmarks': benchmarks, 'results': results}
+    return {'config': csv_config, 'benchmarks': benchmarks, 'results': results}
