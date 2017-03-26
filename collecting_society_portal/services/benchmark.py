@@ -12,18 +12,18 @@ from . import (
 benchmark_file = "/ado/tmp/benchmark/benchmark.csv"
 csv_config = {
     'delimiter': ',',
-    'quotechar': '"',
-    'fieldnames': [
-        'name',
-        'uid',
-        'start',
-        'end',
-        'time',
-        'normalize',
-        'scale',
-        'result'
-    ]
+    'quotechar': '"'
 }
+csv_fieldnames = [
+    'name',
+    'uid',
+    'start',
+    'end',
+    'time',
+    'normalize',
+    'scale',
+    'result'
+]
 
 
 class benchmark(object):
@@ -75,13 +75,18 @@ class benchmark(object):
                 'scale': self.scale,
                 'result': self.result
             }
-            csv_export(benchmark_file, row, **csv_config)
+            csv_export(
+                path=benchmark_file,
+                row=row,
+                fieldnames=csv_fieldnames,
+                **csv_config
+            )
         return False
 
 
 def benchmarks():
     if not os.path.isfile(benchmark_file):
-        return {'config': csv_config, 'benchmarks': None, 'results': None}
+        return {'benchmarks': None, 'results': None}
 
     # import
     rows = csv_import(benchmark_file, **csv_config)
@@ -116,4 +121,4 @@ def benchmarks():
         means = results[name]['means']
         results[name]['mean'] = sum(means.values()) / float(len(means))
 
-    return {'config': csv_config, 'benchmarks': benchmarks, 'results': results}
+    return {'benchmarks': benchmarks, 'results': results}
