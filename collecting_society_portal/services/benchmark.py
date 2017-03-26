@@ -35,7 +35,6 @@ class benchmark(object):
             return
         self.skip = (self.request.registry.settings['env'] != environment)
         self.name = name
-        print(self.name)
         self.uid = uid
         self.scale = scale
         if hasattr(normalize, 'read'):
