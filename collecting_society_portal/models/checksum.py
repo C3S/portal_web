@@ -37,32 +37,30 @@ class Checksum(Tdb):
 
     @classmethod
     @Tdb.transaction(readonly=True)
-    def search_collision(cls, code, begin, end):
+    def search_collision(cls, code, algorithm=None, begin=None, end=None):
         """
         Searches for a checksum collision.
 
         Args:
-            code (str): Code of checksum.
             begin (int): First byte for checksum.
             end (int): Last byte for checksum.
+            algorithm (str): Algorithm for checksum.
+            code (str): Code of checksum.
 
         Returns:
-            obj: Checksum.
-            None: If no match is found.
+            list (obj[Checksum]): List of collided checksums.
+            list ([]): If no match is found.
         """
         if code is None:
-            return None
-        if begin is None:
-            return None
-        if end is None:
-            return None
-        result = cls.get().search([
-            ('code', '=', code),
-            ('begin', '=', begin),
-            ('end', '=', end),
-            ('origin.duplicate_of', '=', None),
-        ])
-        return result[0] if result else None
+            return []
+        query = [('code', '=', code)]
+        if begin:
+            query.append(('begin', '=', begin))
+        if end:
+            query.append(('end', '=', end))
+        if algorithm:
+            query.append(('algorithm', '=', algorithm))
+        return cls.get().search(query)
 
     @classmethod
     @Tdb.transaction(readonly=False)
@@ -95,7 +93,7 @@ class Checksum(Tdb):
             KeyError: If required field is missing.
             NotImplementedError: If type is not implemented.
         """
-        log.debug('create checksum:\n{}'.format(vlist))
+        log.debug('create {} checksums'.format(len(vlist)))
         for values in vlist:
             if 'origin' not in values:
                 raise KeyError('origin is missing')
