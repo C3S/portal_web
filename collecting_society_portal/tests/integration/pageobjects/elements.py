@@ -8,8 +8,9 @@ from .base import BasePageElement
 
 
 class TextInputWidgetElement(BasePageElement):
-    '''Deform TextInputWidget'''
-
+    """
+    Deform TextInputWidget
+    """
     def __call__(self):
         return self.cli.find_element_by_id(self.locator)
 
@@ -26,25 +27,31 @@ class TextInputWidgetElement(BasePageElement):
 
 
 class TextAreaWidgetElement(TextInputWidgetElement):
-    '''Deform TextAreaWidget'''
+    """
+    Deform TextAreaWidget
+    """
     pass
 
 
 class HiddenWidgetElement(TextInputWidgetElement):
-    '''Deform HiddenWidget'''
-
+    """
+    Deform HiddenWidget
+    """
     def getRo(self):
         return self.get()
 
 
 class PasswordWidgetElement(TextInputWidgetElement):
-    '''Deform TextAreaWidget'''
+    """
+    Deform TextAreaWidget
+    """
     pass
 
 
 class CheckedPasswordWidgetElement(TextInputWidgetElement):
-    '''Deform TextAreaWidget'''
-
+    """
+    Deform TextAreaWidget
+    """
     def set(self, val):
         password = self()
         password.clear()
@@ -55,10 +62,11 @@ class CheckedPasswordWidgetElement(TextInputWidgetElement):
 
 
 class RadioChoiceWidgetElement(BasePageElement):
-    '''Deform RadioChoiceWidget'''
-
+    """
+    Deform RadioChoiceWidget
+    """
     def __call__(self):
-        '''returns radiobuttons'''
+        """returns radiobuttons"""
         rb = self.cli.find_elements_by_name(self.locator)
         if not rb:
             raise NoSuchElementException()
@@ -70,7 +78,7 @@ class RadioChoiceWidgetElement(BasePageElement):
                 return rb.get_attribute("value")
 
     def getRo(self):
-        '''returns iterator of option'''
+        """returns iterator of option"""
         option = self.cli.find_elements_by_xpath(
             "//div[@id='item-"+self.locator+"']/div/p"
         )
@@ -81,15 +89,31 @@ class RadioChoiceWidgetElement(BasePageElement):
         return False
 
     def set(self, val):
-        '''val: iterator of option'''
+        """val: iterator of option"""
         for rb in self():
             if rb.get_attribute("value") == val:
                 rb.click()
 
 
-class CheckboxChoiceWidgetElement(BasePageElement):
-    '''Deform CheckboxChoiceWidget'''
+class CheckboxWidgetElement(BasePageElement):
+    """
+    Deform CheckboxWidget
+    """
+    def __call__(self):
+        return self.cli.find_element_by_id(self.locator)
 
+    def get(self):
+        return self().is_selected()
+
+    def set(self, val):
+        if val is not self.get():
+            self().click()
+
+
+class CheckboxChoiceWidgetElement(BasePageElement):
+    """
+    Deform CheckboxChoiceWidget
+    """
     def __call__(self):
         return self.cli.find_element_by_id(self.locator)
 
@@ -108,8 +132,16 @@ class CheckboxChoiceWidgetElement(BasePageElement):
             self().click()
 
 
-class ButtonElement(BasePageElement):
-    '''Deform Button'''
+class DateInputWidgetElement(TextInputWidgetElement):
+    """
+    Deform DateInputWidget
+    """
+    pass
 
+
+class ButtonElement(BasePageElement):
+    """
+    Deform Button
+    """
     def __call__(self):
         self.cli.find_element_by_id(self.locator).click()

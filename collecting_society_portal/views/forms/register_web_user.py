@@ -97,7 +97,7 @@ def email_is_unique(value):
 # --- Fields ------------------------------------------------------------------
 
 class EmailField(colander.SchemaNode):
-    oid = "email"
+    oid = "register-email"
     schema_type = colander.String
     validator = colander.All(
         colander.Email(),
@@ -106,7 +106,7 @@ class EmailField(colander.SchemaNode):
 
 
 class CheckedPasswordField(colander.SchemaNode):
-    oid = "password"
+    oid = "register-password"
     schema_type = colander.String
     validator = colander.Length(min=8)
     widget = deform.widget.CheckedPasswordWidget()

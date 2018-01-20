@@ -62,13 +62,13 @@ def authentication_is_successful(values):
 # --- Fields ------------------------------------------------------------------
 
 class EmailField(colander.SchemaNode):
-    oid = "email"
+    oid = "login-email"
     schema_type = colander.String
     validator = colander.Email()
 
 
 class PasswordField(colander.SchemaNode):
-    oid = "password"
+    oid = "login-password"
     schema_type = colander.String
     widget = deform.widget.PasswordWidget()
 

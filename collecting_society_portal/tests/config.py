@@ -28,8 +28,8 @@ testconfig = {
         },
         # window size of client
         'window_size': {
-            'width': 1600,
-            'height': 768
+            'width': 800,
+            'height': 600
         },
         # take screenshots during integration tests
         'screenshots': {

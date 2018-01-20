@@ -11,7 +11,9 @@ from .elements import (
     PasswordWidgetElement,
     CheckedPasswordWidgetElement,
     RadioChoiceWidgetElement,
+    CheckboxWidgetElement,
     CheckboxChoiceWidgetElement,
+    DateInputWidgetElement,
     ButtonElement
 )
 
@@ -44,13 +46,17 @@ class DeformFormObject(object):
                                      deform.widget.TextAreaWidget,
                                      deform.widget.HiddenWidget,
                                      deform.widget.PasswordWidget,
+                                     deform.widget.CheckboxWidget,
                                      deform.widget.CheckedPasswordWidget,
                                      deform.widget.RadioChoiceWidget,
+                                     deform.widget.DateInputWidget,
                                      deform.widget.CheckboxChoiceWidget)):
             cls = getattr(
                 sys.modules[__name__],
                 field.widget.__class__.__name__ + 'Element'
             )
-            setattr(self, field.oid, cls(self._cli, field.oid))
+            attr = field.oid.replace("-", "_")
+            setattr(self, attr, cls(self._cli, field.oid))
         else:
-            raise NotImplementedError('parser not implemented')
+            raise NotImplementedError(
+                'parser not implemented: ' + field.widget.__class__.__name__)
