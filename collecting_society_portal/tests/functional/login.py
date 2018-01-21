@@ -20,6 +20,7 @@ class TestLogin(FunctionalTestBase):
             '<p class="help-block" id="error-login-email">Required</p>',
             res2.body
         )
+        self.assertTrue(False)
 
     def test_required_field_password(self):
         """
@@ -32,6 +33,7 @@ class TestLogin(FunctionalTestBase):
             '<p class="help-block" id="error-login-password">Required</p>',
             res2.body
         )
+        self.assertTrue(False)
 
     def test_email_validator(self):
         """
