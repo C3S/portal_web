@@ -166,6 +166,11 @@ def main(global_config, **settings):
     # not found view (404 Error)
     config.add_notfound_view(notfound)
 
+    # configure mailer
+    config.include('pyramid_mailer')
+    if not int(settings['mail.to_real_world']):
+        config.include('pyramid_mailer.testing')
+
     # configure webfrontend for portal and plugins
     if settings['service'] == 'portal':
         # web root factory

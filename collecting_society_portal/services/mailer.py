@@ -96,4 +96,11 @@ def send_mail(request, template, variables={}, *args, **kwargs):
     mailer.send(message)
 
     # log message to debug console
-    log.debug(quopri.decodestring(message.to_message().__str__()))
+    log.debug(
+        (
+            "Mail sent with %s:\n\n%s"
+        ) % (
+            mailer.__class__.__name__,
+            quopri.decodestring(message.to_message().__str__())
+        )
+    )
