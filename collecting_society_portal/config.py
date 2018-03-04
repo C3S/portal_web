@@ -69,13 +69,13 @@ def get_plugins(settings):
         >>> print(get_plugins(settings))
         {
             200: {
-                'path': '/ado/src/collecting_society.portal.imp',
+                'path': '/ado/src/collecting_society.portal.repertoire',
                 'name': 'collecting_society_portal_imp',
                 'settings': {}
             },
             100: {
-                'path': '/ado/src/collecting_society.portal.creative',
-                'name': 'collecting_society_portal_creative',
+                'path': '/ado/src/collecting_society.portal.anotherplugin',
+                'name': 'collecting_society_portal_anotherplugin',
                 'settings': {}
             }
         }
