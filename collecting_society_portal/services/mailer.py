@@ -68,6 +68,7 @@ def get_content(request, template, variables={}):
 def send_mail(request, template, variables={}, *args, **kwargs):
     settings = request.registry.settings
     mailer = get_mailer(request)
+    #import pdb; pdb.set_trace()
 
     # template content
     content = get_content(request, template, variables)
@@ -93,12 +94,23 @@ def send_mail(request, template, variables={}, *args, **kwargs):
 
     # create and send message
     message = Message(*args, **kwargs)
-    mailer.send(message)
-
-    # log message to debug console
+    try:
+        mailer.send_immediately(message)
+    except Exception as e:
+        # log message success to debug console
+        log.info(
+            (
+                "Error sending mail using class %s.\nError: %s\nContent:\n\n%s"
+            ) % (
+                mailer.__class__.__name__, e,
+                quopri.decodestring(message.to_message().__str__())
+            )
+        )
+        return
+    # log message success to debug console
     log.debug(
         (
-            "Mail sent with %s:\n\n%s"
+            "Mail sent using class %s.\nContent:\n\n%s"
         ) % (
             mailer.__class__.__name__,
             quopri.decodestring(message.to_message().__str__())
