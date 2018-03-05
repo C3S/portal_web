@@ -137,6 +137,11 @@ def main(global_config, **settings):
         name='user',
         reify=True
     )
+    config.add_request_method(
+        callable=WebUser.current_party,
+        name='party',
+        reify=True
+    )
 
     # configure translation directories for portal and plugins
     config.add_translation_dirs(
