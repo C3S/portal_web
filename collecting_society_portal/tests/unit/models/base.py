@@ -10,7 +10,7 @@ from ....models import Tdb, WebUser
 class TestTdb(UnitTestBase):
 
     def setUp(self):
-        Tdb._db = "c3s"
+        Tdb._db = "test"
         Tdb._user = 0
         Tdb._configfile = "/ado/etc/trytond.conf"
         Tdb._company = 1
