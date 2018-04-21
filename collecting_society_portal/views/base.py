@@ -8,10 +8,19 @@ from pyramid.httpexceptions import (
     HTTPFound
 )
 
+
 log = logging.getLogger(__name__)
 
 
 class ViewBase(object):
+    """
+    The ViewBase class is convenience for form handling
+
+    * process_forms processes registered forms
+    * register_forms registers forms ;-)
+    * cleanup_forms removes persisted session information
+    * redirect sends users elsewhere
+    """
 
     def __init__(self, context, request):
         self._formcontroller = {}
@@ -30,8 +39,14 @@ class ViewBase(object):
         return self.response
 
     def register_form(self, controller, name=None, persistent=False):
+        """
+        Adds a form (i.e. controller) to a session, remembers it
+        """
+
+        # catch edge case...
         if self.request.path.startswith('/static'):
             return
+
         _name = name or controller.__name__
 
         # ensure existence of session key
@@ -67,4 +82,3 @@ class ViewBase(object):
                 self.request.resource_path(resource(self.request), *args),
                 **kwargs
             )
-        return {}
