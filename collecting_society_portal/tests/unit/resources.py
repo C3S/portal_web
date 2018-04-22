@@ -9,7 +9,12 @@ from pyramid.testing import DummyRequest
 
 from ..base import UnitTestBase
 
-from ...resources import ResourceBase
+from ...resources import (
+    BackendResource,
+    FrontendResource,
+    ResourceBase,
+    WebRootFactory
+)
 
 
 class ResourceBaseMock(ResourceBase):
@@ -168,16 +173,16 @@ class TestResources(UnitTestBase):
 
         self.assertTrue('foo' in context.exception)
 
-    # def test_getitem_child(self):
-    #    """
-    #    test ResourceBase.__getitem__
-    #    """
-    #    self.request = DummyRequest()
+    def test_getitem_child(self):
+        """
+        test ResourceBase.__getitem__
+        """
+        ResourceBaseMock.add_child(ResourceBaseChildMock)
+        self.request = DummyRequest()
 
-    #    rbc = ResourceBaseChildMock(self.request)
-    #    rbp = rbc.__parent__()  # ResourceBaseChildMock(self.request)
-    #    rbp.__getitem__('news')
-    #    # self.assertTrue('foo' in context.exception)
+        rb = ResourceBaseMock(self.request)
+
+        self.assertEqual('newschild', rb.__getitem__('newschild').__name__)
 
     def test_add_child(self):
         self.request = DummyRequest()
@@ -214,3 +219,18 @@ class TestResources(UnitTestBase):
         self.assertTrue("context.__parent__: news\n" in res)
         self.assertTrue("context.__children__: {}\n" in res)
         self.assertTrue("context.registry" in res)
+
+
+class TestWebRootFactory(UnitTestBase):
+
+    def test_webrootfactory_frontend(self):
+        self.request = DummyRequest()
+        self.request.user = None
+        fr = WebRootFactory(self.request)
+        self.assertIsInstance(fr, FrontendResource)
+
+    def test_webrootfactory_backend(self):
+        self.request = DummyRequest()
+        self.request.user = 'foo'
+        br = WebRootFactory(self.request)
+        self.assertIsInstance(br, BackendResource)
