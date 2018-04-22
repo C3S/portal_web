@@ -5,7 +5,7 @@ import os
 import shutil
 import glob
 import tempfile
-from tempfile import NamedTemporaryFile
+# from tempfile import NamedTemporaryFile
 import time
 
 from abc import ABCMeta, abstractmethod
@@ -19,6 +19,9 @@ log = logging.getLogger(__name__)
 
 
 class FormController(object):
+    """
+    Abstract class for form handling
+    """
     __metaclass__ = ABCMeta
     __stage__ = None
 
@@ -26,8 +29,8 @@ class FormController(object):
                  context=None, request=None, response=None):
         self._name = name or self.__class__.__name__
         self._form = None
-        self._data = {}
-        self.persistent = persistent
+        self._data = {}  # aggregates several appstructs, dep. on form design
+        self.persistent = persistent  # store in session?
         self.stage = stage or self.__stage__
         self.appstruct = appstruct
         self.context = context
@@ -75,6 +78,9 @@ class FormController(object):
 
     @property
     def data(self):
+        """
+        some kind of appstruct
+        """
         return self._data
 
     def render(self, appstruct={}, form=None):
@@ -89,11 +95,18 @@ class FormController(object):
 
     @abstractmethod
     def controller(self):
-        pass
+        """
+        overwrite this with your form logic!
+        (if form is submitted and ... then ...)
+        """
+        pass  # pragma: no cover
 
     # --- Conditions ----------------------------------------------------------
 
     def submitted(self, button=None):
+        """
+        check to see if your form was submitted (by special button?)
+        """
         data = self.request.POST or self.request.GET
         if not data:
             return False
@@ -104,11 +117,18 @@ class FormController(object):
         return False
 
     def valid(self):
+        """
+        check if form did validate on last validation
+        """
         return self.validationfailure is None
 
     # --- Actions -------------------------------------------------------------
 
     def redirect(self, resource, *args, **kwargs):
+        """
+        return user to other place by str or resource,
+        removes form from session
+        """
         if isinstance(resource, str):
             self.response = HTTPFound(location=resource, **kwargs)
         else:
@@ -131,6 +151,9 @@ class FormController(object):
         return False
 
     def clean(self):
+        """
+        reset the form
+        """
         self._form = None
         self._data = {}
         self.appstruct = None
@@ -139,6 +162,9 @@ class FormController(object):
         self.validationfailure = None
 
     def remove(self):
+        """
+        no longer persist form in session
+        """
         if self.name in self.request.session['forms']:
             del self.request.session['forms'][self.name]
 
