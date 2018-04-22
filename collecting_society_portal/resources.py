@@ -1,9 +1,9 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
 # Repository: https://github.com/C3S/collecting_society.portal
 
-'''
+"""
 Base resources including base, web-/apirootfactory, back-/frontend, debug
-'''
+"""
 
 import logging
 from copy import deepcopy
@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 
 
 class ResourceBase(object):
-    '''
+    """
     Base class for `traversal`_ based resources providing a content registry.
 
     Resources are used to form flexible, hierarchical parent-child structures
@@ -75,7 +75,7 @@ class ResourceBase(object):
 
     .. _traversal:
        http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/traversal.html
-    '''
+    """
     __name__ = None
     __parent__ = None
     __children__ = {}
@@ -95,7 +95,7 @@ class ResourceBase(object):
         self.request = request
 
     def __getitem__(self, key):
-        '''
+        """
         Gets the next child resource.
 
         Args:
@@ -106,18 +106,18 @@ class ResourceBase(object):
 
         Raises:
             KeyError: if no child resource is found.
-        '''
+        """
         if key in self.__children__:
             return self.__children__[key](self.request)
         raise KeyError(key)
 
     def __str__(self):
-        '''
+        """
         Renders the resource as a string.
 
         Returns:
             str: Resource string.
-        '''
+        """
         name = 'None'
         if hasattr(self.__parent__, '__name__'):
             name = self.__parent__.__name__
@@ -135,7 +135,7 @@ class ResourceBase(object):
 
     @classmethod
     def add_child(cls, val):
-        '''
+        """
         Adds a child resource to this resource.
 
         Args:
@@ -146,7 +146,7 @@ class ResourceBase(object):
 
         Examples:
             >>> ParentResource.add_child(ChildResource)
-        '''
+        """
         val.__parent__ = cls
         cls.__children__[val.__dict__['__name__']] = val
 
@@ -213,7 +213,7 @@ class ResourceBase(object):
 
     @classmethod
     def extend_registry(cls, func):
-        '''
+        """
         Decorator function to extend the registry.
 
         The `__registry__` class attribute might contain a dictionary or a
@@ -227,7 +227,7 @@ class ResourceBase(object):
 
         Returns:
             None
-        '''
+        """
         _orig_reg = cls.__registry__
 
         def _registry_extension(self):
@@ -239,7 +239,7 @@ class ResourceBase(object):
 
     @property
     def registry(self):
-        '''
+        """
         Gets the current registry of the resource.
 
         The registry is retrieved by merging the (possibly extended) registry
@@ -249,7 +249,7 @@ class ResourceBase(object):
 
         Returns:
             dict: Current registry
-        '''
+        """
         if not hasattr(self, '_registry_cache'):
             orig_dict = ResourceBase.__registry__
             if self.__parent__:
@@ -262,7 +262,7 @@ class ResourceBase(object):
         return self._registry_cache
 
     def dict(self):
-        '''
+        """
         Returns an autovivid dictionary for easy extension of the registry.
 
         Returns:
@@ -278,7 +278,7 @@ class ResourceBase(object):
                     }
                 }
             }
-        '''
+        """
         return defaultdict(self.dict)
 
 
