@@ -32,7 +32,7 @@ class FormController(object):
         self._data = {}  # aggregates several appstructs, dep. on form design
         self.persistent = persistent  # store in session?
         self.stage = stage or self.__stage__
-        self.appstruct = appstruct
+        self.appstruct = appstruct or {}
         self.context = context
         self.request = request
         self.response = response or {}
