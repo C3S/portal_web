@@ -21,12 +21,12 @@ class FormControllerMock(FormController):
 
 class DeformFormMockValidating():
 
-    formid = 'deform'
+    formid = 'my_form_id'
 
     def validate(self, data):
         return {'foo': 'bar'}
 
-    def render(self):
+    def render(self, appstruct={}):
         return "<form></form>"
 
 
@@ -60,6 +60,53 @@ class TestFormBase(UnitTestBase):
 
         my_form
 
+    def test_formcontroller_getstate(self):
+        """
+        test the FormController class
+        """
+        my_form = FormControllerMock()
+
+        res = my_form.__getstate__()
+        # res = {
+        #     '_name': 'FormControllerMock',
+        #     'persistent': False,
+        #     'appstruct': {},
+        #     '_data': {},
+        #     '__stage__': None,
+        #     'stage': None}
+        self.assertEqual(res['_name'], 'FormControllerMock')
+        self.assertEqual(res['persistent'], False)
+
+    def test_formcontroller_setstate(self):
+        """
+        test the FormController class
+        """
+        my_form = FormControllerMock()
+
+        res = my_form.__getstate__()
+        # res = {
+        #     '_name': 'FormControllerMock',
+        #     'persistent': False,
+        #     'appstruct': {},
+        #     '_data': {},
+        #     '__stage__': None,
+        #     'stage': None}
+        self.assertEqual(res['_name'], 'FormControllerMock')
+        self.assertEqual(res['persistent'], False)
+
+        new_state = {
+            '_name': 'FormControllerMoo',
+            'persistent': True,
+            'appstruct': {"foo": "moo"},
+            '_data': {},
+            '__stage__': None,
+            'stage': None}
+        my_form.__setstate__(new_state)
+        res = my_form.__getstate__()
+        self.assertEqual(res['_name'], 'FormControllerMoo')
+        self.assertEqual(res['persistent'], True)
+        # self.assertEqual(res['appstruct'], dict("foo: "moo"))
+
     def test_validate(self):
         post_dict = {"foo": "bar"}
         self.request = DummyRequest(post=post_dict)
@@ -75,6 +122,9 @@ class TestFormBase(UnitTestBase):
         my_form.form = my_deform_form
         res = my_form.validate()
         self.assertTrue(res)
+        vres = my_form.valid()
+        vres
+        self.assertTrue(vres)
 
     def test_validate_not(self):
         post_dict = {"foo": "bar"}
@@ -91,24 +141,40 @@ class TestFormBase(UnitTestBase):
         my_form.form = my_deform_form
         res = my_form.validate()
         self.assertFalse(res)
+        self.assertIn(my_form.validationfailure.error, 'my error')
 
-    # def test_render(self):
-    #     post_dict = {"foo": "bar"}
-    #     self.request = DummyRequest(post=post_dict)
-    #     self.context = DummyResource()
+    def test_render(self):
+        post_dict = {"foo": "bar"}
+        self.request = DummyRequest(post=post_dict)
+        self.context = DummyResource()
 
-    #     my_deform_form = DeformFormMockValidating()
+        my_deform_form = DeformFormMockValidating()
 
-    #     my_form = FormControllerMock(
-    #         context=self.context,
-    #         request=self.request,
+        my_form = FormControllerMock(
+            context=self.context,
+            request=self.request,
 
-    #     )
-    #     my_form.form = my_deform_form
-    #     appstruct = {"foo": "bar"}
-    #     #res = my_form.render(appstruct=appstruct)
-    #     res = my_form.render(appstruct)
-    #     self.assertFalse(res)
+        )
+        my_form.form = my_deform_form
+        res = my_form.render()
+        res
+        self.assertIn('FormControllerMock', my_form.response)
+        self.assertIn(my_form.response['FormControllerMock'], '<form></form>')
+
+    def test_process(self):
+        self.request = DummyRequest()
+        self.context = DummyResource()
+
+        my_deform_form = DeformFormMockValidating()
+
+        my_form = FormControllerMock(
+            context=self.context,
+            request=self.request,
+
+        )
+        my_form.form = my_deform_form
+        res = my_form.process(self.context, self.request)
+        res  # should be the controller
 
     def test_data(self):
         post_dict = {"foo": "bar"}
@@ -125,6 +191,137 @@ class TestFormBase(UnitTestBase):
         my_form.form = my_deform_form
         res = my_form.data
         self.assertEqual(res, {})
+
+    def test_submitted_false(self):
+        post_dict = {"foo": "bar"}
+        self.request = DummyRequest(post=post_dict)
+        self.context = DummyResource()
+
+        my_deform_form = DeformFormMockValidating()
+
+        my_form = FormControllerMock(
+            context=self.context,
+            request=self.request,
+
+        )
+        my_form.form = my_deform_form
+        res = my_form.submitted()
+        self.assertEqual(res, False)
+
+    def test_submitted_false_nodata(self):
+        post_dict = {}
+        self.request = DummyRequest(post=post_dict)
+        self.context = DummyResource()
+
+        my_deform_form = DeformFormMockValidating()
+
+        my_form = FormControllerMock(
+            context=self.context,
+            request=self.request,
+
+        )
+        my_form.form = my_deform_form
+        res = my_form.submitted()
+        self.assertEqual(res, False)
+
+    def test_submitted_true(self):
+        post_dict = {
+            "foo": "bar",
+            "__formid__": "my_form_id"
+        }
+        self.request = DummyRequest(post=post_dict)
+        self.context = DummyResource()
+
+        my_deform_form = DeformFormMockValidating()
+
+        my_form = FormControllerMock(
+            context=self.context,
+            request=self.request,
+
+        )
+        my_form.form = my_deform_form
+        res = my_form.submitted()
+        self.assertEqual(res, True)
+
+    def test_submitted_true_button(self):
+        post_dict = {
+            "foo": "bar",
+            "submit": True,
+            "__formid__": "my_form_id"
+        }
+        self.request = DummyRequest(post=post_dict)
+        self.context = DummyResource()
+
+        my_deform_form = DeformFormMockValidating()
+
+        my_form = FormControllerMock(
+            context=self.context,
+            request=self.request,
+
+        )
+        my_form.form = my_deform_form
+        my_form.formid = "deform"
+        res = my_form.submitted(button='submit')
+        res
+        self.assertEqual(res, True)
+
+    def test_redirect_str(self):
+
+        self.request = DummyRequest()
+        self.request.session['forms'] = {
+            'FormControllerMock': 'form'}
+        self.context = DummyResource(path="/foo")
+
+        self.assertIn(
+            self.request.session['forms']['FormControllerMock'],
+            'form')
+
+        # my_deform_form = DeformFormMockValidating()
+
+        my_form = FormControllerMock(
+            context=self.context,
+            request=self.request,
+
+        )
+        my_form.redirect(resource="/foo")
+        # assert form has been removed from session
+        self.assertEqual(
+            self.request.session['forms'], {})
+
+    def test_redirect_res(self):
+
+        self.request = DummyRequest()
+        self.request.session['forms'] = {
+            'FormControllerMock': 'form'}
+        self.context = DummyResource()
+
+        # my_deform_form = DeformFormMockValidating()
+
+        my_form = FormControllerMock(
+            context=self.context,
+            request=self.request,
+
+        )
+        my_form.redirect(DummyResource)
+
+    def test_clean(self):
+
+        self.request = DummyRequest()
+        self.request.session['forms'] = {
+            'FormControllerMock': 'form'}
+        self.context = DummyResource()
+
+        # my_deform_form = DeformFormMockValidating()
+
+        my_form = FormControllerMock(
+            context=self.context,
+            request=self.request,
+
+        )
+        my_form.clean()
+        self.assertTrue(my_form._form is None)
+        self.assertEqual(my_form._data, {})
+        self.assertIsNone(my_form.validationfailure)
 
 
 # class TestTmpFile(UnitTestBase):
