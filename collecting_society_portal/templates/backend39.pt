@@ -87,7 +87,7 @@
                     <div class="col-md-12">
 
                         <!-- registry: language flags -->
-                        <div tal:condition="context.registry['meta']['languages']|false"
+                        <div tal:condition="context.registry['meta']['languages']|False"
                             class="cs-langflags">
                             <a tal:repeat="language context.registry['meta']['languages']"
                             tal:attributes="href '?_LOCALE_='+language['id']">
