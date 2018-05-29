@@ -79,7 +79,8 @@ class FormController(object):
     @property
     def data(self):
         """
-        some kind of appstruct
+        session persistent dict for aggregated data of all appstructs (stages)
+        needs to be filled manually
         """
         return self._data
 
@@ -103,14 +104,15 @@ class FormController(object):
 
     # --- Conditions ----------------------------------------------------------
 
-    def submitted(self, button=None):
+    def submitted(self, button=None, form=None):
         """
-        check to see if your form was submitted (by special button?)
+        check to see if your form was submitted (by certain button and/or form)
         """
         data = self.request.POST or self.request.GET
         if not data:
             return False
-        if '__formid__' in data and self._form.formid == data['__formid__']:
+        form = form or self._form.formid
+        if '__formid__' in data and data['__formid__'] == form:
             if button:
                 return button in data
             return True
@@ -138,11 +140,13 @@ class FormController(object):
             )
         self.remove()
 
-    def validate(self):
+    def validate(self, data=False):
         self.appstruct, self.validationfailure = None, None
         try:
-            data = self.request.POST.items() or self.request.GET.items()
-            self.appstruct = self.form.validate(data)
+            _data = self.request.POST.items() or self.request.GET.items()
+            if data:
+                _data += self.data.items()
+            self.appstruct = self.form.validate(_data)
             self.response = {self.name: self.form.render()}
             return True
         except deform.ValidationFailure as e:

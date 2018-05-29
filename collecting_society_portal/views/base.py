@@ -1,6 +1,7 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
 # Repository: https://github.com/C3S/collecting_society.portal
 
+from collections import OrderedDict
 import logging
 
 from pyramid.httpexceptions import (
@@ -23,7 +24,7 @@ class ViewBase(object):
     """
 
     def __init__(self, context, request):
-        self._formcontroller = {}
+        self._formcontroller = OrderedDict()
         self.request = request
         self.context = context
         self.response = {}
