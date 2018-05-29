@@ -22,7 +22,7 @@ install_requires = [
     'c3s_collecting_society',
     'cornice',
     'cryptacular',
-    'deform==2.0a2',
+    'deform',
     'pyramid',
     'pyramid_beaker',
     'pyramid_chameleon',

@@ -49,12 +49,11 @@ class DeformFormMockNonValidating():
 class TestFormBase(UnitTestBase):
 
     def setUp(self):
-
         pass
 
     def test_formcontroller_controller(self):
         """
-        test the FormController class
+        Test the FormController class
         """
         my_form = FormControllerMock()
 
@@ -62,7 +61,7 @@ class TestFormBase(UnitTestBase):
 
     def test_formcontroller_getstate(self):
         """
-        test the FormController class
+        Test the FormController class
         """
         my_form = FormControllerMock()
 
@@ -79,7 +78,7 @@ class TestFormBase(UnitTestBase):
 
     def test_formcontroller_setstate(self):
         """
-        test the FormController class
+        Test the FormController class
         """
         my_form = FormControllerMock()
 
@@ -108,6 +107,9 @@ class TestFormBase(UnitTestBase):
         # self.assertEqual(res['appstruct'], dict("foo: "moo"))
 
     def test_validate(self):
+        """
+        Test validation success
+        """
         post_dict = {"foo": "bar"}
         self.request = DummyRequest(post=post_dict)
         self.context = DummyResource()
@@ -127,6 +129,9 @@ class TestFormBase(UnitTestBase):
         self.assertTrue(vres)
 
     def test_validate_not(self):
+        """
+        Test validation failure
+        """
         post_dict = {"foo": "bar"}
         self.request = DummyRequest(post=post_dict)
         self.context = DummyResource()
@@ -144,6 +149,9 @@ class TestFormBase(UnitTestBase):
         self.assertIn(my_form.validationfailure.error, 'my error')
 
     def test_render(self):
+        """
+        Test render
+        """
         post_dict = {"foo": "bar"}
         self.request = DummyRequest(post=post_dict)
         self.context = DummyResource()
@@ -162,6 +170,9 @@ class TestFormBase(UnitTestBase):
         self.assertIn(my_form.response['FormControllerMock'], '<form></form>')
 
     def test_process(self):
+        """
+        Test process forms
+        """
         self.request = DummyRequest()
         self.context = DummyResource()
 
@@ -177,6 +188,9 @@ class TestFormBase(UnitTestBase):
         res  # should be the controller
 
     def test_data(self):
+        """
+        Test data
+        """
         post_dict = {"foo": "bar"}
         self.request = DummyRequest(post=post_dict)
         self.context = DummyResource()
@@ -193,6 +207,9 @@ class TestFormBase(UnitTestBase):
         self.assertEqual(res, {})
 
     def test_submitted_false(self):
+        """
+        Test submitted false
+        """
         post_dict = {"foo": "bar"}
         self.request = DummyRequest(post=post_dict)
         self.context = DummyResource()
@@ -209,6 +226,9 @@ class TestFormBase(UnitTestBase):
         self.assertEqual(res, False)
 
     def test_submitted_false_nodata(self):
+        """
+        Test submitted false nodata
+        """
         post_dict = {}
         self.request = DummyRequest(post=post_dict)
         self.context = DummyResource()
@@ -225,6 +245,9 @@ class TestFormBase(UnitTestBase):
         self.assertEqual(res, False)
 
     def test_submitted_true(self):
+        """
+        Test submitted true
+        """
         post_dict = {
             "foo": "bar",
             "__formid__": "my_form_id"
@@ -244,6 +267,9 @@ class TestFormBase(UnitTestBase):
         self.assertEqual(res, True)
 
     def test_submitted_true_button(self):
+        """
+        Test submitted true button
+        """
         post_dict = {
             "foo": "bar",
             "submit": True,
@@ -266,7 +292,9 @@ class TestFormBase(UnitTestBase):
         self.assertEqual(res, True)
 
     def test_redirect_str(self):
-
+        """
+        Test redirect str
+        """
         self.request = DummyRequest()
         self.request.session['forms'] = {
             'FormControllerMock': 'form'}
@@ -289,7 +317,9 @@ class TestFormBase(UnitTestBase):
             self.request.session['forms'], {})
 
     def test_redirect_res(self):
-
+        """
+        Test redirect resource
+        """
         self.request = DummyRequest()
         self.request.session['forms'] = {
             'FormControllerMock': 'form'}
@@ -305,7 +335,9 @@ class TestFormBase(UnitTestBase):
         my_form.redirect(DummyResource)
 
     def test_clean(self):
-
+        """
+        Test clean
+        """
         self.request = DummyRequest()
         self.request.session['forms'] = {
             'FormControllerMock': 'form'}

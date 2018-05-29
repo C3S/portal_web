@@ -63,6 +63,9 @@ class TestViewBase(UnitTestBase):
         assert(my_viewbase is not None)
 
     def test_process_form_exception(self):
+        """
+        Test proces form exception
+        """
         my_viewbase = ViewBase(self.context, self.request)
         my_viewbase.register_form(
             FormControllerMockHTTPException, name="bla")
@@ -74,6 +77,9 @@ class TestViewBase(UnitTestBase):
         self.assertIsInstance(result, HTTPNotFound)
 
     def test_process_form_processed(self):
+        """
+        Test process form processed
+        """
         my_viewbase = ViewBase(self.context, self.request)
         my_viewbase.register_form(FormControllerMock, name="bla")
         my_viewbase.register_form(FormControllerMock, name="blupp")
@@ -82,11 +88,17 @@ class TestViewBase(UnitTestBase):
         self.assertIn("blupp", result.keys())
 
     def test_redirect_str(self):
+        """
+        Test redirect str
+        """
         my_viewbase = ViewBase(self.context, self.request)
         result = my_viewbase.redirect('/foo')
         self.assertIsInstance(result, HTTPException)
 
     def test_redirect_resource(self):
+        """
+        Test redirect resource
+        """
         my_viewbase = ViewBase(self.context, self.request)
         mock_resource = DummyResource
         # self.request.resource_path = '/foo
@@ -95,9 +107,9 @@ class TestViewBase(UnitTestBase):
         self.assertNotIsInstance(result, ResourceBase)
 
     def test_registerform_staticpath(self):
-        '''
-        foo
-        '''
+        """
+        Test tegisterform static path
+        """
         # self.request = DummyRequest(path="/static/foo/barform")
         self.request.path = "/static/foo/barform"
         my_viewbase = ViewBase(self.context, self.request)
@@ -108,7 +120,9 @@ class TestViewBase(UnitTestBase):
         self.assertFalse(my_viewbase._formcontroller)
 
     def test_registerform(self):
-
+        """
+        Test register form
+        """
         my_viewbase = ViewBase(self.context, self.request)
 
         my_viewbase.register_form(FormControllerMock, name="bla")

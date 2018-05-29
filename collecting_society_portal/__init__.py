@@ -172,8 +172,9 @@ def main(global_config, **settings):
     config.add_notfound_view(notfound)
 
     # configure mailer
-    config.include('pyramid_mailer')
-    if not int(settings['mail.to_real_world']):
+    if int(settings['mail.to_real_world']):
+        config.include('pyramid_mailer')
+    else:
         config.include('pyramid_mailer.testing')
 
     # configure webfrontend for portal and plugins

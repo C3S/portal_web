@@ -13,7 +13,6 @@ Test classes should extend one of the base classes:
 
 import os
 from datetime import datetime
-from functools import wraps
 
 import unittest
 from webtest import TestApp
@@ -22,8 +21,10 @@ from selenium import webdriver
 from paste.deploy.loadwsgi import appconfig
 from pyramid import testing
 
-from ..models import Tdb
-from ..config import get_plugins
+from ..config import (
+    get_plugins,
+    replace_environment_vars
+)
 from .. import main
 from .config import testconfig
 
@@ -103,6 +104,9 @@ class Net(object):
 
         # Plugins
         self.plugins = get_plugins(self.appconfig)
+
+        # Evironment
+        self.appconfig = replace_environment_vars(self.appconfig)
 
         # App
         app = main({}, **self.appconfig)

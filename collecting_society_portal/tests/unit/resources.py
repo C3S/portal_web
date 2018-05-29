@@ -185,6 +185,9 @@ class TestResources(UnitTestBase):
         self.assertEqual('newschild', rb.__getitem__('newschild').__name__)
 
     def test_add_child(self):
+        """
+        test ResourceBase.add_child
+        """
         self.request = DummyRequest()
 
         ResourceBaseMock.add_child(ResourceBaseChildMock)
@@ -198,6 +201,9 @@ class TestResources(UnitTestBase):
         )
 
     def test_resourcebase__str__(self):
+        """
+        test ResourceBase.__str__
+        """
         self.request = DummyRequest()
         rb = ResourceBaseChildMock(self.request)
         res = rb.__str__()
@@ -224,12 +230,18 @@ class TestResources(UnitTestBase):
 class TestWebRootFactory(UnitTestBase):
 
     def test_webrootfactory_frontend(self):
+        """
+        test webrootfactory frontend
+        """
         self.request = DummyRequest()
         self.request.user = None
         fr = WebRootFactory(self.request)
         self.assertIsInstance(fr, FrontendResource)
 
     def test_webrootfactory_backend(self):
+        """
+        test webrootfactory backend
+        """
         self.request = DummyRequest()
         self.request.user = 'foo'
         br = WebRootFactory(self.request)
