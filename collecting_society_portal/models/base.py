@@ -1,6 +1,7 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
 # Repository: https://github.com/C3S/collecting_society.portal
 
+import logging
 from functools import wraps
 
 from trytond.transaction import Transaction
@@ -8,6 +9,8 @@ from trytond.cache import Cache
 from trytond.config import config
 from trytond import backend
 from trytond.pool import Pool
+
+log = logging.getLogger(__name__)
 
 
 class Tdb(object):
@@ -224,3 +227,29 @@ class Tdb(object):
         return pool.get(str(cls.__dict__['__name__']))
 
     transaction = staticmethod(transaction)
+
+    # --- Methods -------------------------------------------------------------
+
+    @classmethod
+    def escape(cls, string, wrap=False):
+        string = string.replace('_', '\\_')
+        string = string.replace('%', '\\_')
+        if wrap:
+            string = "%" + string + "%"
+        return string
+
+    @classmethod
+    def escape_domain(cls, domain, wrap=True):
+        for index, statement in enumerate(domain):
+            if isinstance(statement, (list,)):
+                cls.escape_operands(statement)
+            if isinstance(statement, basestring):
+                continue
+            if statement[1] in ['like', 'ilike', 'not like', 'not ilike']:
+                statement_list = list(statement)
+                statement_list[2].replace('_', '\\_')
+                statement_list[2].replace('%', '\\_')
+                if wrap:
+                    statement_list[2] = "%" + statement_list[2] + "%"
+                domain[index] = tuple(statement_list)
+        return domain
