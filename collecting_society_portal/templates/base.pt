@@ -132,6 +132,10 @@
             'deform:static/pickadate/picker.time.js'
         )}"></script>
 
+        <script src="${request.static_path(
+            'deform:static/scripts/file_upload.js'
+        )}"></script>
+
         <!--[if lt IE 9]>
             <script src="${request.static_path(
                 'collecting_society_portal:static/lib/html5shiv.min.js'

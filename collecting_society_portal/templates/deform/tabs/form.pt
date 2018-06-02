@@ -17,7 +17,8 @@
                   ajax_options ajax_options|field.ajax_options;
                   formid formid|field.formid;
                   action action|field.action or None;
-                  method method|field.method;"
+                  method method|field.method;
+                  prevnext prevnext|False"
       tal:attributes="autocomplete autocomplete;
                       style style;
                       class css_class + ' cs-tabbedform';
@@ -32,6 +33,8 @@
 
     <input type="hidden" name="_charset_" />
     <input type="hidden" name="__formid__" value="${formid}"/>
+
+    <h1 tal:condition="title">${title}</h1>
 
     <div class="alert alert-danger" tal:condition="field.error">
         <div class="errorMsgLbl" tal:condition="not field.errormsg" i18n:translate="">
@@ -60,18 +63,11 @@
                 ${button.title}
             </button>
         </tal:loop>
-        <button class="btn btnPrevious" type="button" i18n:translate="">
-            Previous
-        </button>
-        <button class="btn btnNext" type="button" i18n:translate="">
-            Next
-        </button>
     </div>
 
     <div class="panel panel-default">
         <!-- Nav -->
         <div class="panel-heading">
-            <h3 tal:condition="title" class="cs-tabbedform-title">${title}</h3>
             <ul class="nav nav-tabs cs-tabbedform-nav" role="tablist">
                 <li role="presentation"
                     tal:repeat="schema field.children"
@@ -94,34 +90,46 @@
                  tal:repeat="child field"
                  tal:attributes="class 'tab-pane active' if repeat.child.start
                                  else 'tab-pane'">
-                <div tal:replace="structure child.render_template(item_template)"/>
+                <div class="cs-tabbedform-form">
+                    <div tal:replace="structure child.render_template(item_template)"/>
+                </div>
+                <!-- Form Controls -->
+                <div class="cs-tabbedform-controls">
+                    <div class="btn-group pull-right" role="group" aria-label="...">
+                        <button class="btn btnPrevious" type="button" i18n:translate=""
+                                tal:condition="not repeat.child.start">Previous</button>
+                        <button class="btn btnNext" type="button" i18n:translate=""
+                                tal:condition="not repeat.child.end">Next</button>
+                        <tal:loop tal:repeat="button buttons">
+                            <button tal:define="btn_disposition repeat.button.start
+                                                and 'btn-primary' or 'btn-default';
+                                                btn_icon button.icon|None"
+                                    tal:attributes="disabled button.disabled
+                                                    if button.disabled else None"
+                                    id="${formid+button.name}"
+                                    name="${button.name}"
+                                    type="${button.type}"
+                                    class="btn ${btn_disposition} ${button.css_class}"
+                                    value="${button.value}"
+                                    tal:condition="repeat.child.end and
+                                                   button.name == 'submit'">
+                                <i tal:condition="btn_icon" class="${btn_icon}"> </i>
+                                ${button.title}
+                            </button>
+                        </tal:loop>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script type="text/javascript">
-    
-    function nav_display() {
-        $('.btnNext').prop('disabled', false);
-        $('.btnPrevious').prop('disabled', false);
-        if($('.nav-tabs > .active').next('li').length === 0) {
-            $('.btnNext').prop('disabled', true);
-        }
-        if($('.nav-tabs > .active').prev('li').length === 0) {
-            $('.btnPrevious').prop('disabled', true);
-        }
-    }
-    $('.btnNext').click(function(){
-        $('.nav-tabs > .active').next('li').find('a').trigger('click');
-        nav_display();
-    });
-    $('.btnPrevious').click(function(){
-        $('.nav-tabs > .active').prev('li').find('a').trigger('click');
-        nav_display();
-    });
-    $(document).ready(function(){
-        nav_display();
-    });
+        $('.btnNext').click(function(){
+            $('.nav-tabs > .active').next('li').find('a').trigger('click');
+        });
+        $('.btnPrevious').click(function(){
+            $('.nav-tabs > .active').prev('li').find('a').trigger('click');
+        });
     </script>
 
     <script type="text/javascript" tal:condition="use_ajax">
