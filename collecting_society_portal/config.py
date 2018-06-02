@@ -47,7 +47,7 @@ def replace_environment_vars(settings):
     )
 
 
-def get_plugins(settings):
+def get_plugins(settings=None):
     """
     Fetches plugin settings based on module name pattern matching.
 
@@ -80,6 +80,14 @@ def get_plugins(settings):
             }
         }
     """
+    if not settings:
+        from paste.deploy.loadwsgi import appconfig
+        settings = appconfig(
+            'config:' + os.path.join(
+                os.path.dirname(__file__), '..',
+                os.environ['ENVIRONMENT'] + '.ini'
+            )
+        )
     plugins = {}
     modules = [
         {'name': name, 'path': imp.path} for imp, name, _ in iter_modules()

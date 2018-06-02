@@ -15,10 +15,12 @@
         <legend tal:condition="title">${title}</legend>
         <p tal:condition="description">${description}</p>
     </div>
-    ${field.start_mapping()}
-    <div tal:repeat="child field.children"
-         tal:replace="structure child.render_template(item_template)" >
+    <div class="container-fluid cs-tabbedform-tabcontent">
+        ${field.start_mapping()}
+        <div tal:repeat="child field.children"
+             tal:replace="structure child.render_template(item_template)" >
+        </div>
+        ${field.end_mapping()}
     </div>
-    ${field.end_mapping()}
 
 </tal:def>
