@@ -5,9 +5,12 @@
 Helper functions included as top-level names in temlating system.
 """
 
+# dependancies
+from decimal import Decimal
+
+# utilities
 import logging
 from base64 import b64encode
-from decimal import Decimal
 
 from collecting_society_portal.models import (
     Tdb,
@@ -60,9 +63,9 @@ def format_currency(value, places=None, curr=None, sep=None, dp=None, pos=None,
     _pos = pos or currency.positive_sign
     _neg = neg or currency.negative_sign
     _trailneg = ''
-    if trailneg or currency.n_cs_precedes :
+    if trailneg or currency.n_cs_precedes:
         _trailneg = trailneg or currency.negative_sign
-    
+
     q = Decimal(10) ** -_places
     sign, digits, exp = value.quantize(q).as_tuple()
     result = []
@@ -86,4 +89,3 @@ def format_currency(value, places=None, curr=None, sep=None, dp=None, pos=None,
     build(_curr)
     build(_neg if sign else _pos)
     return ''.join(reversed(result))
-
