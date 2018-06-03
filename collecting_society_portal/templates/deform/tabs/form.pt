@@ -71,12 +71,16 @@
             <ul class="nav nav-tabs cs-tabbedform-nav" role="tablist">
                 <li role="presentation"
                     tal:repeat="schema field.children"
-                    tal:attributes="class 'active' if repeat.schema.start else ''">
-                    <a href="#${schema.oid}" 
+                    tal:attributes="class 'active' if repeat.schema.start else ''"
+                    id="cs-tabbedform-tab-${schema.name}">
+                    <a href="#cs-tabbedform-tabitem-${schema.name}"
                        aria-controls="${schema.oid}" 
                        role="tab"
                        data-toggle="tab"
-                       tal:attributes="class 'cs-error' if schema.error else ''">
+                       data-anchor="cs-tabbedform-tabitem-${schema.name}"
+                       tal:attributes="class 'cs-tabbedform-tab cs-error'
+                                       if schema.error
+                                       else 'cs-tabbedform-tab'">
                        ${schema.title}
                     </a>
                 </li>
@@ -86,8 +90,8 @@
         <!-- Content -->
         <div class="panel-body tab-content cs-tabbedform-content">
             <div role="tabpanel"
-                 id="${child.oid}"
                  tal:repeat="child field"
+                 id="cs-tabbedform-tabitem-${child.name}"
                  tal:attributes="class 'tab-pane active' if repeat.child.start
                                  else 'tab-pane'">
                 <div class="cs-tabbedform-form">
@@ -124,11 +128,45 @@
     </div>
 
     <script type="text/javascript">
-        $('.btnNext').click(function(){
-            $('.nav-tabs > .active').next('li').find('a').trigger('click');
-        });
-        $('.btnPrevious').click(function(){
-            $('.nav-tabs > .active').prev('li').find('a').trigger('click');
+        formcontrols = 0;
+        function redraw_formcontrols() {
+            var controls = $(".cs-tabbedform-controls");
+            if(!controls.length)
+                return;
+            if(formcontrols === 0) {
+                formcontrols = {
+                    btnNext: $(controls).first().find(".btnNext")[0].outerHTML,
+                    btnPrevious: $(controls).last().find(".btnPrevious")[0].outerHTML,
+                    btnSubmit: $(controls).last().find("button[type='submit']")[0].outerHTML,
+                };
+            }
+            visible = [];
+            $(".cs-tabbedform-tab:visible").each(function(){
+                var anchor = $(this).data('anchor');
+                visible.push($("#" + anchor));
+            });
+            var first = $(visible[0]).find(".cs-tabbedform-controls .btn-group");
+            var last = $(visible[visible.length-1]).find(".cs-tabbedform-controls .btn-group");
+            $(first).empty();
+            $(last).empty();
+            if(!visible.length)
+                return;
+            if(visible.length == 1) {
+                $(first).append(formcontrols.btnSubmit);
+                return;
+            }
+            $(first).append(formcontrols.btnNext);
+            $(last).append(formcontrols.btnPrevious);
+            $(last).append(formcontrols.btnSubmit);
+            $('.btnNext').click(function(){
+                $('.nav-tabs > .active').next('li:visible').find('a').trigger('click');
+            });
+            $('.btnPrevious').click(function(){
+                $('.nav-tabs > .active').prev('li:visible').find('a').trigger('click');
+            });
+        }
+        $(document).ready(function(){
+            redraw_formcontrols();
         });
     </script>
 
