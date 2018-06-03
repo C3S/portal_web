@@ -31,8 +31,10 @@ class ViewBase(object):
         self.cleanup_forms()
         log.debug(self.context)
 
-    def process_forms(self):
+    def process_forms(self, data={}):
         for name, controller in self._formcontroller.iteritems():
+            for key in data:
+                setattr(self.context, key, data[key])
             _response = controller.process(self.context, self.request)
             if isinstance(_response, HTTPException):
                 return _response
