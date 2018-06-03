@@ -1,5 +1,5 @@
 <!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
-      Repository: https://github.com/C3S/collecting_society.portal -->
+      Repository: https://github.com/C3S/collecting_society.portal.repertoire -->
 <!--!
 
     Customized deform form field mapping.
@@ -15,7 +15,7 @@
         <legend tal:condition="title">${title}</legend>
         <p tal:condition="description">${description}</p>
     </div>
-    <div class="container-fluid cs-tabbedform-tabcontent">
+    <div class="container-fluid cs-nav-form-tabcontent">
         ${field.start_mapping()}
         <div tal:repeat="child field.children"
              tal:replace="structure child.render_template(item_template)" >

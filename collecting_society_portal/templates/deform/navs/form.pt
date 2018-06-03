@@ -18,10 +18,11 @@
                   formid formid|field.formid;
                   action action|field.action or None;
                   method method|field.method;
-                  prevnext prevnext|False"
+                  prevnext prevnext|False;
+                  navstyle navstyle|field.widget.navstyle;"
       tal:attributes="autocomplete autocomplete;
                       style style;
-                      class css_class + ' cs-tabbedform';
+                      class css_class + ' cs-navform';
                       action action;"
       id="${formid}"
       method="${method}"
@@ -68,19 +69,19 @@
     <div class="panel panel-default">
         <!-- Nav -->
         <div class="panel-heading">
-            <ul class="nav nav-pills cs-nav-pills" role="tablist">
+            <ul class="nav nav-${navstyle} cs-nav-${navstyle}" role="tablist">
                 <li role="presentation"
                     tal:repeat="schema field.children"
                     tal:attributes="class 'active' if repeat.schema.start else ''"
-                    id="cs-tabbedform-tab-${schema.name}">
-                    <a href="#cs-tabbedform-tabitem-${schema.name}"
+                    id="cs-navform-item-menu-${schema.name}">
+                    <a href="#cs-navform-item-content-${schema.name}"
                        aria-controls="${schema.oid}" 
                        role="tab"
                        data-toggle="tab"
-                       data-anchor="cs-tabbedform-tabitem-${schema.name}"
-                       tal:attributes="class 'cs-tabbedform-tab cs-error'
+                       data-anchor="cs-navform-item-content-${schema.name}"
+                       tal:attributes="class 'cs-navform-item-menu cs-error'
                                        if schema.error
-                                       else 'cs-tabbedform-tab'">
+                                       else 'cs-navform-item-menu'">
                        ${schema.title}
                     </a>
                 </li>
@@ -88,17 +89,17 @@
         </div>
 
         <!-- Content -->
-        <div class="panel-body tab-content cs-tabbedform-content">
+        <div class="panel-body tab-content cs-navform-item-content">
             <div role="tabpanel"
                  tal:repeat="child field"
-                 id="cs-tabbedform-tabitem-${child.name}"
+                 id="cs-navform-item-content-${child.name}"
                  tal:attributes="class 'tab-pane active' if repeat.child.start
                                  else 'tab-pane'">
-                <div class="cs-tabbedform-form">
+                <div class="cs-navform-form">
                     <div tal:replace="structure child.render_template(item_template)"/>
                 </div>
                 <!-- Form Controls -->
-                <div class="cs-tabbedform-controls">
+                <div class="cs-navform-controls">
                     <div class="btn-group pull-right" role="group" aria-label="...">
                         <button class="btn btnPrevious" type="button" i18n:translate=""
                                 tal:condition="not repeat.child.start">Previous</button>
@@ -130,7 +131,7 @@
     <script type="text/javascript">
         formcontrols = 0;
         function redraw_formcontrols() {
-            var controls = $(".cs-tabbedform-controls");
+            var controls = $(".cs-navform-controls");
             if(!controls.length)
                 return;
             if(formcontrols === 0) {
@@ -141,12 +142,12 @@
                 };
             }
             visible = [];
-            $(".cs-tabbedform-tab:visible").each(function(){
+            $(".cs-navform-item-menu:visible").each(function(){
                 var anchor = $(this).data('anchor');
                 visible.push($("#" + anchor));
             });
-            var first = $(visible[0]).find(".cs-tabbedform-controls .btn-group");
-            var last = $(visible[visible.length-1]).find(".cs-tabbedform-controls .btn-group");
+            var first = $(visible[0]).find(".cs-navform-controls .btn-group");
+            var last = $(visible[visible.length-1]).find(".cs-navform-controls .btn-group");
             $(first).empty();
             $(last).empty();
             if(!visible.length)
@@ -159,10 +160,10 @@
             $(last).append(formcontrols.btnPrevious);
             $(last).append(formcontrols.btnSubmit);
             $('.btnNext').click(function(){
-                $('.nav-pills > .active').next('li:visible').find('a').trigger('click');
+                $('.nav-${navstyle} > .active').next('li:visible').find('a').trigger('click');
             });
             $('.btnPrevious').click(function(){
-                $('.nav-pills > .active').prev('li:visible').find('a').trigger('click');
+                $('.nav-${navstyle} > .active').prev('li:visible').find('a').trigger('click');
             });
         }
         $(document).ready(function(){
