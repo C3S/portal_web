@@ -47,7 +47,7 @@
         ${description}
     </p>
 
-    <div class="form-group">
+    <div class="form-group pull-right">
         <tal:loop tal:repeat="button buttons">
             <button tal:define="btn_disposition repeat.button.start
                                 and 'btn-primary' or 'btn-default';
@@ -68,7 +68,7 @@
     <div class="panel panel-default">
         <!-- Nav -->
         <div class="panel-heading">
-            <ul class="nav nav-tabs cs-tabbedform-nav" role="tablist">
+            <ul class="nav nav-pills cs-nav-pills" role="tablist">
                 <li role="presentation"
                     tal:repeat="schema field.children"
                     tal:attributes="class 'active' if repeat.schema.start else ''"
@@ -159,10 +159,10 @@
             $(last).append(formcontrols.btnPrevious);
             $(last).append(formcontrols.btnSubmit);
             $('.btnNext').click(function(){
-                $('.nav-tabs > .active').next('li:visible').find('a').trigger('click');
+                $('.nav-pills > .active').next('li:visible').find('a').trigger('click');
             });
             $('.btnPrevious').click(function(){
-                $('.nav-tabs > .active').prev('li:visible').find('a').trigger('click');
+                $('.nav-pills > .active').prev('li:visible').find('a').trigger('click');
             });
         }
         $(document).ready(function(){
