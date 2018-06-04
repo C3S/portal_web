@@ -3,7 +3,7 @@
 
 from pyramid.renderers import render
 
-from ...models import Content
+from ....models import Content
 
 
 class UncommitedContentWidget():
