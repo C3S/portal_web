@@ -7,7 +7,7 @@ Dictionary Merge Tests
 
 from ..base import UnitTestBase
 
-from ...services import iban
+from ....services import iban
 
 
 class TestIban(UnitTestBase):
