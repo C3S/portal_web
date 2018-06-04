@@ -38,6 +38,7 @@ Redistributes works are copyright and licensed as follows:
 - JavaScript Templates -- Copyright (c) 2011-2016 Sebastian Tschan under MIT (http://www.opensource.org/licenses/MIT).
 - JavaScript Load Image -- Copyright (c) 2011-2016 Sebastian Tschan under MIT (http://www.opensource.org/licenses/MIT).
 - jQuery File Upload -- Copyright (c) 2010-2016 Sebastian Tschan under MIT (http://www.opensource.org/licenses/MIT).
+- DataTables -- Copyright (c) 2007-2018 SpryMedia Ltd under MIT (https://datatables.net/license/).
 - iban.py -- Copyright (c) 2002-2010, Thomas Günther Licensed under GPLv2 or later (http://toms-cafe.de/iban/iban.py).
 - signika font -- Copyright (c) 2011 by Anna Giedryś Licensed under SIL OpenFont License 1.1 (http://ancymonic.com)
 

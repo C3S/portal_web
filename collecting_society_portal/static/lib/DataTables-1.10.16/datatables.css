@@ -4,10 +4,10 @@
  *
  * To rebuild or modify this file with the latest versions of the included
  * software please visit:
- *   https://datatables.net/download/#bs/dt-1.10.16/r-2.2.1
+ *   https://datatables.net/download/#bs/dt-1.10.16/fh-3.1.3/r-2.2.1/rg-1.0.2/rr-1.2.3
  *
  * Included libraries:
- *   DataTables 1.10.16, Responsive 2.2.1
+ *   DataTables 1.10.16, FixedHeader 3.1.3, Responsive 2.2.1, RowGroup 1.0.2, RowReorder 1.2.3
  */
 
 table.dataTable {
@@ -199,6 +199,28 @@ div.table-responsive > div.dataTables_wrapper > div.row > div[class^="col-"]:las
 }
 
 
+table.dataTable.fixedHeader-floating,
+table.dataTable.fixedHeader-locked {
+  background-color: white;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+table.dataTable.fixedHeader-floating {
+  position: fixed !important;
+}
+
+table.dataTable.fixedHeader-locked {
+  position: absolute !important;
+}
+
+@media print {
+  table.fixedHeader-floating {
+    display: none;
+  }
+}
+
+
 table.dataTable.dtr-inline.collapsed > tbody > tr > td.child,
 table.dataTable.dtr-inline.collapsed > tbody > tr > th.child,
 table.dataTable.dtr-inline.collapsed > tbody > tr > td.dataTables_empty {
@@ -378,6 +400,36 @@ div.dtr-modal div.dtr-modal-background {
 }
 div.dtr-bs-modal table.table tr:first-child td {
   border-top: none;
+}
+
+
+table.dataTable tr.group td {
+  font-weight: bold;
+  background-color: #e0e0e0;
+}
+
+
+table.dt-rowReorder-float {
+  position: absolute !important;
+  opacity: 0.8;
+  table-layout: fixed;
+  outline: 2px solid #337ab7;
+  outline-offset: -2px;
+  z-index: 2001;
+}
+
+tr.dt-rowReorder-moving {
+  outline: 2px solid #888;
+  outline-offset: -2px;
+}
+
+body.dt-rowReorder-noOverflow {
+  overflow-x: hidden;
+}
+
+table.dataTable td.reorder {
+  text-align: center;
+  cursor: move;
 }
 
 
