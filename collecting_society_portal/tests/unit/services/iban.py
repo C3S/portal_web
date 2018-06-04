@@ -1,29 +1,29 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
-# Repository: https://github.com/C3S/collecting_society.portal.repertoire
+# Repository: https://github.com/C3S/collecting_society.portal
 
-from pyramid.renderers import render
+"""
+Dictionary Merge Tests
+"""
 
-from ....models import Content
+from ..base import UnitTestBase
+
+from ...services import iban
 
 
-class UncommitedContentWidget():
+class TestIban(UnitTestBase):
 
-    def __init__(self, request, category='all'):
-        self.party = request.party.id
-        self.template = '../../templates/widgets/uncommited_content.pt'
-        self.category = category
+    def test_iban(self):
+        '''
+        Assemble an IBAN
+        '''
+        code, bank, account = "DE", "12345678", "123456789"
+        german_iban = iban.create_iban(code, bank, account)
+        self.assertEqual(german_iban, 'DE58123456780123456789')
 
-    def get_len(self, content_list):
-        if content_list:
-            return len(content_list)
-        else:
-            return 0
-
-    def output(self):
-        uncomm = self.get_len(
-            Content.search_uncommits(self.party, self.category))
-        output = render(
-            self.template,
-            {'uncomm': uncomm}
-        )
-        return output
+    def test_country(self):
+        '''
+        Get a country name by its code
+        '''
+        code = "DE"
+        country = iban.country_data(code)
+        self.assertEqual(country.name, 'Germany')
