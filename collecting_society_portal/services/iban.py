@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
+# flake8: noqa
 
 """iban.py 1.5 - Create or check International Bank Account Numbers (IBAN).
 

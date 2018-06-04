@@ -10,7 +10,7 @@ from decimal import Decimal
 
 # utilities
 import logging
-from base64 import b64encode
+from base64 import b64encode  # noqa: F401
 
 from collecting_society_portal.models import (
     Tdb,

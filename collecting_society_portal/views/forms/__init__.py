@@ -1,5 +1,6 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
 # Repository: https://github.com/C3S/collecting_society.portal
+# flake8: noqa
 
 from pkg_resources import resource_filename
 from pyramid.threadlocal import get_current_request

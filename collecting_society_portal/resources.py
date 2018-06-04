@@ -7,7 +7,6 @@ Base resources including base, web-/apirootfactory, back-/frontend, debug
 
 import logging
 from copy import deepcopy
-
 from collections import (
     Mapping,
     defaultdict,
@@ -17,12 +16,8 @@ from collections import (
 from pyramid.security import (
     Allow,
     Authenticated,
-    Everyone
 )
 
-from .models import (
-    WebUser
-)
 
 log = logging.getLogger(__name__)
 

@@ -243,7 +243,7 @@ class Tdb(object):
         for index, statement in enumerate(domain):
             if isinstance(statement, (list,)):
                 cls.escape_operands(statement)
-            if isinstance(statement, basestring):
+            if isinstance(statement, basestring):  # noqa: F821
                 continue
             if statement[1] in ['like', 'ilike', 'not like', 'not ilike']:
                 statement_list = list(statement)

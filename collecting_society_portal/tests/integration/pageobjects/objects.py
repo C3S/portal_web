@@ -4,7 +4,7 @@
 import deform
 import sys
 
-from .elements import (
+from .elements import (  # noqa: F401
     TextInputWidgetElement,
     TextAreaWidgetElement,
     HiddenWidgetElement,

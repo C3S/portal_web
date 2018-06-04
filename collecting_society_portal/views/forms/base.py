@@ -187,7 +187,7 @@ class TmpFile(object):
     def __getstate__(self):
         try:
             return self.name
-        except:
+        except:  # noqa: E722
             pass
         return None
 

@@ -42,7 +42,9 @@ class benchmark(object):
             normalize.seek(0, os.SEEK_END)
             self.normalize = normalize.tell()
             normalize.seek(0)
-        elif isinstance(normalize, basestring) and os.path.isfile(normalize):
+        elif isinstance(
+                normalize, basestring   # noqa: F821
+             ) and os.path.isfile(normalize):
             # valid path implies filesize in bytes
             self.normalize = os.path.getsize(normalize)
         else:

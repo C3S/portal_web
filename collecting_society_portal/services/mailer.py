@@ -6,7 +6,6 @@ import logging
 import quopri
 
 from pyramid_mailer import get_mailer
-from pyramid_mailer.mailer import Mailer
 from pyramid_mailer.message import Message
 
 from ..config import get_plugins
@@ -68,7 +67,6 @@ def get_content(request, template, variables={}):
 def send_mail(request, template, variables={}, *args, **kwargs):
     settings = request.registry.settings
     mailer = get_mailer(request)
-    #import pdb; pdb.set_trace()
 
     # template content
     content = get_content(request, template, variables)

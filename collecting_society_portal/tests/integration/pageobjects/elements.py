@@ -124,7 +124,7 @@ class CheckboxChoiceWidgetElement(BasePageElement):
         try:
             self()
             return True
-        except:
+        except:  # noqa: E722
             return False
 
     def set(self, val):

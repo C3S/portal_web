@@ -238,7 +238,7 @@ def debug_request(event):
     # log
     try:
         log.debug("REQUEST:\n %s" % event.request.as_bytes(skip_body=True))
-    except:
+    except:  # noqa
         pass
 
 
@@ -269,7 +269,7 @@ def debug_response(event):
     # log
     try:
         log.debug("RESPONSE:\n %s" % event.response.__str__(skip_body=True))
-    except:
+    except: # noqa
         pass
 
 

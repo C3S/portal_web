@@ -28,7 +28,7 @@ from ..config import (
 from .. import main
 from .config import testconfig
 
-from .integration.pageobjects import *
+from .integration.pageobjects import *  # noqa
 
 
 class Net(object):
