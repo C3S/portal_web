@@ -5,7 +5,7 @@
 Dictionary Merge Tests
 """
 
-from ..base import UnitTestBase
+from ...base import UnitTestBase
 
 from ....services import iban
 
