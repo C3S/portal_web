@@ -6,6 +6,7 @@
 from .base import Tdb
 
 # models
+from .party import Party
 from .web_user import WebUser
 from .company import Company
 from .bank_account_number import BankAccountNumber
