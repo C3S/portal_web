@@ -150,13 +150,17 @@ class Net(object):
         Returns:
             selenium.webdriver.PhantomJs: PhantomJs client.
         """
-        self.cli = webdriver.PhantomJS(
+        # self.cli = webdriver.PhantomJS(
+        #     desired_capabilities=testconfig['client']['desired_capabilities']
+        # )
+        self.cli = webdriver.Remote(
+            command_executor=testconfig['client']['connection']['selenium'],
             desired_capabilities=testconfig['client']['desired_capabilities']
         )
-        self.cli.set_window_size(
-            testconfig['client']['window_size']['width'],
-            testconfig['client']['window_size']['height']
-        )
+        # self.cli.set_window_size(
+        #     testconfig['client']['window_size']['width'],
+        #     testconfig['client']['window_size']['height']
+        # )
         return self.cli
 
     def stop_client(self):
@@ -430,10 +434,7 @@ class IntegrationTestBase(TestBase):
             None.
         """
         self.cli.get(
-            'http://' +
-            self.cfg['server']['host'] + ':' +
-            self.cfg['server']['port'] + '/' +
-            url
+            'http://' + self.cfg['client']['connection']['server'] + '/' + url
         )
 
     def screenshot(self, filename=''):

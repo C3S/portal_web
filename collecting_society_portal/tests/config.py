@@ -19,12 +19,16 @@ testconfig = {
         'debug': True
     },
     'client': {
+        # connection
+        'connection': {
+            'selenium': 'http://selenium:4444/wd/hub',
+            'server': 'portal:6544'
+        },
         # desired_capabilities
         'desired_capabilities': {
-            'platform': 'ANY',
-            'browserName': 'phantomjs',
-            'version': '',
-            'javascriptEnabled': True
+            'browserName': 'firefox',
+            'acceptInsecureCerts': True,
+            'marionette': True
         },
         # window size of client
         'window_size': {
