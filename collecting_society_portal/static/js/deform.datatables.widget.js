@@ -72,6 +72,11 @@ deform.DatatableSequence = function(vars) {
 
     /*** AUXILIARY ***********************************************************/    
 
+    /* Escapes html characters for display */
+    this.escape = function(str) {
+        return jQuery('<div />').text(str).html();
+    };
+
     /* Generates html code for the sequence (see addSequence() in deform.js) */
     this.newSequence = function(data) {
         var fieldmatch = /deformField(\d+)/;
@@ -247,6 +252,8 @@ deform.DatatableSequence = function(vars) {
 
     /* Adds a row */
     this.addRow = function(rowId) {
+        if(datatableSequence.mode !== 'add')
+            return false;
         // get data
         var data = datatableSequence.source.table.row(rowId).data();
         // prevent multiple addition
@@ -264,7 +271,10 @@ deform.DatatableSequence = function(vars) {
     /* Removes a row */
     this.removeRow = function(link) {
         // get row
-        var row = datatableSequence.target.table.row($(link).parents('tr'));
+        var tr = $(link).parents('tr');
+        if(tr.hasClass('child'))
+            tr = tr.prev('tr');
+        var row = datatableSequence.target.table.row(tr);
         // remove always, if not in edit mode
         if(datatableSequence.mode == "add") {
             row.remove().draw();
@@ -293,7 +303,7 @@ deform.DatatableSequence = function(vars) {
         var data = datatableSequence.getDataTemplate();
         var row = datatableSequence.target.table.row.add(data).draw();
         // open edit area
-        $(row.node()).find('a.edit').click();
+        datatableSequence.editRow($(row.node()));
         // catch enter key
         var child = $(row.node()).next('tr');
         var submit = $(child).find('.cs-datatables-apply');
@@ -316,8 +326,8 @@ deform.DatatableSequence = function(vars) {
         }
         if(datatableSequence.mode == "add")
             datatableSequence.mode = "edit";
-        $(link).hide();
-        var row = datatableSequence.target.table.row($(link).closest('tr'));
+        var row = datatableSequence.target.table.row($(link).closest('tr'))
+            .invalidate('data').draw(false);
         row.child(datatableSequence.target.editDiv(row.data())).show();
         $(row.child()).addClass('child');
         return false;
@@ -337,11 +347,11 @@ deform.DatatableSequence = function(vars) {
         var row = datatableSequence.target.table.row(child.prev('tr'));
         var data = row.data();
         datatableSequence.updateData(data, editForm);
+        datatableSequence.mode = "add";
         // update row
         row.data(data).draw();
         // close edit area
         row.child.remove();
-        datatableSequence.mode = "add";
         return false;
     };
 
@@ -366,8 +376,8 @@ deform.DatatableSequence = function(vars) {
         if(!table)
             return '';
         if(data.mode === "create")
-            return '<span class="label label-default" i18n:translate="">' +
-                table.i18n('custom.new') + '</span>';
+            return '<span class="badge"><small>' +
+                table.i18n('custom.new') + '</small></span>';
         var hasData = false;
         var isVisible = table.columns().responsiveHidden();
         table.row(meta.row).columns().every(function(index) {
@@ -395,17 +405,34 @@ deform.DatatableSequence = function(vars) {
         return data ? $('<table class="table"/>').append(data) : false;
     };
 
-    this.target.editCol = function(data, type, row, meta) {
+    this.target.controlsHead = function() {
+        return  '<a href="#" class="cs-thin"' +
+                    'onclick="return deform.datatableSequences.' +
+                        datatableSequence.oid + '.createRow();">' +
+                    '<span class="glyphicon glyphicon-plus"></span> ' +
+                    '<span i18n:translate="">Create</span>' +
+                '</a>';
+    };
+
+    this.target.controlsCol = function(data, type, row, meta) {
         var table = datatableSequence.target.table;
         if(!table)
             return '';
-        return data.mode !== "add" ?
-            '<a href="" onclick="return ' +
-                    'deform.datatableSequences.' + datatableSequence.oid + '.' +
-                    'editRow(this);" class="edit">' +
-                '<span class="glyphicon glyphicon-pencil"></span> ' +
-                table.i18n('custom.edit') +
-            '</a>' : '';
+        if(data.mode === "create" && datatableSequence.mode === "add")
+            return  '<a href="#" onclick="return ' +
+                            'deform.datatableSequences.' + datatableSequence.oid +
+                            '.editRow(this);" class="edit">' +
+                        '<span class="glyphicon glyphicon-pencil"></span> ' +
+                        table.i18n('custom.edit') +
+                    '</a>';
+        if(data.mode === "add")
+            return  '<a href="#" onclick="return ' +
+                            'deform.datatableSequences.' + datatableSequence.oid +
+                            '.removeRow(this);">' +
+                        '<span class="glyphicon glyphicon-minus"></span> ' +
+                        table.i18n('custom.remove') +
+                    '</a>';
+        return '';
     };
 
     this.target.editDiv = function(data) {
@@ -423,18 +450,25 @@ deform.DatatableSequence = function(vars) {
                                 column.title + '</label>' +
                             '<input name="' + column.name + '" ' +
                                 'class="form-control" type="text" ' +
-                                'value="' + data[column.name] + '">' +
+                                'value="' + (data ? data[column.name] : '') + '">' +
                         '</div>';
             });
-        var form = inputs +
+        var buttons = '' +
             '<a href="#" class="cs-datatables-apply" onclick="return ' +
                     'deform.datatableSequences.' + datatableSequence.oid + '.' +
                     'saveRow(this);">' +
                 '<button class="btn btn-info">' +
                     table.i18n('custom.apply') +
                 '</button>' +
+            '</a> ' +
+            '<a href="#" onclick="return ' +
+                    'deform.datatableSequences.' + datatableSequence.oid + '.' +
+                    'removeRow(this);">' +
+                '<button class="btn btn-danger">' +
+                    table.i18n('custom.remove') +
+                '</button>' +
             '</a>';
-        return $('<div class="cs-datatables-edit"/>').append(form);
+        return $('<div class="cs-datatables-edit"/>').append(inputs + buttons);
     };
 
     this.target.showCol = function(data, type, row) {
@@ -445,22 +479,11 @@ deform.DatatableSequence = function(vars) {
             $.each(datatableSequence.columns, function(index, column) {
                 if(column.datatableSequence.createShow && row[column.name])
                     html += '<small>' + column.title + ':</small> ' +
-                            row[column.name] + "<br>";
+                            datatableSequence.escape(row[column.name]) + "<br>";
             });
             return html + row.errors;
         }
         return data;
-    };
-
-    this.target.removeCol = function(data, type, row, meta) {
-        var table = datatableSequence.target.table;
-        return table ?
-            '<a href="#" onclick="return ' +
-                    'deform.datatableSequences.' + datatableSequence.oid + '.' +
-                    'removeRow(this);">' +
-                '<span class="glyphicon glyphicon-minus"></span> ' +
-                table.i18n('custom.remove') +
-            '</a>' : '';
     };
 
     this.source.tableNode = function() {
@@ -506,7 +529,7 @@ deform.DatatableSequence = function(vars) {
 
     this.source.moreDiv = this.target.moreDiv;
 
-    this.source.addCol = function(data, type, row, meta) {
+    this.source.controlsCol = function(data, type, row, meta) {
         var table = datatableSequence.source.table;
         return table ?
             '<a href="#" onclick="return ' +
@@ -608,28 +631,14 @@ deform.DatatableSequence = function(vars) {
             },
             customCols.displayed,
             {
-                name: "edit",
+                name: "controls",
+                title: datatableSequence.target.controlsHead(),
                 data: null,
-                className: "text-right nowrap all",
-                width: "60px",
+                className: "text-left nowrap all",
+                width: "80px",
                 orderable: false,
                 searchable: false,
-                render: datatableSequence.target.editCol
-            },
-            {
-                name: "remove",
-                title:  '<a href="#" class="pull-right cs-thin"' +
-                            'onclick="return deform.datatableSequences.' +
-                                datatableSequence.oid + '.createRow();">' +
-                            '<span class="glyphicon glyphicon-plus"></span> ' +
-                            '<span i18n:translate="">Create</span>' +
-                        '</a>',
-                data: null,
-                className: "text-right nowrap all",
-                width: "100px",
-                orderable: false,
-                searchable: false,
-                render: datatableSequence.target.removeCol
+                render: datatableSequence.target.controlsCol
             },
             customCols.collapsed,
             {
@@ -671,13 +680,13 @@ deform.DatatableSequence = function(vars) {
             },
             customCols.displayed,
             {
-                name: "add",
+                name: "controls",
                 data: null,
-                width: "100px",
+                width: "80px",
                 className: "text-right nowrap all",
                 orderable: false,
                 searchable: false,
-                render: datatableSequence.source.addCol
+                render: datatableSequence.source.controlsCol
             },
             customCols.collapsed,
             customCols.invisible,
@@ -705,7 +714,7 @@ deform.DatatableSequence = function(vars) {
                 info: false,
                 searching: false,
                 autoWidth: false,
-                fixedHeader: true,
+                fixedHeader: false,
                 responsive: {
                     details: {
                         renderer: datatableSequence.target.moreDiv,
@@ -714,7 +723,7 @@ deform.DatatableSequence = function(vars) {
                 },
                 columns: datatableSequence.target.columns,
                 order: [
-                    [ 8, "desc" ],  // create rows at the top
+                    [ 7, "desc" ],  // create rows at the top
                     [ 1, "asc" ]    // first displayed row
                 ]
             });
@@ -727,7 +736,7 @@ deform.DatatableSequence = function(vars) {
                 serverSide: true,
                 searchDelay: 600,
                 autoWidth: false,
-                fixedHeader: true,
+                fixedHeader: false,
                 ajax: {
                     type: "POST",
                     contentType: "application/json; charset=utf-8",
