@@ -418,7 +418,7 @@ deform.DatatableSequence = function(vars) {
         var table = datatableSequence.target.table;
         if(!table)
             return '';
-        if(data.mode === "create" && datatableSequence.mode === "add")
+        if(data.mode !== "add" && datatableSequence.mode === "add")
             return  '<a href="#" onclick="return ' +
                             'deform.datatableSequences.' + datatableSequence.oid +
                             '.editRow(this);" class="edit">' +
@@ -474,7 +474,7 @@ deform.DatatableSequence = function(vars) {
     this.target.showCol = function(data, type, row) {
         if(type !== 'display' && type !== 'filter')
             return data;
-        if(row.mode === "create") {
+        if(row.mode !== "add") {
             var html = "";
             $.each(datatableSequence.columns, function(index, column) {
                 if(column.datatableSequence.createShow && row[column.name])
@@ -616,7 +616,7 @@ deform.DatatableSequence = function(vars) {
     /*** COLUMS **************************************************************/
 
     this.target.columns = (function() {
-        var customCols = datatableSequence.getSortedColumns();
+        var customCols = $.extend(true, {}, datatableSequence.getSortedColumns());
         // show created row data in first custom column
         customCols.displayed[0].render = datatableSequence.target.showCol;
         return [
@@ -667,7 +667,7 @@ deform.DatatableSequence = function(vars) {
     })();
 
     this.source.columns = (function() {
-        var customCols = datatableSequence.getSortedColumns();
+        var customCols = $.extend(true, {}, datatableSequence.getSortedColumns());
         return [
             {
                 name: "more",
