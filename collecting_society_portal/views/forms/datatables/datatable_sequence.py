@@ -11,6 +11,7 @@ log = logging.getLogger(__name__)
 class DatatableSequenceWidget(deform.widget.SequenceWidget):
 
     category = 'structural'
+    item_template = 'datatables/sequence_item'
 
     def rows(self, field, cstruct, kw):
         if not cstruct:
@@ -68,6 +69,7 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
                 "apply": _("Apply", d),
                 "remove": _("Remove", d),
                 "add": _("Add", d),
+                "create": _("Create", d),
             }
         })
 
