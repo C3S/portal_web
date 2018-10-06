@@ -24,6 +24,7 @@ if(typeof deform.datatableSequences == "undefined")
             var ds = new deform.DatatableSequence({
                 oid: "${oid}",
                 name: "${name}",
+                title: "${title}",
                 minLen: "${min_len}",
                 maxLen: "${max_len}",
                 nowLen: "${now_len}",
@@ -73,6 +74,8 @@ var DatatableSequence = function(vars) {
     // self reference
     var ds = this;
 
+    // self in registry
+    this.registry = "deform.datatableSequences." + vars.oid;
 
     /**************************************************************************
         VARIABLES
@@ -81,6 +84,7 @@ var DatatableSequence = function(vars) {
     // deform
     this.oid = vars.oid;
     this.name = vars.name;
+    this.title = vars.title;
     this.minLen = parseInt(vars.minLen);
     this.maxLen = parseInt(vars.maxLen);
     this.nowLen = parseInt(vars.nowLen);
@@ -88,8 +92,22 @@ var DatatableSequence = function(vars) {
     this.proto = vars.proto;
     this.api = vars.api;
 
+    // selectors
+    var base = "datatable_sequence_" + ds.oid;
+    this.sel = {
+        base:        base,
+        html:        "." + base,
+        targetTable: "#" + base + "_target",
+        targetArea:  "." + base + "_target_area",
+        sourceTable: "#" + base + "_source",
+        sourceArea:  "." + base + "_source_area",
+        controls:    "." + base + "_controls",
+        modalAdd:    "#" + base + "_modal_add",
+        modalCreate: "#" + base + "_modal_create",
+    };
+
     // datatable
-    this.language = $(".datatable_sequence_" + ds.oid).data('language');
+    this.language = $(ds.sel.html).data('language');
     this.mode = "add";                  // "add" | "create" | "edit"
     this.columns = vars.columns;        // custom datatable columns
     this.createForm = vars.createForm;  // create form for new rows
@@ -104,28 +122,83 @@ var DatatableSequence = function(vars) {
     this.templates = {
 
         /**
+         * Main template for the datatable sequence.
+         */
+        datatableSequence: function() {
+            var t = ds.templates;            
+            var html = '' +
+                t.targetTable() +
+                t.controls() +
+                t.modal('add', ds.title, t.sourceTable());
+            return html;
+        },
+
+        /**
+         * Template for modals.
+         */
+        modal: function(role, title, content, footer) {
+            var id = ds.sel.base + '_modal_' + role;
+            var close = '<button type="button" class="close"' +
+                                'data-dismiss="modal" aria-label="Close">' +
+                            '<span aria-hidden="true">&times;</span>' +
+                        '</button>';
+            var head =  '<div class="modal-header">' +
+                            close + 
+                            '<h4 class="modal-title" id="' + id + '_label">' +
+                                title +
+                            '</h4>' + 
+                        '</div>';
+            var body = '<div class="modal-body">' + content + '</div>';
+            var foot = footer ? 
+                '<div class="modal-footer">' + footer + '</div>' : '';
+            return '' +
+                '<div class="modal fade" id="' + id + '" tabindex="-1" ' +
+                        'role="dialog" aria-labelledby="' + id + '_label">' +
+                    '<div class="modal-dialog modal-lg" role="document">' +
+                        '<div class="modal-content">' +
+                             head + body + foot +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+        },
+
+        /**
+         * Template for control buttons (add/create).
+         */
+        controls: function() {
+            return '' +
+                '<div class="btn-group" role="group" ' +
+                        'class="' + ds.sel.base + '_controls" ' +
+                        'aria-label="' + ds.sel.base + '_controls">' +
+                    '<button type="button" class="btn btn-default"' +
+                            'data-toggle="modal" ' + 
+                            'data-target="' + ds.sel.modalAdd + '">' +
+                        ds.language.custom.add +
+                    '</button>' +
+                    '<button type="button" class="btn btn-default">' +
+                        ds.language.custom.create +
+                    '</button>' +
+                '</div>';
+        },
+
+        /**
          * Template for target table.
          * 
-         * Contains a header, the table and a wrapper for the deform sequence
-         * serialization.
+         * Contains the table and a wrapper for deform sequence serialization.
          */
         targetTable: function() {
-            // header
-            var header = ds.target.header ?
-                '<h3 class="datatable_sequence_' + ds.oid +
-                    '_target_header"></h3>' : '';
             // table and sequence wrapper
-            var html = header +
+            var html = '' +
                 '<input type="hidden" name="__start__"' + 
                     'value="' + ds.name + ':sequence" />' +
-                '<table id="datatable_sequence_' + ds.oid + '_target"' +
+                '<table id="' + ds.sel.base + '_target"' +
                     'class="table table-hover cs-datatables"></table>' +
                 '<input type="hidden" name="__end__"' + 
                     'value="' + ds.name + ':sequence" />';
             // area
-            var area = '<div class="datatable_sequence_' +
-                ds.oid + '_target_area"/>';
-            return $(area).append(html);
+            var area = '' + 
+                '<div class="' + ds.sel.base + '_target_area"/>';
+            return $(area).append(html).html();
         },
 
         /** 
@@ -183,8 +256,7 @@ var DatatableSequence = function(vars) {
         targetControlsHead: function() {
             // create link
             return  '<a href="#" class="cs-thin"' +
-                        'onclick="return deform.datatableSequences.' +
-                            ds.oid + '.createRow();">' +
+                        'onclick="return ' + ds.registry + '.createRow();">' +
                         '<span class="glyphicon glyphicon-plus"></span> ' +
                         ds.language.custom.create +
                     '</a>';
@@ -201,16 +273,14 @@ var DatatableSequence = function(vars) {
             // edit link (only for created/edited rows in add mode)
             if(data.mode !== "add" && ds.mode === "add")
                 return  '<a href="#" onclick="return ' +
-                                'deform.datatableSequences.' + ds.oid +
-                                '.editRow(this);" class="edit">' +
+                                ds.registry + '.editRow(this);" class="edit">' +
                             '<span class="glyphicon glyphicon-pencil"></span> ' +
                             ds.language.custom.edit +
                         '</a>';
             // remove link (only for added rows)
             if(data.mode === "add")
                 return  '<a href="#" onclick="return ' +
-                                'deform.datatableSequences.' + ds.oid +
-                                '.removeRow(this);">' +
+                                ds.registry + '.removeRow(this);">' +
                             '<span class="glyphicon glyphicon-minus"></span> ' +
                             ds.language.custom.remove +
                         '</a>';
@@ -244,17 +314,14 @@ var DatatableSequence = function(vars) {
             // buttons
             var buttons = '' +
                 // apply button
-                '<a href="#" class="cs-datatables-apply" onclick="return ' +
-                        'deform.datatableSequences.' + ds.oid + '.' +
-                        'saveRow(this);">' +
+                '<a href="#" class="cs-datatables-apply" ' +
+                        'onclick="return ' + ds.registry + '.saveRow(this);">' +
                     '<button class="btn btn-info">' +
                         ds.language.custom.apply +
                     '</button>' +
                 '</a> ' +
                 // remove button
-                '<a href="#" onclick="return ' +
-                        'deform.datatableSequences.' + ds.oid + '.' +
-                        'removeRow(this);">' +
+                '<a href="#" onclick="return ' + ds.registry + '.removeRow(this);">' +
                     '<button class="btn btn-danger">' +
                         ds.language.custom.remove +
                     '</button>' +
@@ -322,13 +389,9 @@ var DatatableSequence = function(vars) {
         /**
          * Template for source table.
          * 
-         * Contains a header, the table and a footer for individual column search.
+         * Contains the table and a footer for individual column search.
          */
         sourceTable: function() {
-            // header
-            var header = ds.source.header ?
-                '<h3 class="datatable_sequence_' + ds.oid +
-                    '_source_header"></h3>' : '';
             // footer
             var footer = '<tfoot>';
             var search = false;
@@ -345,17 +408,17 @@ var DatatableSequence = function(vars) {
             });
             footer += '</tfoot>';
             // table
-            var html = header +
+            var html = '' +
                 '<div class="container-fluid">' +
-                    '<table id="datatable_sequence_' + ds.oid + '_source"' +
+                    '<table id="' + ds.sel.base + '_source"' +
                             'class="table table-hover cs-datatables">' +
                         footer +
                     '</table>' +
                 '</div>';
             // modal
-            var area = '<div class="datatable_sequence_' +
-                ds.oid + '_source_area"/>';
-            return $(area).append(html);
+            var area = '' +
+                '<div class="' + ds.sel.base + '_source_area"/>';
+            return $(area).append(html).html();
         },
 
         /** 
@@ -387,9 +450,8 @@ var DatatableSequence = function(vars) {
         sourceColumnControls: function(data, type, row, meta) {
             // add link
             return '' +
-                '<a href="#" onclick="return ' +
-                        'deform.datatableSequences.' + ds.oid + '.' +
-                        'addRow(' + meta.row + ');">' +
+                '<a href="#" ' +
+                    'onclick="return ' + ds.registry + '.addRow(' + meta.row + ');">' +
                     '<span class="glyphicon glyphicon-plus"></span> ' +
                     ds.language.custom.add +
                 '</a>';
@@ -428,7 +490,7 @@ var DatatableSequence = function(vars) {
               obj (this.target|this.source): Datatable meta object.
         */
         more: function(obj) {
-            $("#" + obj.tableId + ' tbody').on('click', 'td.more', function() {
+            $(obj.tableId + ' tbody').on('click', 'td.more', function() {
                 var row = obj.table.row($(this).closest('tr'));
                 var data = row.data();
                 // show nothing for created rows
@@ -484,23 +546,9 @@ var DatatableSequence = function(vars) {
               obj (this.target|this.source): Datatable meta object.
         */
         save: function(obj) {
-            $("#" + obj.tableId).closest("form").on('submit', function(){
+            $(obj.tableId).closest("form").on('submit', function(){
                 $(obj.table.table().node()).find("a.cs-datatables-apply").click();
             });
-        },
-
-        /*
-            Sets the header for the table.
-
-            Args:
-              obj (this.target|this.source): Datatable meta object.
-        */
-        setHeader: function(obj) {
-            if(obj.header !== "")
-                $('.' + obj.tableId + '_header').first().html(
-                    ds.language.custom[obj.header]);
-            else
-                $('.' + obj.tableId + '_header').remove();
         },
 
     };
@@ -512,14 +560,12 @@ var DatatableSequence = function(vars) {
     this.target = {
         // datatable table
         table: false,
-        // unique class of table html node
-        tableId: "datatable_sequence_" + ds.oid + "_target",
-        // header for the table
-        header: typeof vars.targetHeader == "string" ? vars.targetHeader : "",
+        // table html node selector
+        tableId: ds.sel.targetTable,
         // events to bind (bound on initialization)
-        events: ['setHeader', 'more', 'save', 'redraw'],
+        events: ['more', 'save', 'redraw'],
         // initial data
-        data: $(".datatable_sequence_" + ds.oid).data('data'),
+        data: $(ds.sel.html).data('data'),
         // columns of target table
         columns: (function() {
             // clone custom columns
@@ -579,12 +625,10 @@ var DatatableSequence = function(vars) {
     this.source = {
         // datatable table
         table: false,
-        // unique class of table html node
-        tableId: "datatable_sequence_" + ds.oid + "_source",
-        // header for the table
-        header: typeof vars.sourceHeader == "string" ? vars.sourceHeader : "add",
+        // table html node selector
+        tableId: ds.sel.sourceTable,
         // events to bind (bound on initialization)
-        events: ['setHeader', 'more', 'search', 'redraw'],
+        events: ['more', 'search', 'redraw'],
         // columns of target table
         columns: (function() {
             var customCols = $.extend(true, {}, ds.getSortedColumns());
@@ -961,12 +1005,10 @@ DatatableSequence.prototype = {
         $(document).ready(function() {
 
             // generate html
-            var htmlNode = ".datatable_sequence_" + ds.oid;
-            $(htmlNode).append(ds.templates.targetTable());
-            $(htmlNode).append(ds.templates.sourceTable());
+            $(ds.sel.html).append(ds.templates.datatableSequence());
 
             // initialize target table
-            ds.target.table = $("#" + ds.target.tableId).DataTable({
+            ds.target.table = $(ds.sel.targetTable).DataTable({
                 data: ds.target.data,
                 language: ds.language,
                 paging: false,
@@ -988,7 +1030,7 @@ DatatableSequence.prototype = {
             });
             
             // initialize source table
-            ds.source.table = $("#" + ds.source.tableId).DataTable({
+            ds.source.table = $(ds.sel.sourceTable).DataTable({
                 language: ds.language,
                 processing: true,
                 serverSide: true,
