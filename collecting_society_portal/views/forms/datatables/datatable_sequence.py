@@ -36,7 +36,7 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
             data.append(row)
         return json.dumps(data)
 
-    def lang(self):
+    def language(self):
         _ = self.request.localizer.translate
         d = getattr(self, 'domain', 'collecting_society_portal')
         return json.dumps({
@@ -81,8 +81,8 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
         ]))
         kw.update({
             'api': api,
-            'rows': self.rows(field, cstruct, kw),
-            'lang': self.lang(),
+            'data': self.rows(field, cstruct, kw),
+            'language': self.language(),
             '_': _
         })
         return super(DatatableSequenceWidget, self).get_template_values(
