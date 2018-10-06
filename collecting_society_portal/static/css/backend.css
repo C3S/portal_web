@@ -28,6 +28,9 @@ h6, .h6 {}
 .cs-txt-center { text-align:center; }
 .cs-red { color:#fc2a00; }
 
+.cs-modal .pin { margin-right:10px; }
+.cs-modal .pinned { color:#ff0000; opacity:0.9; }
+
 /* Content Left */
 
 .cs-content-left { background-color:#eee; }

@@ -95,15 +95,16 @@ var DatatableSequence = function(vars) {
     // selectors
     var base = "datatable_sequence_" + ds.oid;
     this.sel = {
-        base:        base,
-        html:        "." + base,
-        targetTable: "#" + base + "_target",
-        targetArea:  "." + base + "_target_area",
-        sourceTable: "#" + base + "_source",
-        sourceArea:  "." + base + "_source_area",
-        controls:    "." + base + "_controls",
-        modalAdd:    "#" + base + "_modal_add",
-        modalCreate: "#" + base + "_modal_create",
+        base:         base,
+        html:         "." + base,
+        targetTable:  "#" + base + "_target",
+        targetArea:   "." + base + "_target_area",
+        sourceTable:  "#" + base + "_source",
+        sourceArea:   "." + base + "_source_area",
+        sourceFilter: "#" + base + "_source_filter",
+        controls:     "." + base + "_controls",
+        modalAdd:     "#" + base + "_modal_add",
+        modalCreate:  "#" + base + "_modal_create",
     };
 
     // datatable
@@ -126,11 +127,11 @@ var DatatableSequence = function(vars) {
          */
         datatableSequence: function() {
             var t = ds.templates;            
-            var html = '' +
+            return '' +
                 t.targetTable() +
                 t.controls() +
-                t.modal('add', ds.title, t.sourceTable());
-            return html;
+                t.modal('add', ds.title, t.sourceTable()) +
+                t.modal('create', ds.title, t.edit());
         },
 
         /**
@@ -138,12 +139,18 @@ var DatatableSequence = function(vars) {
          */
         modal: function(role, title, content, footer) {
             var id = ds.sel.base + '_modal_' + role;
-            var close = '<button type="button" class="close"' +
-                                'data-dismiss="modal" aria-label="Close">' +
-                            '<span aria-hidden="true">&times;</span>' +
-                        '</button>';
-            var head =  '<div class="modal-header">' +
-                            close + 
+            var close = '' +
+                '<button type="button" class="close"' +
+                        'data-dismiss="modal" aria-label="Close">' +
+                    '<span class="glyphicon glyphicon-remove"></span>' +
+                '</button>';
+            var pin = role === 'add' ?
+                '<button type="button" class="close pin" aria-label="Pin"' +
+                        'onclick="return ' + ds.registry + '.pinModal(this);">' +
+                    '<span class="glyphicon glyphicon-pushpin"></span>' +
+                '</button> ' : '';
+            var head =  '<div class="modal-header cs-modal-header">' +
+                            close + pin +
                             '<h4 class="modal-title" id="' + id + '_label">' +
                                 title +
                             '</h4>' + 
@@ -152,7 +159,7 @@ var DatatableSequence = function(vars) {
             var foot = footer ? 
                 '<div class="modal-footer">' + footer + '</div>' : '';
             return '' +
-                '<div class="modal fade" id="' + id + '" tabindex="-1" ' +
+                '<div class="modal fade cs-modal" id="' + id + '" tabindex="-1" ' +
                         'role="dialog" aria-labelledby="' + id + '_label">' +
                     '<div class="modal-dialog modal-lg" role="document">' +
                         '<div class="modal-content">' +
@@ -175,7 +182,9 @@ var DatatableSequence = function(vars) {
                             'data-target="' + ds.sel.modalAdd + '">' +
                         ds.language.custom.add +
                     '</button>' +
-                    '<button type="button" class="btn btn-default">' +
+                    '<button type="button" class="btn btn-default"' +
+                            'data-toggle="modal" ' + 
+                            'data-target="' + ds.sel.modalCreate + '">' +
                         ds.language.custom.create +
                     '</button>' +
                 '</div>';
@@ -248,20 +257,6 @@ var DatatableSequence = function(vars) {
             return data ? $('<table class="table"/>').append(data) : false;
         },
 
-        /**
-         * Template for controls head of target table rows.
-         * 
-         * Contains the create link.
-         */
-        targetControlsHead: function() {
-            // create link
-            return  '<a href="#" class="cs-thin"' +
-                        'onclick="return ' + ds.registry + '.createRow();">' +
-                        '<span class="glyphicon glyphicon-plus"></span> ' +
-                        ds.language.custom.create +
-                    '</a>';
-        },
-
         /** 
          * Template for controls column of target table.
          * 
@@ -326,7 +321,10 @@ var DatatableSequence = function(vars) {
                         ds.language.custom.remove +
                     '</button>' +
                 '</a>';
-            return $('<div class="cs-datatables-edit"/>').append(inputs + buttons);
+            return '' +
+                '<div class="cs-datatables-edit">' +
+                    inputs + buttons +
+                '</div>';
         },
 
         /** 
@@ -448,6 +446,20 @@ var DatatableSequence = function(vars) {
          * See https://datatables.net/reference/option/columns.render#function
          */
         sourceColumnControls: function(data, type, row, meta) {
+            var table = ds.target.table;
+            // ensure, table is initialized
+            if(!table)
+                return '';
+            // remove link
+            var targetRow = ds.rowAdded(row);
+            if(targetRow) {
+                return '' +
+                    '<a href="#" onclick="return ' +
+                            ds.registry + '.removeRow(' + targetRow.index() + ');">' +
+                        '<span class="glyphicon glyphicon-minus"></span> ' +
+                        ds.language.custom.remove +
+                    '</a>';
+            }
             // add link
             return '' +
                 '<a href="#" ' +
@@ -551,6 +563,28 @@ var DatatableSequence = function(vars) {
             });
         },
 
+        /*
+            Resets search forms, when modal is closed and not pinned
+
+            Args:
+              obj (this.target|this.source): Datatable meta object.
+        */
+        closeReset: function(obj) {
+            $(ds.sel.modalAdd).on('hidden.bs.modal', function (e) {
+                // consider pin
+                if($(ds.sel.modalAdd + ' .pin').hasClass('pinned'))
+                    return;
+                // reset individual search fields
+                obj.table.columns().every(function () {
+                    var footer = $('input', this.footer()).val('').change();
+                });
+                // reset main search field
+                obj.table.search('');
+                //redraw
+                obj.table.draw();
+            });
+        },
+
     };
 
     /**************************************************************************
@@ -586,7 +620,6 @@ var DatatableSequence = function(vars) {
                 {
                     name: "controls",
                     data: null,
-                    title: ds.templates.targetControlsHead(),
                     className: "text-left nowrap all",
                     width: "80px",
                     orderable: false,
@@ -628,7 +661,7 @@ var DatatableSequence = function(vars) {
         // table html node selector
         tableId: ds.sel.sourceTable,
         // events to bind (bound on initialization)
-        events: ['more', 'search', 'redraw'],
+        events: ['more', 'search', 'closeReset', 'redraw'],
         // columns of target table
         columns: (function() {
             var customCols = $.extend(true, {}, ds.getSortedColumns());
@@ -647,7 +680,7 @@ var DatatableSequence = function(vars) {
                     name: "controls",
                     data: null,
                     width: "80px",
-                    className: "text-right nowrap all",
+                    className: "text-left nowrap all",
                     orderable: false,
                     searchable: false,
                     render: ds.templates.sourceColumnControls
@@ -749,7 +782,7 @@ DatatableSequence.prototype = {
      *   data (array): Datatables row data.
      *
      * Returns:
-     *   true: If row is already added.
+     *   Datatables row: If row is already added.
      *   false: Otherwise.
      */
     rowAdded: function(data) {
@@ -757,17 +790,18 @@ DatatableSequence.prototype = {
         switch(typeof ds.unique) {
             // the column name is provided as a string
             case 'string':
-                var added = false;
                 var id = ds.unique;
+                var row = false;
                 ds.target.table.rows().every(function() {
-                    if(!added && this.data()[id] == data[id])
-                        added = true;
+                    if(this.data()[id] == data[id])
+                        row = this;
                 });
-                return added;
+                return row;
             // a custom function for the data is provided
             case 'function':
                 return ds.unique(data);
             default:
+                // TODO: compare all columns as default
                 return false;
         }
     },
@@ -1104,6 +1138,12 @@ DatatableSequence.prototype = {
         data.sequence = ds.newSequence(data);
         // update table data
         ds.target.table.row.add(data).draw();
+        // close modal, if not pinned
+        var pin = $(ds.sel.modalAdd + ' .pin').first();
+        if(!pin || !pin.hasClass('pinned'))
+            $(ds.sel.modalAdd).modal('hide');
+        // redraw source table (to update controls)
+        ds.source.table.draw(false);
         return false;
     },
 
@@ -1114,32 +1154,45 @@ DatatableSequence.prototype = {
      * row in create/edit mode, ends then in add mode.
      * 
      * Args:
-     *   link (jQuery node): Node of the remove link.
+     *   obj (node): Node of the remove link.
+     *   obj (int): Index of row html node to remove.
      * 
      * Returns:
      *   false: Prevents link execution.
      */
-    removeRow: function(link) {
+    removeRow: function(obj) {
         var ds = this;
-        // get row node
-        var tr = $(link).parents('tr');
-        // get row node for links in child rows
-        if(tr.hasClass('child'))
-            tr = tr.prev('tr');
-        // get datatable row
-        var row = ds.target.table.row(tr);
-        // remove always, if not in edit mode
-        if(ds.mode == "add") {
-            row.remove().draw();
-            return false;
+        // get row
+        var row = false;
+        if(typeof obj === "number")         // for indexes
+            row = ds.target.table.row(obj);
+        else {
+            tr = $(obj);
+            if(!tr.is('tr'))                // for links
+                tr = tr.parents('tr');
+            if(tr.hasClass('child'))        // for children
+                tr = tr.prev('tr');
+            row = ds.target.table.row(tr);
         }
+        var remove = false;
+        // remove always, if not in edit mode
+        if(ds.mode == "add")
+            remove = true;
         // remove only edited row in create/edit mode
         if(row.child()) {
-            row.remove().draw();
-            // set add mode
+            remove = true;
             ds.mode = "add";
-            return false;
         }
+        // remove row
+        if(!remove)
+            return false;
+        row.remove().draw();
+        // close modal, if not pinned
+        var pin = $(ds.sel.modalAdd + ' .pin').first();
+        if(!pin || !pin.hasClass('pinned'))
+            $(ds.sel.modalAdd).modal('hide');
+        // redraw source table (to update controls)
+        ds.source.table.draw(false);
         return false;
     },
 
@@ -1240,6 +1293,22 @@ DatatableSequence.prototype = {
         row.data(data).draw();
         // close edit area
         row.child.remove();
+        return false;
+    },
+
+    /**
+     * Pins a modal.
+     * 
+     * Args:
+     *   link (jQuery node): Node of the pin button.
+     * 
+     * Returns:
+     *   false: Prevents link execution.
+     */
+    pinModal: function(link) {
+        var ds = this;
+        $(link).toggleClass('pinned');
+        $(link).blur();
         return false;
     },
 
