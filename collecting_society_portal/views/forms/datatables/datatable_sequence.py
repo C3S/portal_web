@@ -70,6 +70,7 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
                 "remove": _("Remove", d),
                 "add": _("Add", d),
                 "create": _("Create", d),
+                "cancel": _("Cancel", d),
             }
         })
 

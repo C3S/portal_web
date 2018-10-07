@@ -1,6 +1,26 @@
-<div class="deform-seq-item form-group">
-    ${field.start_mapping()}
-    <div tal:repeat="subfield field.children"
-         tal:replace="structure subfield.serialize(cstruct[subfield.name])" />
-    ${field.end_mapping()}
+<div tal:omit-tag="field.widget.hidden"
+     tal:define="hidden hidden|field.widget.hidden;
+                 error_class error_class|field.widget.error_class;
+                 description description|field.description;
+                 title title|field.title;
+                 oid oid|field.oid"
+     class="${field.error and error_class or ''}"
+     i18n:domain="deform">
+    <div>
+        ${field.start_mapping()}
+        <div tal:repeat="child field.children"
+             tal:replace="structure child.render_template(field.widget.item_template)" >
+        </div>     
+        ${field.end_mapping()}
+        <tal:errors condition="field.error and not hidden"
+                    define="errstr 'error-%s' % oid"
+                    repeat="msg field.error.messages()">
+            <p tal:condition="msg"
+               id="${errstr if repeat.msg.index==0
+                     else '%s-%s' % (errstr, repeat.msg.index)}"
+               class="${error_class} help-block"
+               i18n:translate="">${msg}</p>
+        </tal:errors>
+    </div>
+  <!-- /sequence_item -->
 </div>

@@ -130,8 +130,8 @@ var DatatableSequence = function(vars) {
             return '' +
                 t.targetTable() +
                 t.controls() +
-                t.modal('add', ds.title, t.sourceTable()) +
-                t.modal('create', ds.title, t.edit());
+                t.modal('add', ds.language.custom.add, t.sourceTable()) +
+                t.modal('create', ds.language.custom.create, t.edit());
         },
 
         /**
@@ -304,33 +304,37 @@ var DatatableSequence = function(vars) {
                 inputs += ds.createForm(data);
             // otherwise add default templates for form fields
             else
-                $.each(ds.columns, function(index, column) {
-                    if(column.datatableSequence.createForm)
-                        inputs += '' +
-                            '<div class="form-group">' +
-                                '<label class="control-label" for="' +
-                                    column.name + '">' +
-                                    column.title + '</label>' +
-                                '<input name="' + column.name + '" ' +
-                                    'class="form-control" type="text" ' +
-                                    'value="' + (data ? data[column.name] : '') + '">' +
-                            '</div>';
-                });
-            // buttons
-            var buttons = '' +
-                // apply button
-                '<a href="#" class="cs-datatables-apply" ' +
+                // $.each(ds.columns, function(index, column) {
+                //     if(column.datatableSequence.createForm)
+                //         inputs += '' +
+                //             '<div class="form-group">' +
+                //                 '<label class="control-label" for="' +
+                //                     column.name + '">' +
+                //                     column.title + '</label>' +
+                //                 '<input name="' + column.name + '" ' +
+                //                     'class="form-control" type="text" ' +
+                //                     'value="' + (data ? data[column.name] : '') + '">' +
+                //             '</div>';
+                // });
+                inputs += ds.newSequence();
+            // apply button
+            var apply = '' +
+                '<a href="#" class="btn btn-default cs-datatables-apply" ' +
+                        'role="button" ' +
                         'onclick="return ' + ds.registry + '.saveRow(this);">' +
-                    '<button class="btn btn-info">' +
-                        ds.language.custom.apply +
-                    '</button>' +
-                '</a> ' +
-                // remove button
-                '<a href="#" onclick="return ' + ds.registry + '.removeRow(this);">' +
-                    '<button class="btn btn-danger">' +
-                        ds.language.custom.remove +
-                    '</button>' +
+                    ds.language.custom.apply +
                 '</a>';
+            // remove button
+            var cancel = '' +
+                '<a href="#" class="btn btn-default" role="button" ' +
+                        'onclick="return ' + ds.registry + '.removeRow(this);">' +
+                    ds.language.custom.cancel +
+                '</a>';
+            // button group
+            var buttons = '' +
+                '<div class="btn-group" role="group">' +
+                    apply + cancel +
+                '</div>';
             return '' +
                 '<div class="cs-datatables-edit">' +
                     inputs + buttons +
@@ -492,29 +496,29 @@ var DatatableSequence = function(vars) {
 
     this.events = {
 
-        /*
-            Redraws the table after changing a bootstrap navigation tab.
-
-            Binds to the bootstrap navigation tabs.
-            Fixes the table width.
-
-            Args:
-              obj (this.target|this.source): Datatable meta object.
-        */
+        /**
+         * Redraws the table after changing a bootstrap navigation tab.
+         * 
+         * Binds to the bootstrap navigation tabs.
+         * Fixes the table width.
+         * 
+         * Args:
+         *   obj (this.target|this.source): Datatable meta object.
+         */
         redraw: function(obj) {
             $("a[data-toggle=\"tab\"]").on("shown.bs.tab", function (e) {
                 obj.table.columns.adjust();
             });
         },
 
-        /*
-            Opens and closes the details.
-
-            Binds to the more column on click event.
-
-            Args:
-              obj (this.target|this.source): Datatable meta object.
-        */
+        /**
+         * Opens and closes the details.
+         * 
+         * Binds to the more column on click event.
+         * 
+         * Args:
+         *   obj (this.target|this.source): Datatable meta object.
+         */
         more: function(obj) {
             $(obj.tableId + ' tbody').on('click', 'td.more', function() {
                 var row = obj.table.row($(this).closest('tr'));
@@ -543,14 +547,14 @@ var DatatableSequence = function(vars) {
             });
         },
 
-        /*
-            Initializes the column search.
-
-            Binds to individual column search input fields.
-
-            Args:
-              obj (this.target|this.source): Datatable meta object.
-        */
+        /**
+         * Initializes the column search.
+         * 
+         * Binds to individual column search input fields.
+         * 
+         * Args:
+         *   obj (this.target|this.source): Datatable meta object.
+         */
         search: function(obj) {
             // bind keyup to search updates
             obj.table.columns().every(function () {
@@ -563,26 +567,26 @@ var DatatableSequence = function(vars) {
             });
         },
 
-        /*
-            Applies all open edit forms before submitting the form.
-
-            Binds to form on submit.
-
-            Args:
-              obj (this.target|this.source): Datatable meta object.
-        */
+        /**
+         * Applies all open edit forms before submitting the form.
+         * 
+         * Binds to form on submit.
+         * 
+         * Args:
+         *   obj (this.target|this.source): Datatable meta object.
+         */
         save: function(obj) {
             $(obj.tableId).closest("form").on('submit', function(){
                 $(obj.table.table().node()).find("a.cs-datatables-apply").click();
             });
         },
 
-        /*
-            Resets search forms, when modal is closed and not pinned
-
-            Args:
-              obj (this.target|this.source): Datatable meta object.
-        */
+        /**
+         * Resets search forms, when modal is closed and not pinned
+         * 
+         * Args:
+         *   obj (this.target|this.source): Datatable meta object.
+         */
         closeReset: function(obj) {
             $(ds.sel.modalAdd).on('hidden.bs.modal', function (e) {
                 // consider pin
@@ -634,7 +638,7 @@ var DatatableSequence = function(vars) {
                 {
                     name: "controls",
                     data: null,
-                    className: "text-right nowrap all",
+                    className: "text-right nowrap all cs-datatables-col-controls",
                     orderable: false,
                     searchable: false,
                     render: ds.templates.targetColumnControls
@@ -692,7 +696,7 @@ var DatatableSequence = function(vars) {
                 {
                     name: "controls",
                     data: null,
-                    className: "text-right nowrap all",
+                    className: "text-right nowrap all cs-datatables-col-controls",
                     orderable: false,
                     searchable: false,
                     render: ds.templates.sourceColumnControls
@@ -1037,7 +1041,7 @@ DatatableSequence.prototype = {
         ACTIONS
     **************************************************************************/
 
-    /*
+    /**
      * Initializes the datatable sequence.
      *
      * - Generates html code

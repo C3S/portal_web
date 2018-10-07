@@ -32,6 +32,7 @@ h6, .h6 {}
 .cs-modal .pinned { color:#ff0000; opacity:0.9; }
 
 .cs-datatables-row-details tr td:first-child { padding-left:45px; }
+.table > tbody > tr > td.cs-datatables-col-controls { padding-top:3px; padding-bottom:3px; }
 
 /* Content Left */
 
