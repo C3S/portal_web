@@ -244,17 +244,20 @@ var DatatableSequence = function(vars) {
         more: function(api, rowIdx, columns) {
             // add collapsed data as table rows
             var data = jQuery.map(columns, function(column, index) {
+                var settings = api.settings();
+                console.log(settings);
                 if(!column.data)
                     return '';
                 return column.hidden ?
                     '<tr data-dt-row="' + column.rowIndex + '" data-dt-column="' + 
                             column.columnIndex + '">' +
-                        '<td>' + column.title + ':' + '</td> ' +
-                        '<td>' + column.data + '</td>'+
+                        '<td><small>' + column.title + ':' + '<small></td> ' +
+                        '<td class="fullwidth">' + column.data + '</td>'+
                     '</tr>' : '';
             }).join('');
             // wrap tables rows with table
-            return data ? $('<table class="table"/>').append(data) : false;
+            return data ? $('<table class="table cs-datatables-row-details"/>')
+                .append(data) : false;
         },
 
         /** 

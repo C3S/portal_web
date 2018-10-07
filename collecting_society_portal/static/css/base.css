@@ -26,6 +26,8 @@ h6, .h6 { font-family: "Signika", "Arial"; }
 .fixed { position:fixed; }
 .pull-bottom { position: absolute; bottom:0; }
 .clear { clear:both; }
+.prewrap { white-space:pre-wrap; }
+.fullwidth { width:100%; }
 
 /* collapsable panels 
  * cf. http://stackoverflow.com/questions/18325779/bootstrap-3-collapse-show-state-with-chevron-icon/18568997#18568997 */

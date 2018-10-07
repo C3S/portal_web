@@ -31,6 +31,8 @@ h6, .h6 {}
 .cs-modal .pin { margin-right:10px; }
 .cs-modal .pinned { color:#ff0000; opacity:0.9; }
 
+.cs-datatables-row-details tr td:first-child { padding-left:45px; }
+
 /* Content Left */
 
 .cs-content-left { background-color:#eee; }
