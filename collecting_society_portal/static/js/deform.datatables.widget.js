@@ -260,26 +260,33 @@ var DatatableSequence = function(vars) {
         /** 
          * Template for controls column of target table.
          * 
-         * Contains the edit/remove links.
+         * Contains the edit/remove buttons.
          * 
          * See https://datatables.net/reference/option/columns.render#function
          */
         targetColumnControls: function(data, type, row, meta) {
-            // edit link (only for created/edited rows in add mode)
+            // edit button
+            var edit = '' +
+                '<a href="#" class="btn btn-default btn-sm" role="button" ' +
+                        'onclick="return ' + ds.registry + '.editRow(this);" >' +
+                    ds.language.custom.edit +
+                '</a>';
+            // remove button
+            var remove = '' +
+                '<a href="#" class="btn btn-default btn-sm" role="button" ' +
+                        'onclick="return ' + ds.registry + '.removeRow(this);">' +
+                    ds.language.custom.remove +
+                '</a>';
+            // edit button only for created/edited rows in add mode
+            var buttons = '';
             if(data.mode !== "add" && ds.mode === "add")
-                return  '<a href="#" onclick="return ' +
-                                ds.registry + '.editRow(this);" class="edit">' +
-                            '<span class="glyphicon glyphicon-pencil"></span> ' +
-                            ds.language.custom.edit +
-                        '</a>';
-            // remove link (only for added rows)
-            if(data.mode === "add")
-                return  '<a href="#" onclick="return ' +
-                                ds.registry + '.removeRow(this);">' +
-                            '<span class="glyphicon glyphicon-minus"></span> ' +
-                            ds.language.custom.remove +
-                        '</a>';
-            return '';
+                buttons += edit;
+            // remove button always
+            buttons += remove;
+            return '' +
+                '<div class="btn-group-vertical cs-row-controls" role="group">' +
+                    buttons +
+                '</div>';
         },
 
         /**
@@ -450,23 +457,27 @@ var DatatableSequence = function(vars) {
             // ensure, table is initialized
             if(!table)
                 return '';
-            // remove link
-            var targetRow = ds.rowAdded(row);
-            if(targetRow) {
-                return '' +
-                    '<a href="#" onclick="return ' +
-                            ds.registry + '.removeRow(' + targetRow.index() + ');">' +
-                        '<span class="glyphicon glyphicon-minus"></span> ' +
-                        ds.language.custom.remove +
-                    '</a>';
-            }
-            // add link
-            return '' +
-                '<a href="#" ' +
-                    'onclick="return ' + ds.registry + '.addRow(' + meta.row + ');">' +
-                    '<span class="glyphicon glyphicon-plus"></span> ' +
+            // add button
+            var add = '' +
+                '<a href="#" class="btn btn-default btn-sm" role="button" ' +
+                        'onclick="return ' + ds.registry + 
+                        '.addRow(' + meta.row + ');" >' +
                     ds.language.custom.add +
                 '</a>';
+            // remove button
+            var added = ds.rowAdded(row);
+            var remove = added ?
+                '<a href="#" class="btn btn-default btn-sm" role="button" ' +
+                        'onclick="return ' + ds.registry + 
+                        '.removeRow(' + added.index() + ');">' +
+                    ds.language.custom.remove +
+                '</a>' : '';
+            // remove button if added, add button otherwise
+            buttons = added ? remove : add;
+            return '' +
+                '<div class="btn-group-vertical cs-row-controls" role="group">' +
+                    buttons +
+                '</div>';
         },
 
     };
@@ -620,8 +631,7 @@ var DatatableSequence = function(vars) {
                 {
                     name: "controls",
                     data: null,
-                    className: "text-left nowrap all",
-                    width: "80px",
+                    className: "text-right nowrap all",
                     orderable: false,
                     searchable: false,
                     render: ds.templates.targetColumnControls
@@ -679,8 +689,7 @@ var DatatableSequence = function(vars) {
                 {
                     name: "controls",
                     data: null,
-                    width: "80px",
-                    className: "text-left nowrap all",
+                    className: "text-right nowrap all",
                     orderable: false,
                     searchable: false,
                     render: ds.templates.sourceColumnControls
