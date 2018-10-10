@@ -33,6 +33,7 @@ h6, .h6 {}
 
 .cs-datatables-row-details tr td:first-child { padding-left:45px; }
 .table > tbody > tr > td.cs-datatables-col-controls { padding-top:3px; padding-bottom:3px; }
+.cs-datatables-controls { margin-left:10px; }
 
 /* Content Left */
 

@@ -9,13 +9,23 @@ if(typeof deform.datatableSequences == "undefined")
     Deform Datatables Widget
 
     This class aids the integration of jquery datatables and deform sequences.
+    
     It generates two datatables: One target table with the current sequence
     (one row is one sequence item) and one source table (ajax datasource) with
     rows to add to the sequence. The serialized sequece item for colander is
     saved into a row cell of the target table. Additionally new sequence items
-    might be created and edited.
+    might be created and edited. Adding, creating and editing rows is done via
+    bootstrap modals.
+
+    Additional deform field necessary:
+
+        class ModeField(colander.SchemaNode):
+            oid = "mode"
+            schema_type = colander.String
+            widget = deform.widget.HiddenWidget()
+            validator = colander.OneOf(['add', 'create', 'edit'])
     
-    Initialization:
+    Initialization in template:
     
         <div class="datatable_sequence_${oid}"
             data-rows="${rows}" data-lang="${lang}"></div>
@@ -27,7 +37,6 @@ if(typeof deform.datatableSequences == "undefined")
                 title: "${title}",
                 minLen: "${min_len}",
                 maxLen: "${max_len}",
-                nowLen: "${now_len}",
                 proto: "${prototype}",
                 api: "${api}/<PATH>",
                 unique: "<COLUMNNAME>" | function(data) -> true if unique,
@@ -37,14 +46,12 @@ if(typeof deform.datatableSequences == "undefined")
 
     Additional column attributes for custom columns:
 
-        ds: {
+        datatableSequence: {
             position:     "displayed" | "collapsed" | "invisible"
-            type:         "input" | "textarea" (default: "input")
-            createValue:  string (default: "")
-            createForm:   true | false (default: false)
-            createShow:   true | false (default: false, shows field in table]
-            createError:  true (mandantory) | function(value) -> true on error
+            widgetType:   "HiddenWidget" | "TextInputWidget" | "TextAreaWidget"
             footerSearch: true | false (creates footer search field)
+            createValue:  string (default: "")
+            createShow:   true | false (default: false, shows field in table]
         }
 
     Functional columns:
@@ -63,15 +70,13 @@ if(typeof deform.datatableSequences == "undefined")
     TODO:
     - orderable rows
     - min/max rows
-    - this.templates.edit: switch for input types (input, textarea, etc.)
-    - layover for edit rows?
-    - layover for add row?
-    - highlighting of edit div on clicks on deactivated controls?
+    - additional field types
+    - bluimp templates (+escape!)
 */
 
 var DatatableSequence = function(vars) {
 
-    // self reference
+    // local self reference
     var ds = this;
 
     // self in registry
@@ -85,10 +90,9 @@ var DatatableSequence = function(vars) {
     this.oid = vars.oid;
     this.name = vars.name;
     this.title = vars.title;
-    this.minLen = parseInt(vars.minLen);
-    this.maxLen = parseInt(vars.maxLen);
-    this.nowLen = parseInt(vars.nowLen);
-    this.orderable = (vars.orderable ? parseInt(vars.orderable) == 1 : false);
+    this.minLen = vars.minLen ? parseInt(vars.minLen) : 0;
+    this.maxLen = vars.maxLen ? parseInt(vars.maxLen) : 10000;
+    this.orderable = vars.orderable ? parseInt(vars.orderable) == 1 : false;
     this.proto = vars.proto;
     this.api = vars.api;
 
@@ -105,15 +109,24 @@ var DatatableSequence = function(vars) {
         controls:     "." + base + "_controls",
         modalAdd:     "#" + base + "_modal_add",
         modalCreate:  "#" + base + "_modal_create",
+        modalEdit:    "#" + base + "_modal_edit",
     };
 
     // datatable
     this.language = $(ds.sel.html).data('language');
-    this.mode = "add";                  // "add" | "create" | "edit"
-    this.columns = vars.columns;        // custom datatable columns
-    this.createForm = vars.createForm;  // create form for new rows
-    this.unique = vars.unique;          // string (id column for unique rows) |
-                                        // function(data) -> true if unique
+    this.columns = vars.columns;  // custom datatable columns
+    this.unique = vars.unique;    // definition of uniqueness of data
+
+    // events
+    this.bind = [
+        'closeAdd',
+        'closeCreate',
+        'closeEdit',
+        'search',
+        'more',
+        'showHide',
+        'redrawTab',
+    ];
 
 
     /**************************************************************************
@@ -124,18 +137,35 @@ var DatatableSequence = function(vars) {
 
         /**
          * Main template for the datatable sequence.
+         *
+         * Contains title, tables, controls, and modals for add/create/edit.
          */
         datatableSequence: function() {
-            var t = ds.templates;            
+            var t = ds.templates;
+            var title = ds.title ?
+                '<label class="control-label" for="' + ds.name + '">' +
+                    ds.title + '</label>' : '';
             return '' +
-                t.targetTable() +
-                t.controls() +
-                t.modal('add', ds.language.custom.add, t.sourceTable()) +
-                t.modal('create', ds.language.custom.create, t.edit());
+                '<div class="form-group item-' + ds.name + '">' +
+                    title +
+                    t.controls() +
+                    t.targetTable() +
+                    t.modal('add', ds.language.custom.add, t.sourceTable()) +
+                    t.modal('create', ds.language.custom.create, t.create()) +
+                    t.modal('edit', ds.language.custom.edit, t.edit()) +
+                '</div>';
         },
 
         /**
-         * Template for modals.
+         * Template for (bootstrap) modals.
+         *
+         * Contains header, body, footer and buttons (close, pin for add role).
+         *
+         * Args:
+         *   role (string): "add" | "create" | "edit".
+         *   title (string): Title for the modal.
+         *   content (string): Content for the modal.
+         *   footer (string): Content for the modal.
          */
         modal: function(role, title, content, footer) {
             var id = ds.sel.base + '_modal_' + role;
@@ -174,8 +204,8 @@ var DatatableSequence = function(vars) {
          */
         controls: function() {
             return '' +
-                '<div class="btn-group" role="group" ' +
-                        'class="' + ds.sel.base + '_controls" ' +
+                '<div class="btn-group cs-datatables-controls ' + ds.sel.base + 
+                        '_controls" " role="group" ' +
                         'aria-label="' + ds.sel.base + '_controls">' +
                     '<button type="button" class="btn btn-default"' +
                             'data-toggle="modal" ' + 
@@ -196,12 +226,14 @@ var DatatableSequence = function(vars) {
          * Contains the table and a wrapper for deform sequence serialization.
          */
         targetTable: function() {
+            var hidden = ds.nowLen ? '' : 'hidden';
             // table and sequence wrapper
             var html = '' +
                 '<input type="hidden" name="__start__"' + 
                     'value="' + ds.name + ':sequence" />' +
                 '<table id="' + ds.sel.base + '_target"' +
-                    'class="table table-hover cs-datatables"></table>' +
+                    'class="table table-hover cs-datatables">' +
+                '</table>' +
                 '<input type="hidden" name="__end__"' + 
                     'value="' + ds.name + ':sequence" />';
             // area
@@ -234,31 +266,7 @@ var DatatableSequence = function(vars) {
                 '</span>' : '';
         },
 
-        /** 
-         * Template for more div of target table rows.
-         * 
-         * Contains a table with all collapsed data presented.
-         * 
-         * See https://datatables.net/reference/option/responsive.details.renderer#function
-         */
-        more: function(api, rowIdx, columns) {
-            // add collapsed data as table rows
-            var data = jQuery.map(columns, function(column, index) {
-                var settings = api.settings();
-                console.log(settings);
-                if(!column.data)
-                    return '';
-                return column.hidden ?
-                    '<tr data-dt-row="' + column.rowIndex + '" data-dt-column="' + 
-                            column.columnIndex + '">' +
-                        '<td><small>' + column.title + ':' + '<small></td> ' +
-                        '<td class="fullwidth">' + column.data + '</td>'+
-                    '</tr>' : '';
-            }).join('');
-            // wrap tables rows with table
-            return data ? $('<table class="table cs-datatables-row-details"/>')
-                .append(data) : false;
-        },
+
 
         /** 
          * Template for controls column of target table.
@@ -268,21 +276,25 @@ var DatatableSequence = function(vars) {
          * See https://datatables.net/reference/option/columns.render#function
          */
         targetColumnControls: function(data, type, row, meta) {
+            // button type
+            var btn = data.errors ? 'btn-danger' : 'btn-default';
             // edit button
             var edit = '' +
-                '<a href="#" class="btn btn-default btn-sm" role="button" ' +
-                        'onclick="return ' + ds.registry + '.editRow(this);" >' +
+                '<a href="#" class="btn ' + btn + ' btn-sm cs-datatables-row-edit" ' +
+                        'role="button" ' +
+                        'onclick="return ' + ds.registry + '.editRow(this, event);" >' +
                     ds.language.custom.edit +
                 '</a>';
             // remove button
             var remove = '' +
-                '<a href="#" class="btn btn-default btn-sm" role="button" ' +
+                '<a href="#" class="btn btn-default btn-sm cs-datatables-row-remove "' +
+                        'role="button" ' +
                         'onclick="return ' + ds.registry + '.removeRow(this);">' +
                     ds.language.custom.remove +
                 '</a>';
-            // edit button only for created/edited rows in add mode
+            // edit button only for created/edited rows
             var buttons = '';
-            if(data.mode !== "add" && ds.mode === "add")
+            if(data.mode !== "add")
                 buttons += edit;
             // remove button always
             buttons += remove;
@@ -292,61 +304,11 @@ var DatatableSequence = function(vars) {
                 '</div>';
         },
 
-        /**
-         * Template for edit div of target table rows.
-         * 
-         * Contains the edit form and apply/remove buttons.
-         */
-        edit: function(data) {
-            var inputs = "";
-            // if a custom createForm function is provided, use it
-            if(ds.createForm)
-                inputs += ds.createForm(data);
-            // otherwise add default templates for form fields
-            else
-                // $.each(ds.columns, function(index, column) {
-                //     if(column.datatableSequence.createForm)
-                //         inputs += '' +
-                //             '<div class="form-group">' +
-                //                 '<label class="control-label" for="' +
-                //                     column.name + '">' +
-                //                     column.title + '</label>' +
-                //                 '<input name="' + column.name + '" ' +
-                //                     'class="form-control" type="text" ' +
-                //                     'value="' + (data ? data[column.name] : '') + '">' +
-                //             '</div>';
-                // });
-                inputs += ds.newSequence();
-            // apply button
-            var apply = '' +
-                '<a href="#" class="btn btn-default cs-datatables-apply" ' +
-                        'role="button" ' +
-                        'onclick="return ' + ds.registry + '.saveRow(this);">' +
-                    ds.language.custom.apply +
-                '</a>';
-            // remove button
-            var cancel = '' +
-                '<a href="#" class="btn btn-default" role="button" ' +
-                        'onclick="return ' + ds.registry + '.removeRow(this);">' +
-                    ds.language.custom.cancel +
-                '</a>';
-            // button group
-            var buttons = '' +
-                '<div class="btn-group" role="group">' +
-                    apply + cancel +
-                '</div>';
-            return '' +
-                '<div class="cs-datatables-edit">' +
-                    inputs + buttons +
-                '</div>';
-        },
-
         /** 
          * Template for show column of target table.
          * 
          * Contains the data of the created rows and the error messages.
          * Should be displayed in the first main column for responsiveness.
-         * Data could contain invisible columns, which are only displayed here.
          * 
          * See https://datatables.net/reference/option/columns.render#function
          * See https://datatables.net/manual/data/orthogonal-data
@@ -373,10 +335,7 @@ var DatatableSequence = function(vars) {
         /** 
          * Template for mode column of target table.
          * 
-         * Used for custom sort order:
-         * 1. created rows
-         * 2. editable rows
-         * 3. added rows
+         * Used for custom sort order: created > editable > added
          * 
          * See https://datatables.net/reference/option/columns.render#function
          * See https://datatables.net/manual/data/orthogonal-data
@@ -455,7 +414,7 @@ var DatatableSequence = function(vars) {
         /* 
          * Template for controls column of source table.
          * 
-         * Contains the add link.
+         * Contains the add/remove link.
          * 
          * See https://datatables.net/reference/option/columns.render#function
          */
@@ -468,7 +427,7 @@ var DatatableSequence = function(vars) {
             var add = '' +
                 '<a href="#" class="btn btn-default btn-sm" role="button" ' +
                         'onclick="return ' + ds.registry + 
-                        '.addRow(' + meta.row + ');" >' +
+                        '.addRow(' + meta.row + ', event);" >' +
                     ds.language.custom.add +
                 '</a>';
             // remove button
@@ -480,130 +439,101 @@ var DatatableSequence = function(vars) {
                     ds.language.custom.remove +
                 '</a>' : '';
             // remove button if added, add button otherwise
-            buttons = added ? remove : add;
+            var buttons = added ? remove : add;
             return '' +
                 '<div class="btn-group-vertical cs-row-controls" role="group">' +
                     buttons +
                 '</div>';
         },
 
-    };
-
-
-    /**************************************************************************
-        EVENTS
-    **************************************************************************/
-
-    this.events = {
-
         /**
-         * Redraws the table after changing a bootstrap navigation tab.
+         * Template for create div of target table rows.
          * 
-         * Binds to the bootstrap navigation tabs.
-         * Fixes the table width.
-         * 
-         * Args:
-         *   obj (this.target|this.source): Datatable meta object.
+         * Contains the create form and apply/cancel buttons.
          */
-        redraw: function(obj) {
-            $("a[data-toggle=\"tab\"]").on("shown.bs.tab", function (e) {
-                obj.table.columns.adjust();
-            });
+        create: function() {
+            // get a new sequence
+            var inputs = ds.newSequence();
+            // apply button
+            var apply = '' +
+                '<a href="#" class="btn btn-default cs-datatables-apply" ' +
+                        'role="button" ' +
+                        'onclick="return ' + ds.registry + '.createRow(this, event);">' +
+                    ds.language.custom.apply +
+                '</a>';
+            // remove button
+            var cancel = '' +
+                '<a href="#" class="btn btn-default" role="button" ' +
+                        'data-dismiss="modal" aria-label="Close">' +
+                    ds.language.custom.cancel +
+                '</a>';
+            // button group
+            var buttons = '' +
+                '<div class="btn-group" role="group">' +
+                    apply + cancel +
+                '</div>';
+            return inputs + buttons;
         },
 
         /**
-         * Opens and closes the details.
+         * Template for edit div of target table rows.
          * 
-         * Binds to the more column on click event.
-         * 
-         * Args:
-         *   obj (this.target|this.source): Datatable meta object.
+         * Contains the edit form and apply/remove buttons.
          */
-        more: function(obj) {
-            $(obj.tableId + ' tbody').on('click', 'td.more', function() {
-                var row = obj.table.row($(this).closest('tr'));
-                var data = row.data();
-                // show nothing for created rows
-                if(data.mode == "create")
-                    return;
-                // return, if there are no details
-                if(!ds.dataHidden(row))
-                    return;
-                // show zoom-out icon if details are opened
-                if(row.child.isShown()) {
-                    row.child().show();
-                    $(this).html(
-                        '<span class="glyphicon glyphicon-zoom-out" ' +
-                            'aria-hidden="true"></span>'
-                    );
-                // show zoom-in icon if details are collapsed
-                } else {
-                    row.child(true);
-                    $(this).html(
-                        '<span class="glyphicon glyphicon-zoom-in" ' +
-                            ' aria-hidden="true"></span>'
-                    );
-                }
-            });
+        edit: function() {
+            // sequence wrapper
+            var wrapper = "<div class='deform-sequence-item'></div>";
+            // hidden field for the edited row index
+            var index = '<input name="index" type="hidden" value="">';
+            // apply button
+            var apply = '' +
+                '<a href="#" class="btn btn-default cs-datatables-apply" ' +
+                        'role="button" ' +
+                        'onclick="return ' + ds.registry + '.saveRow(this, event);">' +
+                    ds.language.custom.apply +
+                '</a>';
+            // remove button
+            var cancel = '' +
+                '<a href="#" class="btn btn-default" role="button" ' +
+                        'data-dismiss="modal" aria-label="Close">' +
+                    ds.language.custom.cancel +
+                '</a>';
+            // button group
+            var buttons = '' +
+                '<div class="btn-group" role="group">' +
+                    apply + cancel +
+                '</div>';
+            return index + wrapper + buttons;
         },
 
-        /**
-         * Initializes the column search.
+        /** 
+         * Template for more div of target table rows.
          * 
-         * Binds to individual column search input fields.
+         * Contains a table with all collapsed data presented.
          * 
-         * Args:
-         *   obj (this.target|this.source): Datatable meta object.
+         * See https://datatables.net/reference/option/responsive.details.renderer#function
          */
-        search: function(obj) {
-            // bind keyup to search updates
-            obj.table.columns().every(function () {
-                var that = this;
-                $('input', this.footer()).on('keyup change', function() {
-                    if (that.search() !== this.value) {
-                        that.search( this.value ).draw();
-                    }
-                });
-            });
-        },
-
-        /**
-         * Applies all open edit forms before submitting the form.
-         * 
-         * Binds to form on submit.
-         * 
-         * Args:
-         *   obj (this.target|this.source): Datatable meta object.
-         */
-        save: function(obj) {
-            $(obj.tableId).closest("form").on('submit', function(){
-                $(obj.table.table().node()).find("a.cs-datatables-apply").click();
-            });
-        },
-
-        /**
-         * Resets search forms, when modal is closed and not pinned
-         * 
-         * Args:
-         *   obj (this.target|this.source): Datatable meta object.
-         */
-        closeReset: function(obj) {
-            $(ds.sel.modalAdd).on('hidden.bs.modal', function (e) {
-                // consider pin
-                if($(ds.sel.modalAdd + ' .pin').hasClass('pinned'))
-                    return;
-                // reset individual search fields
-                obj.table.columns().every(function () {
-                    var footer = $('input', this.footer()).val('').change();
-                });
-                // reset main search field
-                obj.table.search('');
-                //redraw
-                obj.table.draw();
-            });
+        more: function(api, rowIdx, columns) {
+            // add collapsed data as table rows
+            var data = jQuery.map(columns, function(column, index) {
+                var settings = api.settings();
+                console.log(settings);
+                if(!column.data)
+                    return '';
+                return column.hidden ?
+                    '<tr data-dt-row="' + column.rowIndex + '" data-dt-column="' + 
+                            column.columnIndex + '">' +
+                        '<td><small>' + column.title + ':' + '<small></td> ' +
+                        '<td class="fullwidth">' + column.data + '</td>'+
+                    '</tr>' : '';
+            }).join('');
+            // wrap tables rows with table
+            return data ? $('<table class="table cs-datatables-row-details"/>')
+                .append(data) : false;
         },
 
     };
+
 
     /**************************************************************************
         TABLES
@@ -614,8 +544,6 @@ var DatatableSequence = function(vars) {
         table: false,
         // table html node selector
         tableId: ds.sel.targetTable,
-        // events to bind (bound on initialization)
-        events: ['more', 'save', 'redraw'],
         // initial data
         data: $(ds.sel.html).data('data'),
         // columns of target table
@@ -677,8 +605,6 @@ var DatatableSequence = function(vars) {
         table: false,
         // table html node selector
         tableId: ds.sel.sourceTable,
-        // events to bind (bound on initialization)
-        events: ['more', 'search', 'closeReset', 'redraw'],
         // columns of target table
         columns: (function() {
             var customCols = $.extend(true, {}, ds.getSortedColumns());
@@ -794,6 +720,12 @@ DatatableSequence.prototype = {
     /**
      * Checks, if a row already added.
      *
+     * If ds.unique is a string, that string is the name of the column, which
+     * defines the uniquness of a row.
+     *
+     * If ds.unique is a function, uniqeness is defined by the return value
+     * of that function, given a data array of the row.
+     *
      * Args:
      *   data (array): Datatables row data.
      *
@@ -816,8 +748,8 @@ DatatableSequence.prototype = {
             // a custom function for the data is provided
             case 'function':
                 return ds.unique(data);
+            // no uniqness, more identical rows are possible
             default:
-                // TODO: compare all columns as default
                 return false;
         }
     },
@@ -868,17 +800,22 @@ DatatableSequence.prototype = {
         // update mode
         sequence.find("input[name='mode']").val(data.mode);
         // update data columns
+        var query = '';
         $.each(ds.columns, function(index, column) {
-            switch(column.datatableSequence.type) {
+            switch(column.datatableSequence.widgetType) {
                 // update textareas
-                case 'textarea':
-                    var query = "textarea[name='" + column.name + "']";
+                case 'TextAreaWidget':
+                    query = "textarea[name='" + column.name + "']";
                     sequence.find(query).val(data[column.data]);
                     break;
                 // update input fields
-                case 'input':
-                default:
-                    var query = "input[name='" + column.name + "']";
+                case 'TextInputWidget':
+                    query = "input[name='" + column.name + "']";
+                    sequence.find(query).attr('value', data[column.data]);
+                    break;
+                // update hidden fields
+                case 'HiddenWidget':
+                    query = "input[name='" + column.name + "']";
                     sequence.find(query).val(data[column.data]);
             }
         });
@@ -887,7 +824,7 @@ DatatableSequence.prototype = {
     },
 
     /**
-     * Updates row data and sequence item html code with edit form data.
+     * Updates row data and sequence item html code with form data.
      * 
      * Args:
      *   data (array): Datatables row data.
@@ -899,9 +836,9 @@ DatatableSequence.prototype = {
         // update data columns
         $.each(ds.columns, function(index, column) {
             var element, value = false;
-            switch(column.datatableSequence.type) {
+            switch(column.datatableSequence.widgetType) {
                 // update textareas
-                case 'textarea':
+                case 'TextAreaWidget':
                     element = form.find("textarea[name='" + column.name + "']");
                     // sanitiy checks
                     if(element.length === 0)
@@ -910,14 +847,17 @@ DatatableSequence.prototype = {
                     data[column.data] = value;
                     break;
                 // update input fields
-                case 'input':
-                default:
+                case 'TextInputWidget':
                     element = form.find("input[name='" + column.name + "']");
                     // sanitiy checks
                     if(element.length === 0)
                         return;
                     value = element.val();
                     data[column.data] = value;
+                    break;
+                // don't update hidden fields
+                case 'HiddenWidget':
+                    break;
             }
         });
         // update sequence item html code with updated data
@@ -958,42 +898,43 @@ DatatableSequence.prototype = {
      *   true: If the form is valid.
      *   false: Otherwise.
      */
-    editFormValid: function(form) {
+    validateForm: function(form) {
         var ds = this;
         var valid = true;
         // for all columns
         $.each(ds.columns, function(index, column) {
-            // skip, if no error function is defined
-            if(typeof column.datatableSequence.createError == "undefined")
+            // get form group
+            group = $(form).find('.item-' + column.name);
+            if(!group)
                 return;
-            // set error function for mandatory fields, if only true is given
-            if(column.datatableSequence.createError === true)
-                column.datatableSequence.createError = function(value) {
-                    return value === ""; };
-            var element, value, group = false;
-            switch(column.datatableSequence.type) {
+            // get required
+            var required = group.find('.required');
+            // get field
+            var field, value = false;
+            switch(column.datatableSequence.widgetType) {
                 // get textarea
-                case 'textarea':
-                    element = form.find("textarea[name='" + column.name + "']");
-                    value = element.val();
-                    group = element.closest('.form-group');
+                case 'TextAreaWidget':
+                    field = form.find("textarea[name='" + column.name + "']");
+                    value = field.val();
                     break;
                 // get input field
-                case 'input':
-                default:
-                    element = form.find("input[name='" + column.name + "']");
-                    value = element.val();
-                    group = element.closest('.form-group');
+                case 'TextInputWidget':
+                    field = form.find("input[name='" + column.name + "']");
+                    value = field.val();
+                    break;
+                // don't get hidden fields
+                case 'HiddenWidget':
+                    return;
             }
-            // validate fields and set error class on errors
-            if(column.datatableSequence.createError(value)) {
+            // prevent emtpy required fields
+            if(required && !value) {
                 valid = false;
                 group.addClass('has-error');
             } else {
                 group.removeClass('has-error');
             }
         });
-        return valid;
+        return valid;        
     },
 
     /**
@@ -1073,6 +1014,10 @@ DatatableSequence.prototype = {
                     }
                 },
                 columns: ds.target.columns,
+                createdRow: function(row, data, dataIndex){
+                    if(data.errors)
+                        $(row).addClass('error');
+                },
                 order: [
                     [ ds.getColumnIndex(ds.target, 'mode'), "asc" ],
                     [ 1, "asc" ]  // first displayed row
@@ -1110,16 +1055,12 @@ DatatableSequence.prototype = {
                 ]
             });
 
+            // add events
+            ds.events = ds.events();
+            $.each(ds.bind, function(index, event) { ds.events[event](); });
+
             // redraw (to display zoom icon in more column)
             ds.target.table.rows().invalidate('data').draw(false);
-
-            // add events
-            $.each([ds.source, ds.target],
-                function(_, obj) {
-                $.each(obj.events, function(_, event) {
-                    ds.events[event](obj);
-                });
-            });
 
             // add datatable sequence to registry (for global access)
             deform.datatableSequences[ds.oid] = ds;
@@ -1130,19 +1071,17 @@ DatatableSequence.prototype = {
     /**
      * Adds a row from source to target table.
      * 
-     * Adds rows only in add mode.
-     * 
      * Args:
      *   rowId (int): Row ID of the row to add.
+     *   event (event): Onclick event.
      * 
      * Returns:
      *   false: Prevents link execution.
      */
-    addRow: function(rowId) {
+    addRow: function(rowId, event) {
         var ds = this;
-        // only add rows in add mode
-        if(ds.mode !== 'add')
-            return false;
+        // prevent multiple edits
+        event.preventDefault();
         // get data
         var data = ds.source.table.row(rowId).data();
         // prevent multiple addition
@@ -1166,9 +1105,6 @@ DatatableSequence.prototype = {
     /**
      * Removes a row from target table.
      * 
-     * Removes all type of rows in add mode. Removes only the created/edited
-     * row in create/edit mode, ends then in add mode.
-     * 
      * Args:
      *   obj (node): Node of the remove link.
      *   obj (int): Index of row html node to remove.
@@ -1180,28 +1116,15 @@ DatatableSequence.prototype = {
         var ds = this;
         // get row
         var row = false;
-        if(typeof obj === "number")         // for indexes
+        if(typeof obj === "number")  // for indexes
             row = ds.target.table.row(obj);
-        else {
+        else {                       // for links
             tr = $(obj);
-            if(!tr.is('tr'))                // for links
+            if(!tr.is('tr'))
                 tr = tr.parents('tr');
-            if(tr.hasClass('child'))        // for children
-                tr = tr.prev('tr');
             row = ds.target.table.row(tr);
         }
-        var remove = false;
-        // remove always, if not in edit mode
-        if(ds.mode == "add")
-            remove = true;
-        // remove only edited row in create/edit mode
-        if(row.child()) {
-            remove = true;
-            ds.mode = "add";
-        }
         // remove row
-        if(!remove)
-            return false;
         row.remove().draw();
         // close modal, if not pinned
         var pin = $(ds.sel.modalAdd + ' .pin').first();
@@ -1213,102 +1136,88 @@ DatatableSequence.prototype = {
     },
 
     /**
-     * Creates a row in target table and edits it.
-     * 
-     * Creates rows only in add mode, ends then in create mode.
-     * 
-     * Note:
-     *   Binds enter key to prevent submission of the whole form.
+     * Creates a row in target table.
+     *
+     * Args:
+     *   link (jQuery node): Node of the create link.
+     *   event (event): Onclick event.
      * 
      * Returns:
      *   false: Prevents link execution.
      */
-    createRow: function() {
+    createRow: function(link, event) {
         var ds = this;
-        // prevent multiple creations
-        if(ds.mode !== "add")
+        // prevent multiple edits
+        event.preventDefault();
+        // get form
+        var form = $(link).closest('.modal-body').find('.deform-sequence-item');
+        // validate edit form
+        if(!ds.validateForm(form))
             return false;
-        ds.mode = "create";
         // set data template and redraw row
         var data = ds.getDataTemplate();
-        var row = ds.target.table.row.add(data).draw();
-        // open edit area
-        ds.editRow($(row.node()));
-        // catch enter key
-        var child = $(row.node()).next('tr');
-        var submit = $(child).find('.cs-datatables-apply');
-        var input = $(child).find('input');
-        $(input).keypress(function (e) {
-            if (e.which == 13) {
-                $(submit).click();
-                return false;
-            }
-        });
+        ds.updateData(data, form);
+        ds.target.table.row.add(data).draw();
+        // close modal
+        $(ds.sel.modalCreate).modal('hide');
         return false;
     },
 
     /**
-     * Edits a row in target table by opening a child row with the edit form.
-     * 
-     * Edits rows in add/create mode. Create mode is retained, add mode ends
-     * in edit mode.
-     * 
-     * See https://datatables.net/reference/api/row().child()
+     * Edits a row in target table.
      * 
      * Args:
      *   link (jQuery node): Node of the edit link.
+     *   event (event): Onclick event.
      * 
      * Returns:
      *   false: Prevents link execution.
      */
-    editRow: function(link) {
+    editRow: function(link, event) {
         var ds = this;
         // prevent multiple edits
-        if(ds.mode == "edit")
-            return false;
-        // set edit mode on add mode (create mode is retained)
-        if(ds.mode == "add")
-            ds.mode = "edit";
-        // get and redraw row
-        var row = ds.target.table.row($(link).closest('tr'))
-            .invalidate('data').draw(false);
-        // open edit area
-        row.child(ds.templates.edit(row.data())).show();
-        $(row.child()).addClass('child');
+        event.preventDefault();
+        // get elements
+        var modal = $(ds.sel.modalEdit);
+        var row = ds.target.table.row($(link).closest('tr'));
+        var data = row.data();
+        // update modal
+        modal.find('.modal-body > input[name="index"]').val(row.index());
+        modal.find('.modal-title').html(ds.language.custom.edit + ' ' + data.name);
+        modal.find('.modal-body .deform-sequence-item').replaceWith(data.sequence);
+        // open modal
+        modal.modal('show');
         return false;
     },
 
     /**
      * Saves an edited row in target table.
      * 
-     * Saves rows only in create/edit mode, ends in add mode.
-     * 
      * Args:
      *   link (jQuery node): Node of the save link.
+     *   event (event): Onclick event.
      * 
      * Returns:
      *   false: Prevents link execution.
      */
-    saveRow: function(link) {
+    saveRow: function(link, event) {
         var ds = this;
-        // save only in create/edit mode
-        if(ds.mode === "add")
-            return false;
+        // prevent multiple edits
+        event.preventDefault();
+        // get elements
+        var modal = $(link).closest('.modal');
+        var index = modal.find('.modal-body > input[name="index"]').val();
+        var form = modal.find('.deform-sequence-item');
         // validate edit form
-        var child = $(link).parents('tr');
-        var editForm = child.find(".cs-datatables-edit");
-        if(!ds.editFormValid(editForm))
+        if(!ds.validateForm(form))
             return false;
-        // update data
-        var row = ds.target.table.row(child.prev('tr'));
+        // update data and draw row
+        var row = ds.target.table.row(index);
         var data = row.data();
-        ds.updateData(data, editForm);
-        // set add mode
-        ds.mode = "add";
-        // update and draw row
+        ds.updateData(data, form);
         row.data(data).draw();
-        // close edit area
-        row.child.remove();
+        // close modal
+        modal.modal('hide');
         return false;
     },
 
@@ -1326,6 +1235,150 @@ DatatableSequence.prototype = {
         $(link).toggleClass('pinned');
         $(link).blur();
         return false;
+    },
+
+    /**************************************************************************
+        EVENTS
+    **************************************************************************/
+
+    events: function() {
+        var ds = this;
+        return {
+        
+            /**
+             * Redraws target and source table after changing a navigation tab.
+             * 
+             * Binds to the bootstrap navigation tabs. Fixes the table width.
+             */
+            redrawTab: function() {
+                $("a[data-toggle=\"tab\"]").on("shown.bs.tab", function (e) {
+                    ds.source.table.columns.adjust();
+                    ds.target.table.columns.adjust();
+                });
+            },
+
+            /**
+             * Shows/Hides target table if data is present/absent.
+             *
+             * Shows/Hides controls if maxLen is (not) reached.
+             * 
+             * Binds to the datatables init and pre draw event.
+             */
+            showHide: function() {
+                ds.target.table.on('preDraw', function() {
+                    var rows = ds.target.table.data().count();
+                    // show/hide target table
+                    if(rows > 0)
+                        $(ds.sel.targetTable).show();
+                    else
+                        $(ds.sel.targetTable).hide();
+                    // show/hide controls
+                    if(rows < ds.maxLen)
+                        $(ds.sel.controls).show();
+                    else {
+                        $(ds.sel.controls).hide();
+                        $(ds.sel.modalAdd).modal('hide');
+                    }
+                });
+            },
+
+            /**
+             * Opens and closes the details for target and source tables.
+             * 
+             * Binds to the more column on click event.
+             */
+            more: function() {
+                $.each([ds.source, ds.target], function(index, obj) {
+                    $(obj.tableId + ' tbody').on('click', 'td.more', function() {
+                        var row = obj.table.row($(this).closest('tr'));
+                        var data = row.data();
+                        // show nothing for created rows
+                        if(data.mode == "create")
+                            return;
+                        // return, if there are no details
+                        if(!ds.dataHidden(row))
+                            return;
+                        // show zoom-out icon if details are opened
+                        if(row.child.isShown()) {
+                            row.child().show();
+                            $(this).html(
+                                '<span class="glyphicon glyphicon-zoom-out" ' +
+                                    'aria-hidden="true"></span>'
+                            );
+                        // show zoom-in icon if details are collapsed
+                        } else {
+                            row.child(true);
+                            $(this).html(
+                                '<span class="glyphicon glyphicon-zoom-in" ' +
+                                    ' aria-hidden="true"></span>'
+                            );
+                        }
+                    });
+                });
+            },
+
+            /**
+             * Initializes the column search of source table.
+             * 
+             * Binds to individual column search input fields.
+             */
+            search: function() {
+                // bind keyup to search updates
+                ds.source.table.columns().every(function () {
+                    var that = this;
+                    $('input', this.footer()).on('keyup change', function() {
+                        if (that.search() !== this.value) {
+                            that.search( this.value ).draw();
+                        }
+                    });
+                });
+            },
+
+            /**
+             * Resets search forms of source table, when add modal is closed.
+             *
+             * Does not reset, if the modal is pinned.
+             */
+            closeAdd: function() {
+                $(ds.sel.modalAdd).on('hidden.bs.modal', function (e) {
+                    // consider pin
+                    if($(ds.sel.modalAdd + ' .pin').hasClass('pinned'))
+                        return;
+                    // reset individual search fields
+                    ds.source.table.columns().every(function () {
+                        var footer = $('input', this.footer()).val('').change();
+                    });
+                    // reset main search field
+                    ds.source.table.search('');
+                    //redraw
+                    ds.source.table.draw();
+                });
+            },
+
+            /**
+             * Generates a new create form, when create modal is closed.
+             */
+            closeCreate: function() {
+                $(ds.sel.modalCreate).on('hidden.bs.modal', function (e) {
+                    // reset form
+                    $(ds.sel.modalCreate).find('.modal-body').html(
+                        ds.templates.create());
+                });
+            },
+
+            /**
+             * Generates a new edit form, when edit modal is closed.
+             */
+            closeEdit: function() {
+                $(ds.sel.modalEdit).on('hidden.bs.modal', function (e) {
+                    // reset form
+                    $(ds.sel.modalEdit).find('.modal-body').html(
+                        ds.templates.edit());
+                });
+            },
+
+        };
+
     },
 
     constructor: DatatableSequence
