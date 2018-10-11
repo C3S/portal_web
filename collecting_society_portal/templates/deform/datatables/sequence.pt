@@ -144,7 +144,7 @@
   {%#o.ds.sequence%}
   <div class="btn-group" role="group">
     <a href="#" class="btn btn-default cs-datatables-apply" role="button"
-       onclick="return {%=o.ds.registry%}.createRow(this, event);">
+       onclick="return {%=o.ds.registry%}.createRow(this);">
       {%=o.ds.language.custom.apply%}
     </a>
     <a href="#" class="btn btn-default" role="button"
@@ -160,7 +160,7 @@
   <div class='deform-sequence-item'></div>
   <div class="btn-group" role="group">
     <a href="#" class="btn btn-default cs-datatables-apply" role="button"
-       onclick="return {%=o.ds.registry%}.saveRow(this, event);">
+       onclick="return {%=o.ds.registry%}.saveRow(this);">
       {%=o.ds.language.custom.apply%}
     </a>
     <a href="#" class="btn btn-default" role="button"
@@ -174,7 +174,7 @@
 <script type="text/x-tmpl" id="datatable_sequence_${oid}_tpl_target_controls">
   <div class="btn-group-vertical cs-row-controls" role="group">
     {% if (o.data.mode !== "add" && o.actions.indexOf('edit') != -1) { %}
-      <a href="#" role="button" onclick="return {%=o.registry%}.editRow(this, event);"
+      <a href="#" role="button" onclick="return {%=o.registry%}.editRow(this);"
          class="btn btn-sm {%=o.editClass%} cs-datatables-row-edit">
           {%=o.language.custom.edit%}
       </a>
@@ -217,12 +217,12 @@
   <div class="btn-group-vertical cs-row-controls" role="group">
     {% if (o.added) { %}
       <a href="#" role="button" class="btn btn-default btn-sm"
-         onclick="return {%=o.registry%}.removeRow({%=o.added.index()%}, event);">
+         onclick="return {%=o.registry%}.removeRow({%=o.added.index()%});">
           {%=o.language.custom.remove%}
       </a>
     {% } else { %}
       <a href="#" role="button" class="btn btn-default btn-sm"
-         onclick="return {%=o.registry%}.addRow({%=o.meta.row%}, event);">
+         onclick="return {%=o.registry%}.addRow({%=o.meta.row%});">
           {%=o.language.custom.add%}
       </a>
     {% } %}

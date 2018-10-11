@@ -468,15 +468,15 @@ DatatableSequence.prototype = {
      * 
      * Args:
      *   rowId (int): Row ID of the row to add.
-     *   event (event): Onclick event.
      * 
      * Returns:
      *   false: Prevents link execution.
      */
-    addRow: function(rowId, event) {
+    addRow: function(rowId) {
         var ds = this;
         // prevent multiple edits
-        event.preventDefault();
+        if(ds.locked())
+            return false;
         // get data
         var data = ds.source.table.row(rowId).data();
         // prevent multiple addition
@@ -535,15 +535,15 @@ DatatableSequence.prototype = {
      *
      * Args:
      *   link (jQuery node): Node of the create link.
-     *   event (event): Onclick event.
      * 
      * Returns:
      *   false: Prevents link execution.
      */
-    createRow: function(link, event) {
+    createRow: function(link) {
         var ds = this;
-        // prevent multiple edits
-        event.preventDefault();
+        // prevent multiple creations
+        if(ds.locked())
+            return false;
         // get form
         var form = $(link).closest('.modal-body').find('.deform-sequence-item');
         // validate edit form
@@ -563,15 +563,12 @@ DatatableSequence.prototype = {
      * 
      * Args:
      *   link (jQuery node): Node of the edit link.
-     *   event (event): Onclick event.
      * 
      * Returns:
      *   false: Prevents link execution.
      */
-    editRow: function(link, event) {
+    editRow: function(link) {
         var ds = this;
-        // prevent multiple edits
-        event.preventDefault();
         // get elements
         var modal = $(ds.sel.modalEdit);
         var row = ds.target.table.row($(link).closest('tr'));
@@ -590,15 +587,15 @@ DatatableSequence.prototype = {
      * 
      * Args:
      *   link (jQuery node): Node of the save link.
-     *   event (event): Onclick event.
      * 
      * Returns:
      *   false: Prevents link execution.
      */
-    saveRow: function(link, event) {
+    saveRow: function(link) {
         var ds = this;
-        // prevent multiple edits
-        event.preventDefault();
+        // prevent multiple saves
+        if(ds.locked())
+            return false;
         // get elements
         var modal = $(link).closest('.modal');
         var index = modal.find('.modal-body > input[name="index"]').val();
@@ -806,6 +803,20 @@ DatatableSequence.prototype = {
     /************************************************************************** 
         AUXILIARY 
     **************************************************************************/
+
+    /** 
+     * Lock mechanism to prevent multiple actions
+     */
+    locked: function() {
+        var ds = this;
+        if(typeof ds.lock === "undefined")
+            ds.lock = false;
+        if(ds.lock)
+            return true;
+        ds.lock = true;
+        setTimeout(function() { ds.lock = false; }, 1000);
+        return false;
+    },
 
     /** 
      * Generates html code for the data of a new sequence item.
