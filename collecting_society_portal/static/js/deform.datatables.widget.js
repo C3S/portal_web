@@ -322,8 +322,10 @@ DatatableSequence.prototype = {
         var customCols = $.extend(true, {}, ds.getSortedColumns());
         // render first field
         customCols.displayed[0].render = function(data, type, row, meta) {
-            if(type !== 'display' || row.mode === "add")
+            if(type !== 'display')
                 return data;
+            if(row.mode === "add")
+                return tmpl.encode(data);
             // show data, if column is the only create field
             var count = 0;
             var show = [];
@@ -827,7 +829,7 @@ DatatableSequence.prototype = {
         if(ds.lock)
             return true;
         ds.lock = true;
-        setTimeout(function() { ds.lock = false; }, 1000);
+        setTimeout(function() { ds.lock = false; }, 200);
         return false;
     },
 
@@ -873,19 +875,6 @@ DatatableSequence.prototype = {
             var newname = oldname.replace(fieldmatch, "deformField$1-" + genid);
             $node.attr('name', newname);
             });
-
-        $(deform.callbacks).each(function(num, item) {
-            var oid = item[0];
-            var callback = item[1];
-            var newid = idmap[oid];
-            if (newid) { 
-                callback(newid);
-                }
-            });
-
-        deform.clearCallbacks();
-        var e = jQuery.Event("change");
-        $('#deform').trigger(e);
 
         if(data)
             ds.updateSequence($htmlnode, data);

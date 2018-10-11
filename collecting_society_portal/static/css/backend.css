@@ -36,6 +36,8 @@ h6, .h6 {}
 .cs-datatables-controls { margin-left:10px; }
 .cs-datatables-row-show { padding-right:4px; font-style:italic; }
 
+.select2-container { width:100%!important; }
+
 /* Content Left */
 
 .cs-content-left { background-color:#eee; }
