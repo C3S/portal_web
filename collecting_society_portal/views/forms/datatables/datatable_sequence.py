@@ -3,6 +3,8 @@ import deform
 import colander
 import json
 
+from pyramid.renderers import get_renderer
+
 from ....services import _
 
 log = logging.getLogger(__name__)
@@ -81,9 +83,14 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
             settings['api.datatables.version']
         ]))
         kw.update({
+            'request': self.request,
             'api': api,
             'data': self.rows(field, cstruct, kw),
             'language': self.language(),
+            'sequence': get_renderer(
+                "collecting_society_portal:"
+                "templates/deform/datatables/sequence.pt"
+            ).implementation(),
             '_': _
         })
         return super(DatatableSequenceWidget, self).get_template_values(
