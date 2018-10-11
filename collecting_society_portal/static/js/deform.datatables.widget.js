@@ -334,7 +334,6 @@ DatatableSequence.prototype = {
                     count++;
                 }
             });
-            console.log(count, show);
             if(count == 1 && show[0].data == customCols.displayed[0].data)
                 return tmpl.encode(data);
             // show table with all created row data
