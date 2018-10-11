@@ -190,8 +190,7 @@
 <script type="text/x-tmpl" id="datatable_sequence_${oid}_tpl_target_show">
   <table>
     {% for (var i=0; i<o.columns.length; i++) { %}
-      {% if (o.columns[i].datatableSequence.createShow
-             && o.row[o.columns[i].name]) { %}
+      {% if (o.row[o.columns[i].name]) { %}
           <tr>
             <td class="cs-datatables-row-show">
               <small>{%=o.columns[i].title%}</small>

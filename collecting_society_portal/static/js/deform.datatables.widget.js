@@ -320,14 +320,28 @@ DatatableSequence.prototype = {
         var ds = this;
         // clone custom columns
         var customCols = $.extend(true, {}, ds.getSortedColumns());
-        // show created row data in first custom column
+        // render first field
         customCols.displayed[0].render = function(data, type, row, meta) {
             if(type !== 'display' || row.mode === "add")
                 return data;
+            // show data, if column is the only create field
+            var count = 0;
+            var show = [];
+            $.each(ds.columns, function(index, column) {
+                if(column.datatableSequence &&
+                   column.datatableSequence.createShow) {
+                    show.push(column);
+                    count++;
+                }
+            });
+            console.log(count, show);
+            if(count == 1 && show[0].data == customCols.displayed[0].data)
+                return tmpl.encode(data);
+            // show table with all created row data
             return tmpl(ds.tpl.target.show, {
                 data: data,
                 row: row,
-                columns: ds.columns,
+                columns: show,
                 language: ds.language,
             });
         };
