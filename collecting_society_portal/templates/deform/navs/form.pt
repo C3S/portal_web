@@ -202,7 +202,6 @@
     </script>
 
     <script type="text/javascript">
-    console.log("test")
     $(document).ready(function(){
         console.log($('#${formid} .cs-navform-item-menu.cs-error'))
         $('#${formid} .cs-navform-item-menu.cs-error').first().click()
