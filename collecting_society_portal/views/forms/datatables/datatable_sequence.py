@@ -14,6 +14,7 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
 
     category = 'structural'
     item_template = 'datatables/sequence_item'
+    actions = ['add', 'create', 'edit']
 
     def rows(self, field, cstruct, kw):
         if not cstruct:
@@ -84,6 +85,7 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
         ]))
         kw.update({
             'request': self.request,
+            'actions': json.dumps(self.actions),
             'api': api,
             'data': self.rows(field, cstruct, kw),
             'language': self.language(),

@@ -34,6 +34,7 @@ if(typeof deform.datatableSequences == "undefined")
                    tal:define="oid oid|field.oid;
                                name field.name;
                                title title|field.title;
+                               actions actions|field.widget.actions;
                                min_len min_len|field.widget.min_len;
                                min_len min_len or 0;
                                max_len max_len|field.widget.max_len;
@@ -146,7 +147,9 @@ var DatatableSequence = function(vars) {
 
     // datatable
     this.language = $(ds.sel.html).data('language');
-    this.actions = vars.actions;  // enabled actions
+    this.actions = vars.actions ? // enabled actions
+                   $.parseJSON(vars.actions) :
+                   ['add', 'create', 'edit'];
     this.columns = vars.columns;  // custom datatable columns
     this.unique = vars.unique;    // definition of uniqueness of data
 
