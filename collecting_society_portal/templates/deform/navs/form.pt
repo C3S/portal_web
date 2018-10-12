@@ -203,8 +203,7 @@
 
     <script type="text/javascript">
     $(document).ready(function(){
-        console.log($('#${formid} .cs-navform-item-menu.cs-error'))
-        $('#${formid} .cs-navform-item-menu.cs-error').first().click()
+        $('#${formid} .cs-navform-item-menu.cs-error').first().click();
     });
     </script>
 

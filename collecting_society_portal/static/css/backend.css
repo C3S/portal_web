@@ -28,6 +28,16 @@ h6, .h6 {}
 .cs-txt-center { text-align:center; }
 .cs-red { color:#fc2a00; }
 
+.cs-modal .pin { margin-right:10px; }
+.cs-modal .pinned { color:#ff0000; opacity:0.9; }
+
+.cs-datatables-row-details tr td:first-child { padding-left:45px; }
+.table > tbody > tr > td.cs-datatables-col-controls { padding-top:3px; padding-bottom:3px; }
+.cs-datatables-controls { margin-left:10px; }
+.cs-datatables-row-show { padding-right:4px; font-style:italic; }
+
+.select2-container { width:100%!important; }
+
 /* Content Left */
 
 .cs-content-left { background-color:#eee; }

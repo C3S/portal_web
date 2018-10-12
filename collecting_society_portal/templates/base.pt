@@ -133,6 +133,10 @@
         )}"></script>
 
         <script src="${request.static_path(
+            'deform:static/scripts/modernizr.custom.input-types-and-atts.js'
+        )}"></script>
+
+        <script src="${request.static_path(
             'deform:static/scripts/file_upload.js'
         )}"></script>
 
