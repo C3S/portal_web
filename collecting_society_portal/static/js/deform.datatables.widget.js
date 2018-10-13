@@ -35,12 +35,12 @@ if(typeof deform.datatableSequences == "undefined")
                                name field.name;
                                title title|field.title;
                                actions actions|field.widget.actions;
-                               min_len min_len|field.schema.min_len;
-                               min_len min_len|field.widget.min_len;
-                               min_len min_len or 0;
-                               max_len max_len|field.schema.max_len;
-                               max_len max_len|field.widget.max_len;
-                               max_len max_len or 100000;
+                               min_len min_len|field.schema.min_len
+                                              |field.widget.min_len
+                                              |0;
+                               max_len max_len|field.schema.max_len
+                                              |field.widget.max_len
+                                              |100000;
                                now_len len(subfields);
                                orderable orderable|field.widget.orderable;
                                orderable orderable and 1 or 0;
