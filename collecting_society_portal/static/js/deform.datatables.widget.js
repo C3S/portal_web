@@ -31,39 +31,15 @@ if(typeof deform.datatableSequences == "undefined")
 
         <tal:block metal:extend-macro="sequence"
                    i18n:domain="<DOMAIN>">
-                   tal:define="oid oid|field.oid;
-                               name field.name;
-                               title title|field.title;
-                               actions actions|field.widget.actions;
-                               min_len min_len|field.schema.min_len
-                                              |field.widget.min_len
-                                              |0;
-                               max_len max_len|field.schema.max_len
-                                              |field.widget.max_len
-                                              |100000;
-                               now_len len(subfields);
-                               orderable orderable|field.widget.orderable;
-                               orderable orderable and 1 or 0;
-                               prototype field.widget.prototype(field);
-                               errormsg field.errormsg"
-            <tal:block metal:fill-slot="init">
-                <script>
-                    var datatableSequence = new deform.DatatableSequence({
-                        oid: "${oid}",
-                        name: "${name}",
-                        title: "${title}",
-                        minLen: "${min_len}",
-                        maxLen: "${max_len}",
-                        errormsg: "${errormsg}",
-                        proto: "${prototype}",
-                        api: "${api}/<PATH>",
-                        unique: "<COLUMNNAME>" | function(data)
-                        tpl: "<BASETEMPLATEID>",
-                        actions: ['add', 'create', 'edit']
-                        columns: [<DATATABLECOLUMNS>],
-                    }).init();
-                </script>
-            </tal:block>
+            <script metal:fill-slot="settings">
+                var datatableSequenceSettings = {
+                    apiPath: "<PATH>",
+                    unique: "<COLUMNNAME>" | function(data)
+                    tpl: "<BASETEMPLATEID>",
+                    actions: ['add', 'create', 'edit']
+                    columns: [<DATATABLECOLUMNS>],
+                }
+            </script>
         </tal:block>
 
     Additional column attributes for custom columns:
@@ -91,7 +67,6 @@ if(typeof deform.datatableSequences == "undefined")
 
     TODO:
     - orderable rows
-    - min rows
     - support the other deform widget types
 */
 
@@ -110,6 +85,7 @@ var DatatableSequence = function(vars) {
     this.orderable = vars.orderable ? parseInt(vars.orderable) == 1 : false;
     this.proto = vars.proto;
     this.api = vars.api;
+    this.apiPath = vars.apiPath;
 
     // selectors
     var base = "datatable_sequence_" + ds.oid;
@@ -278,7 +254,7 @@ DatatableSequence.prototype = {
                 ajax: {
                     type: "POST",
                     contentType: "application/json; charset=utf-8",
-                    url: ds.api,
+                    url: ds.api + "/" + ds.apiPath,
                     xhrFields: {withCredentials: true},
                     dataType: "json",
                     data: function(args) {
