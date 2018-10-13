@@ -67,8 +67,7 @@ if(typeof deform.datatableSequences == "undefined")
         - controls: control links (add)
 
     TODO:
-    - orderable rows
-    - support the other deform widget types
+    - support all other deform widget types
 */
 
 var DatatableSequence = function(vars) {
@@ -244,9 +243,11 @@ DatatableSequence.prototype = {
                 responsive: {
                     details: {
                         renderer: function(api, rowIdx, columns) {
+                            if(!ds.dataHidden(ds.target.table.row(rowIdx)))
+                                return false;
                             return tmpl(ds.tpl.target.details, {
                                 columns: columns
-                            }); 
+                            });
                         },
                         type: 'column'
                     }
@@ -281,9 +282,11 @@ DatatableSequence.prototype = {
                 responsive: {
                     details: {
                         renderer: function(api, rowIdx, columns) {
+                            if(!ds.dataHidden(ds.source.table.row(rowIdx)))
+                                return false;
                             return tmpl(ds.tpl.source.details, {
                                 columns: columns
-                            }); 
+                            });
                         },
                         type: 'column'
                     }
