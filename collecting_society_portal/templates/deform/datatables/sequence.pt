@@ -10,8 +10,9 @@
                                       |field.widget.max_len
                                       |100000;
                        now_len len(subfields);
-                       orderable orderable|field.widget.orderable;
-                       orderable orderable and 1 or 0;
+                       orderable orderable|field.schema.orderable
+                                          |field.widget.orderable
+                                          |0;
                        prototype field.widget.prototype(field);
                        errormsg field.errormsg">
 
@@ -30,8 +31,9 @@
         actions: '${actions}',
         minLen: "${min_len}",
         maxLen: "${max_len}",
-        errormsg: "${errormsg}",
+        orderable: "${orderable}",
         proto: "${prototype}",
+        errormsg: "${errormsg}",
         api: "${api}",
       }, datatableSequenceSettings);
     </script>

@@ -55,6 +55,7 @@ if(typeof deform.datatableSequences == "undefined")
     Functional columns:
     
         target table
+        - orderable: order number (if table is orderable)
         - more: zoom-in/out icon to show details, if available
         - controls: control links (edit, remove)
         - sequence: contains html code for colander sequence item
@@ -213,6 +214,20 @@ DatatableSequence.prototype = {
                 })
             );
 
+            // prepare orderable table
+            var order = [
+                [ ds.getColumnIndex(ds.target, 'mode'), "asc" ],
+                [ 1, "asc" ]  // first displayed row
+            ];
+            if(ds.orderable) {
+                order = [
+                    [ 0, "asc" ]  // order column
+                ];
+                $.each(ds.target.data, function(index, data) {
+                    data.order = index + 1;
+                });
+            }
+
             // initialize target table
             ds.target.table = $(ds.sel.targetTable).DataTable({
                 data: ds.target.data,
@@ -222,6 +237,10 @@ DatatableSequence.prototype = {
                 searching: false,
                 autoWidth: false,
                 fixedHeader: false,
+                rowReorder: ds.orderable ? {
+                    dataSrc: 'order',
+                    selector: 'td:nth-child(1)'
+                } : false,
                 responsive: {
                     details: {
                         renderer: function(api, rowIdx, columns) {
@@ -237,10 +256,7 @@ DatatableSequence.prototype = {
                     if(data.errors)
                         $(row).addClass('warning');
                 },
-                order: [
-                    [ ds.getColumnIndex(ds.target, 'mode'), "asc" ],
-                    [ 1, "asc" ]  // first displayed row
-                ]
+                order: order
             });
             
             // initialize source table
@@ -304,6 +320,11 @@ DatatableSequence.prototype = {
      */
     targetColumns: function() {
         var ds = this;
+        // orderable
+        if(ds.orderable)
+            $.each(ds.columns, function(index, column) {
+                column.orderable = false;
+            });
         // clone custom columns
         var customCols = $.extend(true, {}, ds.getSortedColumns());
         // render first field
@@ -333,7 +354,20 @@ DatatableSequence.prototype = {
             });
         };
         // return merged columns
-        return [
+        var targetColumns = [
+            {
+                name: "order",
+                data: "order",
+                className: "text-center all more",
+                width: "30px",
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row, meta) {
+                    if(type !== 'display')
+                        return data;
+                    return '<span class="glyphicon glyphicon-move"></span>';
+                }
+            },
             {
                 name: "more",
                 data: null,
@@ -407,6 +441,9 @@ DatatableSequence.prototype = {
                 searchable: false,
             }
         ].flat();
+        if(!ds.orderable)
+            targetColumns.shift();
+        return targetColumns;
     },
 
     /**
@@ -420,7 +457,7 @@ DatatableSequence.prototype = {
         // clone custom columns
         var customCols = $.extend(true, {}, ds.getSortedColumns());
         // return merged columns
-        return [
+        var sourceColumns = [
             {
                 name: "more",
                 data: null,
@@ -457,6 +494,7 @@ DatatableSequence.prototype = {
             customCols.collapsed,
             customCols.invisible,
         ].flat();
+        return sourceColumns;
     },
 
 
@@ -487,6 +525,15 @@ DatatableSequence.prototype = {
         data.mode = "add";
         data.errors = "";
         data.sequence = ds.newSequence(data);
+        // set order number for orderable tables
+        if(ds.orderable) {
+            var orderNum = 0;
+            $.each(ds.target.table.data(), function(index, data) {
+                if(data.order > orderNum)
+                    orderNum = data.order;
+            });
+            data.order = orderNum + 1;
+        }
         // update table data
         ds.target.table.row.add(data).draw();
         // close modal, if not pinned
@@ -550,8 +597,18 @@ DatatableSequence.prototype = {
         // validate edit form
         if(!ds.validateForm(form))
             return false;
-        // set data template and redraw row
+        // get data template
         var data = ds.getDataTemplate();
+        // set order number for orderable tables
+        if(ds.orderable) {
+            var orderNum = 0;
+            $.each(ds.target.table.data(), function(index, data) {
+                if(data.order > orderNum)
+                    orderNum = data.order;
+            });
+            data.order = orderNum + 1;
+        }
+        // update data and redraw row
         ds.updateData(data, form);
         ds.target.table.row.add(data).draw();
         // close modal
