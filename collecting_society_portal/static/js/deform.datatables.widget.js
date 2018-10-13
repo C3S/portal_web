@@ -35,14 +35,17 @@ if(typeof deform.datatableSequences == "undefined")
                                name field.name;
                                title title|field.title;
                                actions actions|field.widget.actions;
+                               min_len min_len|field.schema.min_len;
                                min_len min_len|field.widget.min_len;
                                min_len min_len or 0;
+                               max_len max_len|field.schema.max_len;
                                max_len max_len|field.widget.max_len;
                                max_len max_len or 100000;
                                now_len len(subfields);
                                orderable orderable|field.widget.orderable;
                                orderable orderable and 1 or 0;
-                               prototype field.widget.prototype(field)"
+                               prototype field.widget.prototype(field);
+                               errormsg field.errormsg"
             <tal:block metal:fill-slot="init">
                 <script>
                     var datatableSequence = new deform.DatatableSequence({
@@ -51,6 +54,7 @@ if(typeof deform.datatableSequences == "undefined")
                         title: "${title}",
                         minLen: "${min_len}",
                         maxLen: "${max_len}",
+                        errormsg: "${errormsg}",
                         proto: "${prototype}",
                         api: "${api}/<PATH>",
                         unique: "<COLUMNNAME>" | function(data)
@@ -102,6 +106,7 @@ var DatatableSequence = function(vars) {
     this.title = vars.title;
     this.minLen = vars.minLen ? parseInt(vars.minLen) : 0;
     this.maxLen = vars.maxLen ? parseInt(vars.maxLen) : 10000;
+    this.errormsg = vars.errormsg ? vars.errormsg : false;
     this.orderable = vars.orderable ? parseInt(vars.orderable) == 1 : false;
     this.proto = vars.proto;
     this.api = vars.api;
@@ -215,6 +220,8 @@ DatatableSequence.prototype = {
             // generate html
             $(ds.sel.html).append(
                 tmpl(ds.tpl.sequence, {
+                    lableClass: ds.minLen ? "required" : "",
+                    errormsg: ds.errormsg,
                     ds: {
                         registry: ds.registry,
                         actions:  ds.actions,

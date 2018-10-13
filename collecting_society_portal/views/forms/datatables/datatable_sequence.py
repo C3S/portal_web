@@ -10,6 +10,21 @@ from ....services import _
 log = logging.getLogger(__name__)
 
 
+class DatatableSequence(colander.SequenceSchema):
+    def __init__(self, *arg, **kw):
+        if 'min_len' in kw and kw['min_len'] > 0:
+            min_err = _(u'Please add at least one entry.')
+            if kw['min_len'] > 1:
+                min_err = _(
+                    u'Please add at least a total of {} entries.'
+                ).format(kw['min_len'])
+            self.validator = colander.Length(
+                min=kw['min_len'],
+                min_err=_(min_err)
+            )
+        super(DatatableSequence, self).__init__(*arg, **kw)
+
+
 class DatatableSequenceWidget(deform.widget.SequenceWidget):
 
     category = 'structural'

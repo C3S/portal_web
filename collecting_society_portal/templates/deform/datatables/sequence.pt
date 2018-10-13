@@ -8,9 +8,11 @@
 
 <!-- template: sequence -->
 <script type="text/x-tmpl" id="datatable_sequence_${oid}_tpl_sequence">
-  <div class="form-group item-{%=o.ds.name%}">
+  <div class="form-group {%=(o.errormsg?'has-error':'')%} item-{%=o.ds.name%}">
     {% if (o.ds.title) { %}
-      <label class="control-label" for="{%=o.ds.name%}">{%=o.ds.title%}</label>
+      <label class="control-label {%=o.lableClass%}" for="{%=o.ds.name%}">
+        {%=o.ds.title%}
+      </label>
     {% } %}
 
     {% include( o.ds.tpl.controls,
@@ -45,6 +47,12 @@
                     content: o.ds.tpl.edit,
                     ds: o.ds }); %}
     {% } %}
+
+    {% if (o.errormsg) { %}
+        <p class="help-block" id="error-{%=o.ds.oid%}">
+          {%=o.errormsg%}
+        </p>
+    {% } %}    
   </div>
 </script>
 
