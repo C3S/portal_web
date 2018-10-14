@@ -2,4 +2,7 @@
 # Repository: https://github.com/C3S/collecting_society.portal.repertoire
 # flake8: noqa
 
-from .datatable_sequence import DatatableSequenceWidget
+from .datatable_sequence import (
+    DatatableSequence,
+    DatatableSequenceWidget
+)

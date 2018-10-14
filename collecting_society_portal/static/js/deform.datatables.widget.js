@@ -31,34 +31,15 @@ if(typeof deform.datatableSequences == "undefined")
 
         <tal:block metal:extend-macro="sequence"
                    i18n:domain="<DOMAIN>">
-                   tal:define="oid oid|field.oid;
-                               name field.name;
-                               title title|field.title;
-                               min_len min_len|field.widget.min_len;
-                               min_len min_len or 0;
-                               max_len max_len|field.widget.max_len;
-                               max_len max_len or 100000;
-                               now_len len(subfields);
-                               orderable orderable|field.widget.orderable;
-                               orderable orderable and 1 or 0;
-                               prototype field.widget.prototype(field)"
-            <tal:block metal:fill-slot="init">
-                <script>
-                    var datatableSequence = new deform.DatatableSequence({
-                        oid: "${oid}",
-                        name: "${name}",
-                        title: "${title}",
-                        minLen: "${min_len}",
-                        maxLen: "${max_len}",
-                        proto: "${prototype}",
-                        api: "${api}/<PATH>",
-                        unique: "<COLUMNNAME>" | function(data)
-                        tpl: "<BASETEMPLATEID>",
-                        actions: ['add', 'create', 'edit']
-                        columns: [<DATATABLECOLUMNS>],
-                    }).init();
-                </script>
-            </tal:block>
+            <script metal:fill-slot="settings">
+                var datatableSequenceSettings = {
+                    apiPath: "<PATH>",
+                    unique: "<COLUMNNAME>" | function(data)
+                    tpl: "<BASETEMPLATEID>",
+                    actions: ['add', 'create', 'edit']
+                    columns: [<DATATABLECOLUMNS>],
+                }
+            </script>
         </tal:block>
 
     Additional column attributes for custom columns:
@@ -74,6 +55,7 @@ if(typeof deform.datatableSequences == "undefined")
     Functional columns:
     
         target table
+        - orderable: order number (if table is orderable)
         - more: zoom-in/out icon to show details, if available
         - controls: control links (edit, remove)
         - sequence: contains html code for colander sequence item
@@ -85,9 +67,7 @@ if(typeof deform.datatableSequences == "undefined")
         - controls: control links (add)
 
     TODO:
-    - orderable rows
-    - min rows
-    - support the other deform widget types
+    - support all other deform widget types
 */
 
 var DatatableSequence = function(vars) {
@@ -101,9 +81,11 @@ var DatatableSequence = function(vars) {
     this.title = vars.title;
     this.minLen = vars.minLen ? parseInt(vars.minLen) : 0;
     this.maxLen = vars.maxLen ? parseInt(vars.maxLen) : 10000;
+    this.errormsg = vars.errormsg ? vars.errormsg : false;
     this.orderable = vars.orderable ? parseInt(vars.orderable) == 1 : false;
     this.proto = vars.proto;
     this.api = vars.api;
+    this.apiPath = vars.apiPath;
 
     // selectors
     var base = "datatable_sequence_" + ds.oid;
@@ -146,7 +128,9 @@ var DatatableSequence = function(vars) {
 
     // datatable
     this.language = $(ds.sel.html).data('language');
-    this.actions = vars.actions;  // enabled actions
+    this.actions = vars.actions ? // enabled actions
+                   $.parseJSON(vars.actions) :
+                   ['add', 'create', 'edit'];
     this.columns = vars.columns;  // custom datatable columns
     this.unique = vars.unique;    // definition of uniqueness of data
 
@@ -212,6 +196,8 @@ DatatableSequence.prototype = {
             // generate html
             $(ds.sel.html).append(
                 tmpl(ds.tpl.sequence, {
+                    lableClass: ds.minLen ? "required" : "",
+                    errormsg: ds.errormsg,
                     ds: {
                         registry: ds.registry,
                         actions:  ds.actions,
@@ -227,6 +213,20 @@ DatatableSequence.prototype = {
                 })
             );
 
+            // prepare orderable table
+            var order = [
+                [ ds.getColumnIndex(ds.target, 'mode'), "asc" ],
+                [ 1, "asc" ]  // first displayed row
+            ];
+            if(ds.orderable) {
+                order = [
+                    [ 0, "asc" ]  // order column
+                ];
+                $.each(ds.target.data, function(index, data) {
+                    data.order = index + 1;
+                });
+            }
+
             // initialize target table
             ds.target.table = $(ds.sel.targetTable).DataTable({
                 data: ds.target.data,
@@ -236,12 +236,18 @@ DatatableSequence.prototype = {
                 searching: false,
                 autoWidth: false,
                 fixedHeader: false,
+                rowReorder: ds.orderable ? {
+                    dataSrc: 'order',
+                    selector: 'td:nth-child(1)'
+                } : false,
                 responsive: {
                     details: {
                         renderer: function(api, rowIdx, columns) {
+                            if(!ds.dataHidden(ds.target.table.row(rowIdx)))
+                                return false;
                             return tmpl(ds.tpl.target.details, {
                                 columns: columns
-                            }); 
+                            });
                         },
                         type: 'column'
                     }
@@ -251,10 +257,7 @@ DatatableSequence.prototype = {
                     if(data.errors)
                         $(row).addClass('warning');
                 },
-                order: [
-                    [ ds.getColumnIndex(ds.target, 'mode'), "asc" ],
-                    [ 1, "asc" ]  // first displayed row
-                ]
+                order: order
             });
             
             // initialize source table
@@ -268,7 +271,7 @@ DatatableSequence.prototype = {
                 ajax: {
                     type: "POST",
                     contentType: "application/json; charset=utf-8",
-                    url: ds.api,
+                    url: ds.api + "/" + ds.apiPath,
                     xhrFields: {withCredentials: true},
                     dataType: "json",
                     data: function(args) {
@@ -279,9 +282,11 @@ DatatableSequence.prototype = {
                 responsive: {
                     details: {
                         renderer: function(api, rowIdx, columns) {
+                            if(!ds.dataHidden(ds.source.table.row(rowIdx)))
+                                return false;
                             return tmpl(ds.tpl.source.details, {
                                 columns: columns
-                            }); 
+                            });
                         },
                         type: 'column'
                     }
@@ -318,6 +323,11 @@ DatatableSequence.prototype = {
      */
     targetColumns: function() {
         var ds = this;
+        // orderable
+        if(ds.orderable)
+            $.each(ds.columns, function(index, column) {
+                column.orderable = false;
+            });
         // clone custom columns
         var customCols = $.extend(true, {}, ds.getSortedColumns());
         // render first field
@@ -347,7 +357,20 @@ DatatableSequence.prototype = {
             });
         };
         // return merged columns
-        return [
+        var targetColumns = [
+            {
+                name: "order",
+                data: "order",
+                className: "text-center all more",
+                width: "30px",
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row, meta) {
+                    if(type !== 'display')
+                        return data;
+                    return '<span class="glyphicon glyphicon-move"></span>';
+                }
+            },
             {
                 name: "more",
                 data: null,
@@ -421,6 +444,9 @@ DatatableSequence.prototype = {
                 searchable: false,
             }
         ].flat();
+        if(!ds.orderable)
+            targetColumns.shift();
+        return targetColumns;
     },
 
     /**
@@ -434,7 +460,7 @@ DatatableSequence.prototype = {
         // clone custom columns
         var customCols = $.extend(true, {}, ds.getSortedColumns());
         // return merged columns
-        return [
+        var sourceColumns = [
             {
                 name: "more",
                 data: null,
@@ -471,6 +497,7 @@ DatatableSequence.prototype = {
             customCols.collapsed,
             customCols.invisible,
         ].flat();
+        return sourceColumns;
     },
 
 
@@ -501,6 +528,15 @@ DatatableSequence.prototype = {
         data.mode = "add";
         data.errors = "";
         data.sequence = ds.newSequence(data);
+        // set order number for orderable tables
+        if(ds.orderable) {
+            var orderNum = 0;
+            $.each(ds.target.table.data(), function(index, data) {
+                if(data.order > orderNum)
+                    orderNum = data.order;
+            });
+            data.order = orderNum + 1;
+        }
         // update table data
         ds.target.table.row.add(data).draw();
         // close modal, if not pinned
@@ -564,8 +600,18 @@ DatatableSequence.prototype = {
         // validate edit form
         if(!ds.validateForm(form))
             return false;
-        // set data template and redraw row
+        // get data template
         var data = ds.getDataTemplate();
+        // set order number for orderable tables
+        if(ds.orderable) {
+            var orderNum = 0;
+            $.each(ds.target.table.data(), function(index, data) {
+                if(data.order > orderNum)
+                    orderNum = data.order;
+            });
+            data.order = orderNum + 1;
+        }
+        // update data and redraw row
         ds.updateData(data, form);
         ds.target.table.row.add(data).draw();
         // close modal

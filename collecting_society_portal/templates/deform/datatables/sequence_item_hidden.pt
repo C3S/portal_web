@@ -1,6 +1,0 @@
-<div class="deform-seq-item form-group">
-    ${field.start_mapping()}
-    <div tal:repeat="subfield field.children"
-         tal:replace="structure subfield.serialize(cstruct[subfield.name])" />
-    ${field.end_mapping()}
-</div>
