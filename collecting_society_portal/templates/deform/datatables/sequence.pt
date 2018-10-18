@@ -2,7 +2,9 @@
            tal:define="oid oid|field.oid;
                        name field.name;
                        title title|field.title;
-                       actions actions|field.widget.actions;
+                       actions dumps(field.schema.actions)
+                              |dumps(field.widget.actions)
+                              |'';
                        min_len min_len|field.schema.min_len
                                       |field.widget.min_len
                                       |0;
