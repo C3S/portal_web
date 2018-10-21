@@ -16,7 +16,6 @@ class Company(Tdb):
     __name__ = 'company.company'
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def search_by_id(cls, company_id):
         """
         Searches a company by company id.

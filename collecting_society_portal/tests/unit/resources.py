@@ -234,7 +234,7 @@ class TestWebRootFactory(UnitTestBase):
         test webrootfactory frontend
         """
         self.request = DummyRequest()
-        self.request.user = None
+        self.request.web_user = None
         fr = WebRootFactory(self.request)
         self.assertIsInstance(fr, FrontendResource)
 
@@ -243,6 +243,6 @@ class TestWebRootFactory(UnitTestBase):
         test webrootfactory backend
         """
         self.request = DummyRequest()
-        self.request.user = 'foo'
+        self.request.web_user = 'foo'
         br = WebRootFactory(self.request)
         self.assertIsInstance(br, BackendResource)

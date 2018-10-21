@@ -18,7 +18,6 @@ class Checksum(Tdb):
     __name__ = 'checksum'
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def search_by_code(cls, code):
         """
         Searches a checksum by code.
@@ -36,7 +35,6 @@ class Checksum(Tdb):
         return result[0] if result else None
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def search_collision(cls, code, algorithm=None, begin=None, end=None):
         """
         Searches for a checksum collision.

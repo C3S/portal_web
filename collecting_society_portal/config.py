@@ -10,12 +10,20 @@ import logging
 from pkgutil import iter_modules
 import ConfigParser
 
+from trytond.transaction import Transaction
+from trytond.cache import Cache
+from trytond.pool import Pool
+
 from pyramid.httpexceptions import (
     HTTPFound,
     HTTPNotFound
 )
 from pyramid.renderers import get_renderer
 
+from .models import (
+    Tdb,
+    WebUser
+)
 from . import helpers
 
 log = logging.getLogger(__name__)
@@ -196,6 +204,62 @@ def add_locale(event):
         event.request._LOCALE_ = current
         event.request.response = HTTPFound(location=event.request.path_url)
         event.request.response.set_cookie('_LOCALE_', value=current)
+
+
+def open_db_connection(event):
+    """ Open and close database connection """
+    if not Transaction().cursor or not Transaction().cursor._conn.closed:
+        with Transaction().start(Tdb._db, 0):
+            pool = Pool(str(Tdb._db))
+            user = pool.get('res.user')
+            context = user.get_preferences(context_only=True)
+            Cache.clean(Tdb._db)
+        Transaction().start(
+            Tdb._db, Tdb._user, readonly=True, context=context)
+
+
+def close_db_connection(event):
+    """ Close database connection """
+    def close_db(request):
+        cursor = Transaction().cursor
+        if cursor and not Transaction().cursor._conn.closed:
+            Cache.resets(Tdb._db)
+            Transaction().stop()
+        if event.request.registry.settings['debug.tdb.transactions'] == 'true':
+            Tdb.wraps = 0
+    event.request.add_finished_callback(close_db)
+
+
+def web_user(request):
+    p = request.path
+    # exclude requests
+    if p.startswith('/static/') or p.startswith('/_debug_toolbar/'):
+        return None
+    return WebUser.current_web_user(request)
+
+
+def party(request):
+    p = request.path
+    # exclude requests
+    if p.startswith('/static/') or p.startswith('/_debug_toolbar/'):
+        return None
+    return WebUser.current_party(request)
+
+
+def user(request):
+    p = request.path
+    # exclude requests
+    if p.startswith('/static/') or p.startswith('/_debug_toolbar/'):
+        return None
+    return WebUser.current_user(request)
+
+
+def roles(request):
+    p = request.path
+    # exclude requests
+    if p.startswith('/static/') or p.startswith('/_debug_toolbar/'):
+        return None
+    return WebUser.current_roles(request)
 
 
 def notfound(request):

@@ -289,7 +289,7 @@ class WebRootFactory(object):
         FrontendResource: If user is not logged in
     """
     def __new__(cls, request):
-        if request.user:
+        if request.authenticated_userid:
             return BackendResource(request)
         return FrontendResource(request)
 
@@ -357,9 +357,7 @@ class ProfileResource(ResourceBase):
     __name__ = "profile"
     __parent__ = BackendResource
     __children__ = {}
-    __acl__ = [
-        (Allow, Authenticated, 'read')
-    ]
+    __acl__ = []
 
 
 class DebugResource(ResourceBase):

@@ -91,70 +91,57 @@ def main(global_config, **settings):
         policy=AuthTktAuthenticationPolicy(
             secret=settings['authentication.secret'],
             hashalg='sha512',
-            callback=WebUser.groupfinder
-        )
-    )
+            callback=WebUser.groupfinder))
     config.set_default_permission('administrator')
 
     # configure subscribers
     config.add_subscriber(
         subscriber='.config.add_templates',
-        iface='pyramid.events.BeforeRender'
-    )
+        iface='pyramid.events.BeforeRender')
     config.add_subscriber(
         subscriber='.config.add_helpers',
-        iface='pyramid.events.BeforeRender'
-    )
+        iface='pyramid.events.BeforeRender')
     config.add_subscriber(
         subscriber='.config.add_locale',
-        iface='pyramid.events.NewRequest'
-    )
+        iface='pyramid.events.NewRequest')
+    config.add_subscriber(
+        subscriber='.config.open_db_connection',
+        iface='pyramid.events.BeforeTraversal')
+    config.add_subscriber(
+        subscriber='.config.close_db_connection',
+        iface='pyramid.events.NewRequest')
     if settings['env'] == 'development':
         config.add_subscriber(
             subscriber='.config.debug_request',
-            iface='pyramid.events.NewRequest'
-        )
+            iface='pyramid.events.NewRequest')
         config.add_subscriber(
             subscriber='.config.debug_response',
-            iface='pyramid.events.NewResponse'
-        )
+            iface='pyramid.events.NewResponse')
 
-    # configure route predicates
+    # configure predicates
     config.add_route_predicate(
-        name='environment',
-        factory='.config.Environment'
-    )
-
-    # configure view predicates
+        name='environment', factory='.config.Environment')
     config.add_view_predicate(
-        name='environment',
-        factory='.config.Environment'
-    )
+        name='environment', factory='.config.Environment')
 
     # configure request methods
     config.add_request_method(
-        callable=WebUser.current_web_user,
-        name='user',
-        reify=True
-    )
+        callable='.config.web_user', name='web_user', reify=True)
     config.add_request_method(
-        callable=WebUser.current_party,
-        name='party',
-        reify=True
-    )
+        callable='.config.party', name='party', reify=True)
+    config.add_request_method(
+        callable='.config.user', name='user', reify=True)
+    config.add_request_method(
+        callable='.config.roles', name='roles', reify=True)
 
     # configure translation directories for portal and plugins
     config.add_translation_dirs(
         'colander:locale/',
         'deform:locale/',
-        'collecting_society_portal:locale/'
-    )
+        'collecting_society_portal:locale/')
     for priority in sorted(plugins):
         translation_dir = os.path.join(
-            plugins[priority]['path'],
-            plugins[priority]['name'],
-            'locale'
-        )
+            plugins[priority]['path'], plugins[priority]['name'], 'locale')
         if os.path.isdir(translation_dir):
             config.add_translation_dirs(translation_dir)
 
@@ -162,8 +149,7 @@ def main(global_config, **settings):
     for priority in sorted(plugins):
         fileConfig(
             plugins[priority]['path'] + '/' + settings['env'] + '.ini',
-            disable_existing_loggers=False
-        )
+            disable_existing_loggers=False)
 
     # commit config with basic settings
     config.commit()
@@ -184,20 +170,14 @@ def main(global_config, **settings):
         # web resources
         config.include('.includes.web_resources')
         for priority in sorted(plugins):
-            config.include(
-                plugins[priority]['name']+'.includes.web_resources'
-            )
+            config.include(plugins[priority]['name']+'.includes.web_resources')
         # web registry
         config.include('.includes.web_registry')
         for priority in sorted(plugins):
-            config.include(
-                plugins[priority]['name']+'.includes.web_registry'
-            )
+            config.include(plugins[priority]['name']+'.includes.web_registry')
         # web views
         for priority in sorted(plugins, reverse=True):
-            config.include(
-                plugins[priority]['name'] + '.includes.web_views'
-            )
+            config.include(plugins[priority]['name'] + '.includes.web_views')
         config.include('.includes.web_views')
         # api views
         if settings['api.in_web'] == 'true':
@@ -205,12 +185,10 @@ def main(global_config, **settings):
             for priority in sorted(plugins, reverse=True):
                 config.include(
                     plugins[priority]['name'] + '.includes.api_views',
-                    route_prefix=settings['api.in_web_path']
-                )
+                    route_prefix=settings['api.in_web_path'])
             config.include(
                 '.includes.api_views',
-                route_prefix=settings['api.in_web_path']
-            )
+                route_prefix=settings['api.in_web_path'])
 
     # configure api for portal and plugins
     if settings['service'] == 'api':
@@ -219,9 +197,7 @@ def main(global_config, **settings):
         config.set_root_factory(factory=ApiRootFactory)
         # api views
         for priority in sorted(plugins, reverse=True):
-            config.include(
-                plugins[priority]['name'] + '.includes.api_views'
-            )
+            config.include(plugins[priority]['name'] + '.includes.api_views')
         config.include('.includes.api_views')
 
     return config.make_wsgi_app()

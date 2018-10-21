@@ -16,7 +16,6 @@ class Party(Tdb):
     __name__ = 'party.party'
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def search_all(cls):
         """
         Gets all parties.
@@ -28,7 +27,6 @@ class Party(Tdb):
         return cls.get().search([])
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def search_by_id(cls, uid):
         """
         Searches a party by id.
@@ -46,7 +44,21 @@ class Party(Tdb):
         return result[0] if result else None
 
     @classmethod
-    @Tdb.transaction(readonly=True)
+    def search_by_name(cls, name):
+        """
+        Searches a party by name
+
+        Args:
+          name (string): party.name
+
+        Returns:
+          obj: party
+          None: if no match is found
+        """
+        result = cls.get().search([('name', '=', name)])
+        return result[0] or None
+
+    @classmethod
     def search_by_email(cls, email):
         """
         Searches a party by email.

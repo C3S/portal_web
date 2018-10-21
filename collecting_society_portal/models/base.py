@@ -4,6 +4,10 @@
 import logging
 from functools import wraps
 
+from psycopg2._psycopg import InterfaceError
+
+from pyramid import threadlocal
+
 from trytond.transaction import Transaction
 from trytond.cache import Cache
 from trytond.config import config
@@ -32,6 +36,8 @@ class Tdb(object):
         _company (int): Default company id.
         __name__ (str): Name of the tryton model to be initialized.
     """
+
+    wraps = 0  # debug information
 
     # --- DB ------------------------------------------------------------------
 
@@ -72,7 +78,7 @@ class Tdb(object):
         with Transaction().start(str(cls._db), int(cls._user), readonly=True):
             Pool().init()
 
-    def transaction(readonly=None, user=None, context=None, withhold=False):
+    def transaction(readonly=None, user=None, context=None):
         """
         Decorater function to wrap database communication with transactions.
 
@@ -111,72 +117,106 @@ class Tdb(object):
             https://pypi.python.org/pypi/flask_tryton
         """
         DatabaseOperationalError = backend.get('DatabaseOperationalError')
+        _tdbglog = "/ado/tmp/transaction.log"
 
-        class NoTransaction():
-            """Dummy context manager to avoid duplicate code."""
+        def closed():
+            if Transaction().cursor:
+                return Transaction().cursor._conn.closed
+            return False
 
-            def __enter__(self):
-                return None
-
-            def __exit__(self, type, value, traceback):
-                pass
-
-        def default_context():
-            pool = Pool(str(Tdb._db))
-            user = pool.get('res.user')
-            return user.get_preferences(context_only=True)
+        def _tdbg(func, mode, string=None, levelchange=0):
+            settings = threadlocal.get_current_registry().settings
+            if settings['debug.tdb.transactions'] == 'true':
+                import os
+                import inspect
+                stack = inspect.stack()
+                _, filename, line_number, function, lines, _ = stack[2]
+                functions = []
+                for i, framerecord in enumerate(stack):
+                    f = framerecord[3]
+                    if f in ['<lambda>', '_call_view']:
+                        break
+                    if f in ['_tdbg', 'wrapper']:
+                        continue
+                    functions.append(f)
+                functions.reverse()
+                with open(_tdbglog, "a") as f:
+                    lvl = Tdb.wraps if mode == "WRAP" else Tdb.wraps - 1
+                    f.write("\t"*Tdb.wraps + "%s %s" % (mode, func.__name__))
+                    f.write(" %s" % lvl)
+                    if mode == "WRAP":
+                        f.write(" | %s:%s():%s %s\n" % (
+                            os.path.basename(filename), function, line_number,
+                            lines[0].strip()))
+                        f.write(
+                            "\t"*(Tdb.wraps+1)+"- connection: %s, %s\n" % (
+                                closed() and "closed" or "open",
+                                readonly and "read" or "write"))
+                        f.write("\t"*(Tdb.wraps+1)+"- calls:  %s" % (
+                            " -> ".join(functions)))
+                    if string:
+                        f.write(" | " + string)
+                    f.write("\n")
+                    Tdb.wraps += levelchange
+                    if not Tdb.wraps:
+                        f.write("\n")
+                os.chmod(_tdbglog, 775)
 
         def decorator(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
                 _db = Tdb._db
-                _readonly = True
-                if readonly is not None:
-                    _readonly = readonly
-                elif 'request' in kwargs:
-                    _readonly = not (kwargs['request'].method
-                                     in ('PUT', 'POST', 'DELETE', 'PATCH'))
                 _user = user or 0
-                _context = {}
-
                 _retry = Tdb._retry or 0
-                _is_open = (Transaction().cursor)
+                _readonly = readonly
+                if 'request' in kwargs:
+                    _readonly = not (
+                        kwargs['request'].method
+                        in ('PUT', 'POST', 'DELETE', 'PATCH'))
+                _tdbg(func, "WRAP", None, 1)
 
-                if not _is_open:
-                    with Transaction().start(_db, 0):
-                        Cache.clean(_db)
-                        _context.update(default_context())
-                else:
-                    # Transaction().new_cursor(readonly=_readonly)
-                    pass
-                _context.update(context or {})
-                # _context.update({'company': Tdb._company})
+                for count in range(_retry, 0, -1):
+                    if closed():
+                        _tdbg(func, "CONNECT")
+                        with Transaction().start(_db, 0):
+                            Cache.clean(_db)
+                            pool = Pool(Tdb._db)
+                            User = pool.get('res.user')
+                            _context = User.get_preferences(context_only=True)
+                            _context.update(context or {})
+                        Transaction().start(
+                            _db, _user, readonly=_readonly, context=_context,
+                            close=False)
 
-                for count in range(_retry, -1, -1):
-                    with NoTransaction() if _is_open else Transaction().start(
-                            _db, _user, readonly=_readonly, context=_context):
-                        cursor = Transaction().cursor
-                        if withhold:
-                            cursor.cursor.withhold = True
-                        try:
-                            result = func(*args, **kwargs)
-                            if not _readonly:
-                                cursor.commit()
-                        except DatabaseOperationalError:
-                            cursor.rollback()
-                            if count and not _readonly:
-                                continue
+                    cursor = Transaction().cursor
+                    try:
+                        _tdbg(func, "CALL", "Try %s, Cursor %s" %
+                              (_retry + 1 - count, id(cursor)))
+                        result = func(*args, **kwargs)
+                        if not _readonly:
+                            _tdbg(func, "COMMIT", "Try %s, Cursor %s" %
+                                  (_retry + 1 - count, id(cursor)))
+                            cursor.commit()
+                    except DatabaseOperationalError:
+                        cursor.rollback()
+                        if not count or _readonly:
                             raise
-                        except Exception:
-                            cursor.rollback()
+                        continue
+                    except InterfaceError:
+                        cursor.rollback()
+                        if not count:
                             raise
-                        Cache.resets(_db)
-                        return result
+                        continue
+                    except Exception:
+                        cursor.rollback()
+                        raise
+
+                    _tdbg(func, "RETURN", None, -1)
+                    return result
             return wrapper
         return decorator
 
     @classmethod
-    @transaction(readonly=True)
     def pool(cls):
         """
         Gets the Tryton pool object.
@@ -188,7 +228,6 @@ class Tdb(object):
         return pool
 
     @classmethod
-    @transaction(readonly=True)
     def context(cls):
         """
         Gets the Transaction context.
@@ -204,7 +243,6 @@ class Tdb(object):
     __name__ = None
 
     @classmethod
-    @transaction(readonly=True)
     def get(cls, model=None):
         """
         Gets a Tryton model object.

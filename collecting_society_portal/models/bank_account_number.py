@@ -16,7 +16,6 @@ class BankAccountNumber(Tdb):
     __name__ = 'bank.account.number'
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def search_by_number(cls, number):
         """
         Searches a bank account number by number.

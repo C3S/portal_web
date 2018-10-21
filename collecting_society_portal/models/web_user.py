@@ -16,7 +16,6 @@ class WebUser(Tdb):
     __name__ = 'web.user'
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def current_web_user(cls, request):
         """
         Gets the currently logged in web user.
@@ -28,10 +27,12 @@ class WebUser(Tdb):
             obj (web.user): Web user.
             None: If no web user is logged in.
         """
-        return cls.search_by_email(request.unauthenticated_userid)
+        userid = request.authenticated_userid
+        if not userid:
+            return None
+        return cls.search_by_email(userid)
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def current_party(cls, request):
         """
         Gets the party of the currently logged in web user.
@@ -43,13 +44,11 @@ class WebUser(Tdb):
             obj (web.user.party): Party of the web user.
             None: If no web user is logged in
         """
-        current = cls.current_web_user(request)
-        if current:
-            return cls.current_web_user(request).party
-        return None
+        if not request.web_user:
+            return None
+        return request.web_user.party
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def current_user(cls, request):
         """
         Gets the party of the currently logged in web user.
@@ -61,13 +60,11 @@ class WebUser(Tdb):
             obj (web.user.party): Party of the web user.
             None: If no web user is logged in
         """
-        current = cls.current_web_user(request)
-        if current:
-            return cls.current_web_user(request).user
-        return None
+        if not request.web_user:
+            return None
+        return request.web_user.user
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def current_roles(cls, request):
         """
         Gets the roles of the currently logged in web user.
@@ -79,13 +76,11 @@ class WebUser(Tdb):
             list: List of roles of the current web user.
             None: If no web user is logged in.
         """
-        current = cls.current_web_user(request)
-        if current:
-            return cls.roles(current)
-        return None
+        if not request.web_user:
+            return None
+        return [role.code for role in request.web_user.roles]
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def groupfinder(cls, email, request):
         """
         Gets the roles of a web user for effective principals.
@@ -98,15 +93,12 @@ class WebUser(Tdb):
             list: List of roles of the current web user.
             None: If no web user is logged in.
         """
-        if not email:
-            return cls.current_roles(request)
-        current = cls.search_by_email(email)
-        if current:
-            return cls.roles(current)
+        web_user = cls.search_by_email(email)
+        if web_user:
+            return cls.roles(web_user)
         return None
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def roles(cls, web_user):
         """
         Gets the roles of a web user.
@@ -117,10 +109,9 @@ class WebUser(Tdb):
         Returns:
             list: List of roles of the web user.
         """
-        return [role.name for role in web_user.roles]
+        return [role.code for role in web_user.roles]
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def authenticate(cls, email, password):
         """
         Checks authentication of a web user with email and password.
@@ -136,7 +127,6 @@ class WebUser(Tdb):
         return cls.get().authenticate(email, password)
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def search_all(cls):
         """
         Gets all web users.
@@ -148,7 +138,6 @@ class WebUser(Tdb):
         return cls.get().search([])
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def search_by_id(cls, uid):
         """
         Searches a web user by id.
@@ -166,7 +155,6 @@ class WebUser(Tdb):
         return result[0] if result else None
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def search_by_email(cls, email):
         """
         Searches a web user by email.
@@ -184,7 +172,6 @@ class WebUser(Tdb):
         return result[0] if result else None
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def search_by_opt_in_uuid(cls, opt_in_uuid):
         """
         Searches a web user by opt in uuid.
@@ -202,7 +189,6 @@ class WebUser(Tdb):
         return result[0] if result else None
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def get_opt_in_uuid_by_id(cls, uid):
         """
         Searches an opt in uuid by web user id.
@@ -222,7 +208,6 @@ class WebUser(Tdb):
         return None
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def get_opt_in_state_by_email(cls, email):
         """
         Searches the opt in state for the web user by email.
