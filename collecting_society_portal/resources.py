@@ -340,7 +340,7 @@ class BackendResource(ResourceBase):
     __parent__ = None
     __children__ = {}
     __acl__ = [
-        (Allow, Authenticated, 'read')
+        (Allow, Authenticated, 'authenticated')
     ]
 
 
