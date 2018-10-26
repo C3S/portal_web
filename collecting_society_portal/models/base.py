@@ -126,6 +126,8 @@ class Tdb(object):
 
         def _tdbg(func, mode, string=None, levelchange=0):
             settings = threadlocal.get_current_registry().settings
+            if 'debug.tdb.transactions' not in settings:
+                return
             if settings['debug.tdb.transactions'] == 'true':
                 import os
                 import inspect
@@ -198,17 +200,20 @@ class Tdb(object):
                                   (_retry + 1 - count, id(cursor)))
                             cursor.commit()
                     except DatabaseOperationalError:
-                        cursor.rollback()
+                        if cursor:
+                            cursor.rollback()
                         if not count or _readonly:
                             raise
                         continue
                     except InterfaceError:
-                        cursor.rollback()
+                        if cursor:
+                            cursor.rollback()
                         if not count:
                             raise
                         continue
                     except Exception:
-                        cursor.rollback()
+                        if cursor:
+                            cursor.rollback()
                         raise
 
                     _tdbg(func, "RETURN", None, -1)
