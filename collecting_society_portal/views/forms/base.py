@@ -15,6 +15,8 @@ from pyramid.httpexceptions import HTTPFound
 import colander
 import deform
 
+from ...resources import ResourceBase
+
 log = logging.getLogger(__name__)
 
 
@@ -126,18 +128,18 @@ class FormController(object):
 
     # --- Actions -------------------------------------------------------------
 
-    def redirect(self, resource, *args, **kwargs):
+    def redirect(self, resource='', *args, **kwargs):
         """
         return user to other place by str or resource,
         removes form from session
         """
-        if isinstance(resource, str):
-            self.response = HTTPFound(location=resource, **kwargs)
-        else:
-            self.response = HTTPFound(
-                self.request.resource_path(resource(self.request), *args),
-                **kwargs
-            )
+        if isinstance(resource, basestring):
+            path = self.request.resource_path(self.context, resource, *args)
+        elif isinstance(resource, ResourceBase):
+            path = self.request.resource_path(resource, *args)
+        elif isinstance(resource, type) and issubclass(resource, ResourceBase):
+            path = self.request.resource_path(resource(self.request), *args)
+        self.response = HTTPFound(path, **kwargs)
         self.remove()
 
     def validate(self, data=False):

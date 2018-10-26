@@ -9,6 +9,8 @@ from pyramid.httpexceptions import (
     HTTPFound
 )
 
+from ..resources import ResourceBase
+
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +31,6 @@ class ViewBase(object):
         self.context = context
         self.response = {}
         self.cleanup_forms()
-        log.debug(self.context)
 
     def process_forms(self, data={}):
         for name, controller in self._formcontroller.iteritems():
@@ -77,11 +78,11 @@ class ViewBase(object):
         for form_name in forms_to_delete:
             del _forms[form_name]
 
-    def redirect(self, resource, *args, **kwargs):
-        if isinstance(resource, str):
-            return HTTPFound(location=resource, **kwargs)
-        else:
-            return HTTPFound(
-                self.request.resource_path(resource(self.request), *args),
-                **kwargs
-            )
+    def redirect(self, resource='', *args, **kwargs):
+        if isinstance(resource, basestring):
+            path = self.request.resource_path(self.context, resource, *args)
+        elif isinstance(resource, ResourceBase):
+            path = self.request.resource_path(resource, *args)
+        elif isinstance(resource, type) and issubclass(resource, ResourceBase):
+            path = self.request.resource_path(resource(self.request), *args)
+        return HTTPFound(path, **kwargs)
