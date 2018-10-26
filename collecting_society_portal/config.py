@@ -7,6 +7,7 @@ Helper functions for the creation of the pyramid app.
 
 import os
 import logging
+import pprint
 from pkgutil import iter_modules
 import ConfigParser
 
@@ -208,7 +209,9 @@ def add_locale(event):
 
 def open_db_connection(event):
     """ Open and close database connection """
-    if not Transaction().cursor or not Transaction().cursor._conn.closed:
+    user = Transaction().user  # pyramid subrequests have no cursor
+    cursor = Transaction().cursor and not Transaction().cursor._conn.closed
+    if not user and not cursor:
         with Transaction().start(Tdb._db, 0):
             pool = Pool(str(Tdb._db))
             user = pool.get('res.user')
@@ -275,6 +278,39 @@ def notfound(request):
     return HTTPNotFound()
 
 
+def context_found(event):
+    """Trigger _context_found() on context, after it has been found"""
+    event.request.context._context_found()
+
+
+def debug_context(event):
+    """
+    Prints context to debug log.
+
+    Args:
+        event (pyramid.events.ContextFound): ContextFound event.
+
+    Returns:
+        None.
+    """
+    p = event.request.path
+    settings = event.request.registry.settings
+
+    # exclude requests
+    if p.startswith('/static/') or p.startswith('/_debug_toolbar/'):
+        return
+    # api
+    if settings['service'] == 'api':
+        if settings['debug.api.context'] == 'false':
+            return
+    # web
+    if settings['service'] == 'portal':
+        if settings['debug.web.context'] == 'false':
+            return
+
+    log.debug(event.request.context)
+
+
 def debug_request(event):
     """
     Prints request to debug log.
@@ -296,8 +332,8 @@ def debug_request(event):
         if settings['debug.api.request'] == 'false':
             return
     # web
-    if settings['service'] == 'web':
-        if settings['debug.web.request']:
+    if settings['service'] == 'portal':
+        if settings['debug.web.request'] == 'false':
             return
     # log
     try:
@@ -327,8 +363,8 @@ def debug_response(event):
         if settings['debug.api.response'] == 'false':
             return
     # web
-    if settings['service'] == 'web':
-        if settings['debug.web.response']:
+    if settings['service'] == 'portal':
+        if settings['debug.web.response'] == 'false':
             return
     # log
     try:

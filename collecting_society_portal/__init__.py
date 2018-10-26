@@ -108,12 +108,18 @@ def main(global_config, **settings):
         subscriber='.config.open_db_connection',
         iface='pyramid.events.BeforeTraversal')
     config.add_subscriber(
+        subscriber='.config.context_found',
+        iface='pyramid.events.ContextFound')
+    config.add_subscriber(
         subscriber='.config.close_db_connection',
         iface='pyramid.events.NewRequest')
     if settings['env'] == 'development':
         config.add_subscriber(
             subscriber='.config.debug_request',
             iface='pyramid.events.NewRequest')
+        config.add_subscriber(
+            subscriber='.config.debug_context',
+            iface='pyramid.events.ContextFound')
         config.add_subscriber(
             subscriber='.config.debug_response',
             iface='pyramid.events.NewResponse')
