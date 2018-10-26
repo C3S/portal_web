@@ -24,7 +24,6 @@ class TestTdb(UnitTestBase):
         pool = Tdb.pool()
         assert isinstance(pool, Pool)
 
-    @Tdb.transaction()
     def test_autenticate_user(self):
         """
         Can standard user be authenticated?
@@ -33,7 +32,6 @@ class TestTdb(UnitTestBase):
         webu = WebUser.authenticate("alf_imp@c3s.cc", "cc")
         assert (webu is not None)
 
-    @Tdb.transaction()
     def test_autenticate_wrong_user(self):
         """
         Does wrong authentication throw an error?

@@ -16,7 +16,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class TestResources(UnitTestBase):
+class TestHelpers(UnitTestBase):
 
     def setUp(self):
         Tdb._db = "c3s"
@@ -25,6 +25,7 @@ class TestResources(UnitTestBase):
         Tdb._company = 1
         Tdb.init()
 
+    @Tdb.transaction()
     def test_format_currency(self):
         '''
         Does converting a decimal to a money formatted string work?
