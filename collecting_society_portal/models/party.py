@@ -76,7 +76,6 @@ class Party(Tdb):
         return result[0] if result else None
 
     @classmethod
-    @Tdb.transaction(readonly=False)
     def create(cls, vlist):
         """
         Creates parties.

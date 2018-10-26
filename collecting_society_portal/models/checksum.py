@@ -61,7 +61,6 @@ class Checksum(Tdb):
         return cls.get().search(query)
 
     @classmethod
-    @Tdb.transaction(readonly=False)
     def create(cls, vlist):
         """
         Creates a checksum.

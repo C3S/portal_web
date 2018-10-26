@@ -20,7 +20,6 @@ from collecting_society_portal.models import (
 log = logging.getLogger(__name__)
 
 
-@Tdb.transaction(readonly=True)
 def format_currency(value, places=None, curr=None, sep=None, dp=None, pos=None,
                     neg=None, trailneg=None):
     """

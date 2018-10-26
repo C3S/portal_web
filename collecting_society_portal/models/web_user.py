@@ -227,7 +227,6 @@ class WebUser(Tdb):
         return None
 
     @classmethod
-    @Tdb.transaction(readonly=False)
     def update_opt_in_state(cls, opt_in_uuid, state):
         """
         Sets the opt in state for the web user.
@@ -250,7 +249,6 @@ class WebUser(Tdb):
         return False
 
     @classmethod
-    @Tdb.transaction(readonly=False)
     def create(cls, vlist):
         """
         Creates web users.
