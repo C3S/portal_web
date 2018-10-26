@@ -6,6 +6,7 @@ Base resources including base, web-/apirootfactory, back-/frontend, debug
 """
 
 import logging
+import pprint
 from copy import deepcopy
 from collections import (
     Mapping,
@@ -18,8 +19,10 @@ from pyramid.security import (
     Authenticated,
 )
 
+from .models import Tdb
 
 log = logging.getLogger(__name__)
+pp = pprint.PrettyPrinter(indent=4)
 
 
 class ResourceBase(object):
@@ -73,7 +76,7 @@ class ResourceBase(object):
     """
     __name__ = None
     __parent__ = None
-    __children__ = {}
+    __children__ = None
     __registry__ = {
         'meta': {},
         'content': {},
@@ -82,12 +85,14 @@ class ResourceBase(object):
         'widgets': {}
     }
     __acl__ = []
+    _write = []
 
     def __init__(self, request):
-        if self.__parent__:
-            instance = self.__parent__(request)
-            self.__parent__ = instance
+        Parent = self.__parent__
+        if Parent and isinstance(Parent, type):
+            self.__parent__ = Parent(request)
         self.request = request
+        self.readonly = True
 
     def __getitem__(self, key):
         """
@@ -102,8 +107,10 @@ class ResourceBase(object):
         Raises:
             KeyError: if no child resource is found.
         """
-        if key in self.__children__:
+        if self.__children__ and key in self.__children__:
             return self.__children__[key](self.request)
+        if key in self._write:
+            self.readonly = False
         raise KeyError(key)
 
     def __str__(self):
@@ -124,8 +131,8 @@ class ResourceBase(object):
         ) % (
             self.__class__.__module__, self.__class__.__name__,
             name,
-            self.__children__,
-            self.registry,
+            pp.pformat(self.__children__),
+            pp.pformat(self.registry),
         )
 
     @classmethod
@@ -143,7 +150,10 @@ class ResourceBase(object):
             >>> ParentResource.add_child(ChildResource)
         """
         val.__parent__ = cls
-        cls.__children__[val.__dict__['__name__']] = val
+        if '__name__' in val.__dict__:
+            if not cls.__children__:
+                cls.__children__ = {}
+            cls.__children__[val.__dict__['__name__']] = val
 
     @classmethod
     def merge_registry(cls, orig_dict, new_dict):
@@ -276,6 +286,41 @@ class ResourceBase(object):
         """
         return defaultdict(self.dict)
 
+    # triggered by ContextFound event to load resources after traversal
+    def _context_found(self):
+        if not hasattr(self, 'context_found'):
+            return
+        if not self.readonly:
+            self._context_found_writable()
+        else:
+            self.context_found()
+
+    # wrapping function needed for writable transaction decorator
+    @Tdb.transaction(readonly=False)
+    def _context_found_writable(self):
+        self.context_found()
+
+    def context_found(self):
+        pass
+
+
+class ModelResource(ResourceBase):
+    _write = []
+
+    def __init__(self, request, code):
+        self.__parent__ = self.__parent__(request)
+        self.__name__ = code
+        self.readonly = True
+        self.request = request
+        self.code = code
+
+    # traversal
+    def __getitem__(self, key):
+        # views needing writable transactions
+        if key in self._write:
+            self.readonly = False
+        raise KeyError(key)
+
 
 class WebRootFactory(object):
     """
@@ -324,6 +369,7 @@ class FrontendResource(ResourceBase):
     __parent__ = None
     __children__ = {}
     __acl__ = []
+    _write = ['register', 'verify_email']
 
 
 class BackendResource(ResourceBase):
