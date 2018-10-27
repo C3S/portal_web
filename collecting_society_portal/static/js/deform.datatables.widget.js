@@ -208,7 +208,7 @@ DatatableSequence.prototype = {
                         tpl:      ds.tpl,
                         sel:      ds.sel,
                         language: ds.language,
-                        sequence: ds.newSequence(),
+                        sequence: '',
                     }
                 })
             );
@@ -412,6 +412,17 @@ DatatableSequence.prototype = {
                 className: "sequence hidden",
                 orderable: false,
                 searchable: false,
+                render: function(data, type, row, meta) {
+                    if(data instanceof jQuery) {
+                        var $row = $(ds.target.table.row(meta.row).node());
+                        var sequence = $row.children(".sequence");
+                        if(sequence)
+                            sequence.empty();
+                            sequence.append(data);
+                        return "";
+                    }
+                    return data;
+                },
             },
             customCols.invisible,
             {
@@ -527,7 +538,7 @@ DatatableSequence.prototype = {
         // set data
         data.mode = "add";
         data.errors = "";
-        data.sequence = ds.newSequence(data);
+        data.sequence = ds.newSequence(data).html;
         // set order number for orderable tables
         if(ds.orderable) {
             var orderNum = 0;
@@ -824,17 +835,29 @@ DatatableSequence.prototype = {
              * Generates a new create form, when create modal is closed.
              */
             closeCreate: function() {
-                $(ds.sel.modalCreate).on('hidden.bs.modal', function (e) {
+                $(ds.sel.modalCreate).on('show.bs.modal', function (e) {
                     // reset form
+                    var sequence = ds.newSequence();
                     $(ds.sel.modalCreate).find('.modal-body').html(
                         tmpl(ds.tpl.create, {
                             ds: {
                                 registry: ds.registry,
                                 language: ds.language,
-                                sequence: ds.newSequence(),
+                                sequence: sequence.html,
                             }
                         })
                     );
+                    // process deform callbacks
+                    $(deform.callbacks).each(function(num, item) {
+                        var oid = item[0];
+                        var callback = item[1];
+                        var newid = sequence.idmap[oid];
+                        if (newid)
+                            callback(newid);
+                    });
+                    deform.clearCallbacks();
+                    var ce = jQuery.Event("change");
+                    $('#deform').trigger(ce);
                 });
             },
 
@@ -849,9 +872,9 @@ DatatableSequence.prototype = {
                             ds: {
                                 registry: ds.registry,
                                 language: ds.language,
-                                sequence: ds.newSequence(),
+                                sequence: ds.newSequence().html,
                             }
-                        })    
+                        })
                     );
                 });
             },
@@ -925,7 +948,10 @@ DatatableSequence.prototype = {
         if(data)
             ds.updateSequence($htmlnode, data);
 
-        return $htmlnode.prop('outerHTML');
+        return {
+            html: $htmlnode.prop('outerHTML'),
+            idmap: idmap
+        };
     },
 
     /**
@@ -1031,7 +1057,7 @@ DatatableSequence.prototype = {
             }
         });
         // save updated html code back into the row data again
-        data.sequence = sequence.prop('outerHTML');
+        data.sequence = sequence;
     },
 
     /**
@@ -1044,6 +1070,7 @@ DatatableSequence.prototype = {
     updateData: function(data, form) {
         var ds = this;
         data.errors = "";
+        data.sequence = form;
         // update data columns
         $.each(ds.columns, function(index, column) {
             var element, value = false;
@@ -1071,8 +1098,6 @@ DatatableSequence.prototype = {
                     break;
             }
         });
-        // update sequence item html code with updated data
-        ds.updateSequence(data.sequence, data);
     },
 
     /**
@@ -1093,7 +1118,7 @@ DatatableSequence.prototype = {
             if(typeof column.datatableSequence.createValue != "undefined")
                 data[column.data] = column.datatableSequence.createValue;
         });
-        data.sequence = ds.newSequence(data);
+        data.sequence = ds.newSequence(data).html;
         return data;
     },
 
