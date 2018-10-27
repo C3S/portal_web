@@ -34,6 +34,7 @@ if(typeof deform.datatableSequences == "undefined")
             <script metal:fill-slot="settings">
                 var datatableSequenceSettings = {
                     apiPath: "<PATH>",
+                    apiArgs: function(args)
                     unique: "<COLUMNNAME>" | function(data)
                     tpl: "<BASETEMPLATEID>",
                     actions: ['add', 'create', 'edit']
@@ -86,6 +87,7 @@ var DatatableSequence = function(vars) {
     this.proto = vars.proto;
     this.api = vars.api;
     this.apiPath = vars.apiPath;
+    this.apiArgs = vars.apiArgs;
 
     // selectors
     var base = "datatable_sequence_" + ds.oid;
@@ -275,7 +277,7 @@ DatatableSequence.prototype = {
                     xhrFields: {withCredentials: true},
                     dataType: "json",
                     data: function(args) {
-                        args.group = false;
+                        ds.apiArgs(args);
                         return JSON.stringify(args);
                     }
                 },
