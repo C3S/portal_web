@@ -161,6 +161,9 @@
 
     <body>
 
+        <!-- container for js templates -->
+        <div id="cs-tmpl-container" class="hidden"></div>
+
         <!-- slot: content -->
         <tal:block metal:define-slot="content" />
 

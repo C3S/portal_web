@@ -37,11 +37,20 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
         for subfield in [x[1] for x in kw['subfields']]:
             row = subfield.cstruct
             for column in row:
+                # substitue colander null values
                 if row[column] == colander.null:
                     row[column] = ""
-            row['errors'] = ""
+            for item in subfield:
+                # use select text instead of value
+                if isinstance(item.widget, deform.widget.SelectWidget):
+                    for option in item.widget.values:
+                        if option[0] == row[item.name]:
+                            row[item.name] = option[1]
+            # provide rendered sequence
             row['sequence'] = subfield.render_template(
                 self.item_template, parent=field)
+            # provide errors
+            row['errors'] = ""
             for child in subfield.children:
                 if not child.error:
                     continue
