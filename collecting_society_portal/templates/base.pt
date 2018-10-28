@@ -161,8 +161,10 @@
 
     <body>
 
-        <!-- container for js templates -->
+        <!-- container for javascript templates -->
         <div id="cs-tmpl-container" class="hidden"></div>
+        <!-- container for bootstrap modals -->
+        <div id="cs-modal-container"></div>
 
         <!-- slot: content -->
         <tal:block metal:define-slot="content" />

@@ -94,23 +94,24 @@ var DatatableSequence = function(vars) {
     var base = "datatable_sequence_" + ds.oid;
     this.registry = "deform.datatableSequences." + ds.oid;
     this.sel = {
-        base:         base,
-        html:         "." + base,
-        targetTable:  "#" + base + "_target",
-        targetArea:   "." + base + "_target_area",
-        sourceTable:  "#" + base + "_source",
-        sourceArea:   "." + base + "_source_area",
-        sourceFilter: "#" + base + "_source_filter",
-        controls:     "." + base + "_controls",
-        modalAdd:     "#" + base + "_modal_add",
-        modalCreate:  "#" + base + "_modal_create",
-        modalEdit:    "#" + base + "_modal_edit",
+        base:           base,
+        html:           "." + base,
+        targetTable:    "#" + base + "_target",
+        targetArea:     "." + base + "_target_area",
+        sourceTable:    "#" + base + "_source",
+        sourceArea:     "." + base + "_source_area",
+        sourceFilter:   "#" + base + "_source_filter",
+        controls:       "." + base + "_controls",
+        modalAdd:       "#" + base + "_modal_add",
+        modalCreate:    "#" + base + "_modal_create",
+        modalEdit:      "#" + base + "_modal_edit",
+        tmplContainer:  "#cs-tmpl-container",
+        modalContainer: "#cs-modal-container"
     };
 
     // templates
     base = "datatable_sequence";
     this.tpl = {
-        container:    "#cs-tmpl-container",
         sequence:     vars.tpl ? vars.tpl : base + "_tpl_sequence",
         controls:     base + "_tpl_controls",
         target: {
@@ -185,7 +186,7 @@ DatatableSequence.prototype = {
       */
     init: function() {
         var ds = this;
-        $(ds.tpl.container).load(
+        $(ds.sel.tmplContainer).load(
             "/static/portal/tmpl/sequence.tmpl",
             function() { ds._init(); }
         );
@@ -209,25 +210,58 @@ DatatableSequence.prototype = {
             ds.target.columns = ds.targetColumns();
             ds.source.columns = ds.sourceColumns();
 
-            // generate html
+            // define shared template variables
+            var dsTmpl = {
+                registry: ds.registry,
+                actions:  ds.actions,
+                name:     ds.name,
+                title:    ds.title,
+                source:   ds.source,
+                target:   ds.target,
+                tpl:      ds.tpl,
+                sel:      ds.sel,
+                language: ds.language,
+                sequence: '',
+            };
+
+            // generate table html
             $(ds.sel.html).append(
                 tmpl(ds.tpl.sequence, {
                     lableClass: ds.minLen ? "required" : "",
                     errormsg: ds.errormsg,
-                    ds: {
-                        registry: ds.registry,
-                        actions:  ds.actions,
-                        name:     ds.name,
-                        title:    ds.title,
-                        source:   ds.source,
-                        target:   ds.target,
-                        tpl:      ds.tpl,
-                        sel:      ds.sel,
-                        language: ds.language,
-                        sequence: '',
-                    }
+                    ds: dsTmpl
                 })
             );
+            
+            // generate modal html
+            if($.inArray('add', ds.actions) > -1)
+                $(ds.sel.modalContainer).append(
+                    tmpl(ds.tpl.modal, {
+                        role: 'add',
+                        title: ds.language.custom.add,
+                        content: ds.tpl.source.table,
+                        pin: true,
+                        ds: dsTmpl
+                    })
+                );
+            if($.inArray('create', ds.actions) > -1)
+                $(ds.sel.modalContainer).append(
+                    tmpl(ds.tpl.modal, {
+                        role: 'create',
+                        title: ds.language.custom.create,
+                        content: ds.tpl.create,
+                        ds: dsTmpl
+                    })
+                );
+            if($.inArray('edit', ds.actions) > -1)
+                $(ds.sel.modalContainer).append(
+                    tmpl(ds.tpl.modal, {
+                        role: 'edit',
+                        title: ds.language.custom.edit,
+                        content: ds.tpl.edit,
+                        ds: dsTmpl
+                    })
+                );
 
             // prepare orderable table
             var order = [

@@ -15,31 +15,6 @@
     {% include( o.ds.tpl.target.table,
                 { ds: o.ds }); %}
 
-    {% if (o.ds.actions.indexOf('add') != -1) { %}
-      {% include( o.ds.tpl.modal,
-                  { role: 'add',
-                    title: o.ds.language.custom.add,
-                    content: o.ds.tpl.source.table,
-                    pin: true,
-                    ds: o.ds }); %}
-    {% } %}
-
-    {% if (o.ds.actions.indexOf('create') != -1) { %}
-      {% include( o.ds.tpl.modal,
-                  { role: 'create',
-                    title: o.ds.language.custom.create,
-                    content: o.ds.tpl.create,
-                    ds: o.ds }); %}
-    {% } %}
-    
-    {% if (o.ds.actions.indexOf('edit') != -1) { %}
-      {% include( o.ds.tpl.modal,
-                  { role: 'edit',
-                    title: o.ds.language.custom.edit,
-                    content: o.ds.tpl.edit,
-                    ds: o.ds }); %}
-    {% } %}
-
     {% if (o.errormsg) { %}
         <p class="help-block" id="error-{%=o.ds.oid%}">
           {%=o.errormsg%}
