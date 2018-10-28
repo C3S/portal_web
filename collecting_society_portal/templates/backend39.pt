@@ -104,42 +104,46 @@
                         <tal:block metal:use-macro="m['navbar']"
                                    tal:define="name 'top'" />
 
-                        <!-- request: flashmessages -->
-                        <div class="alert alert-success" role="alert"
-                             tal:condition="request.session.peek_flash(
-                                 'main-alert-success')" >
-                            <p tal:repeat="message request.session.pop_flash(
-                                   'main-alert-success')" >
-                                ${message}
-                            </p>
-                        </div>
-                        <div class="alert alert-info" role="alert"
-                             tal:condition="request.session.peek_flash(
-                                 'main-alert-info')" >
-                            <p tal:repeat="message request.session.pop_flash(
-                                   'main-alert-info')" >
-                                ${message}
-                            </p>
-                        </div>
-                        <div class="alert alert-warning" role="alert"
-                             tal:condition="request.session.peek_flash(
-                                'main-alert-warning')" >
-                            <p tal:repeat="message request.session.pop_flash(
-                                   'main-alert-warning')" >
-                                ${message}
-                            </p>
-                        </div>
-                        <div class="alert alert-danger" role="alert"
-                             tal:condition="request.session.peek_flash(
-                                'main-alert-danger')" >
-                            <p tal:repeat="message request.session.pop_flash(
-                                   'main-alert-danger')" >
-                                ${message}
-                            </p>
-                        </div>
+                        <div class="cs-fullscreen-container">
 
-                        <!-- slot: content right -->
-                        <tal:block metal:define-slot="content-right" />
+                            <!-- request: flashmessages -->
+                            <div class="alert alert-success" role="alert"
+                                 tal:condition="request.session.peek_flash(
+                                     'main-alert-success')" >
+                                <p tal:repeat="message request.session.pop_flash(
+                                       'main-alert-success')" >
+                                    ${message}
+                                </p>
+                            </div>
+                            <div class="alert alert-info" role="alert"
+                                 tal:condition="request.session.peek_flash(
+                                     'main-alert-info')" >
+                                <p tal:repeat="message request.session.pop_flash(
+                                       'main-alert-info')" >
+                                    ${message}
+                                </p>
+                            </div>
+                            <div class="alert alert-warning" role="alert"
+                                 tal:condition="request.session.peek_flash(
+                                    'main-alert-warning')" >
+                                <p tal:repeat="message request.session.pop_flash(
+                                       'main-alert-warning')" >
+                                    ${message}
+                                </p>
+                            </div>
+                            <div class="alert alert-danger" role="alert"
+                                 tal:condition="request.session.peek_flash(
+                                    'main-alert-danger')" >
+                                <p tal:repeat="message request.session.pop_flash(
+                                       'main-alert-danger')" >
+                                    ${message}
+                                </p>
+                            </div>
+
+                            <!-- slot: content right -->
+                            <tal:block metal:define-slot="content-right" />
+
+                        </div>
 
                     </div>
                 </div>
