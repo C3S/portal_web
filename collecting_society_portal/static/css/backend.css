@@ -28,8 +28,6 @@ h6, .h6 {}
 .cs-txt-center { text-align:center; }
 .cs-red { color:#fc2a00; }
 
-.cs-fullscreen { z-index: 9999; width: 100%; height: 100%; position: fixed; top: 0; left: 0; background-color:#fff; padding:50px; }
-
 .cs-modal .pin { margin-right:10px; }
 .cs-modal .pinned { color:#ff0000; opacity:0.9; }
 
