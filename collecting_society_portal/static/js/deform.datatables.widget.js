@@ -46,11 +46,12 @@ if(typeof deform.datatableSequences == "undefined")
     Additional column attributes for custom columns:
 
         datatableSequence: {
-            position:     "displayed" | "collapsed" | "invisible"
-            widgetType:   "HiddenWidget" | "TextInputWidget" | "TextAreaWidget"
-            footerSearch: true | false (creates footer search field)
-            createValue:  string (default: "")
-            createShow:   true | false (default: false, shows field in table]
+            targetPosition: "displayed" | "collapsed" | "invisible"
+            sourcePosision: "displayed" | "collapsed" | "invisible"
+            widgetType:     string (deform widget type)
+            footerSearch:   true | false (creates footer search field)
+            createValue:    string (default: "")
+            createShow:     true | false (default: false, shows field in table]
         }
 
     Functional columns:
@@ -87,7 +88,7 @@ var DatatableSequence = function(vars) {
     this.proto = vars.proto;
     this.api = vars.api;
     this.apiPath = vars.apiPath;
-    this.apiArgs = vars.apiArgs;
+    this.apiArgs = vars.apiArgs ? vars.apiArgs : false;
 
     // selectors
     var base = "datatable_sequence_" + ds.oid;
@@ -107,7 +108,9 @@ var DatatableSequence = function(vars) {
     };
 
     // templates
+    base = "datatable_sequence";
     this.tpl = {
+        container:    "#cs-tmpl-container",
         sequence:     vars.tpl ? vars.tpl : base + "_tpl_sequence",
         controls:     base + "_tpl_controls",
         target: {
@@ -139,7 +142,7 @@ var DatatableSequence = function(vars) {
     // events
     this.bind = [
         'closeAdd',
-        'closeCreate',
+        'openCreate',
         'closeEdit',
         'search',
         'more',
@@ -178,6 +181,17 @@ DatatableSequence.prototype = {
     **************************************************************************/
 
     /**
+      * Loads the sequence templates and calls init
+      */
+    init: function() {
+        var ds = this;
+        $(ds.tpl.container).load(
+            "/static/portal/tmpl/sequence.tmpl",
+            function() { ds._init(); }
+        );
+    },
+
+    /**
      * Initializes the datatable sequence.
      *
      * - Initializes columns
@@ -187,7 +201,7 @@ DatatableSequence.prototype = {
      * - Binds the events
      * - Adds the instance to the datatableSequence registry
      */
-    init: function() {
+    _init: function() {
         var ds = this;
         $(document).ready(function() {
 
@@ -277,7 +291,8 @@ DatatableSequence.prototype = {
                     xhrFields: {withCredentials: true},
                     dataType: "json",
                     data: function(args) {
-                        ds.apiArgs(args);
+                        if(ds.apiArgs)
+                            ds.apiArgs(args);
                         return JSON.stringify(args);
                     }
                 },
@@ -333,31 +348,31 @@ DatatableSequence.prototype = {
         // clone custom columns
         var customCols = $.extend(true, {}, ds.getSortedColumns());
         // render first field
-        customCols.displayed[0].render = function(data, type, row, meta) {
-            if(type !== 'display')
-                return data;
-            if(row.mode === "add")
-                return tmpl.encode(data);
-            // show data, if column is the only create field
-            var count = 0;
-            var show = [];
-            $.each(ds.columns, function(index, column) {
-                if(column.datatableSequence &&
-                   column.datatableSequence.createShow) {
-                    show.push(column);
-                    count++;
-                }
-            });
-            if(count == 1 && show[0].data == customCols.displayed[0].data)
-                return tmpl.encode(data);
-            // show table with all created row data
-            return tmpl(ds.tpl.target.show, {
-                data: data,
-                row: row,
-                columns: show,
-                language: ds.language,
-            });
-        };
+        // customCols.displayed[0].render = function(data, type, row, meta) {
+        //     if(type !== 'display')
+        //         return data;
+        //     if(row.mode === "add")
+        //         return tmpl.encode(data);
+        //     // show data, if column is the only create field
+        //     var count = 0;
+        //     var show = [];
+        //     $.each(ds.columns, function(index, column) {
+        //         if(column.datatableSequence &&
+        //            column.datatableSequence.createShow) {
+        //             show.push(column);
+        //             count++;
+        //         }
+        //     });
+        //     if(count == 1 && show[0].data == customCols.displayed[0].data)
+        //         return tmpl.encode(data);
+        //     // show table with all created row data
+        //     return tmpl(ds.tpl.target.show, {
+        //         data: data,
+        //         row: row,
+        //         columns: show,
+        //         language: ds.language,
+        //     });
+        // };
         // return merged columns
         var targetColumns = [
             {
@@ -540,7 +555,7 @@ DatatableSequence.prototype = {
         // set data
         data.mode = "add";
         data.errors = "";
-        data.sequence = ds.newSequence(data).html;
+        data.sequence = ds.newSequence(data).node;
         // set order number for orderable tables
         if(ds.orderable) {
             var orderNum = 0;
@@ -645,12 +660,17 @@ DatatableSequence.prototype = {
         var ds = this;
         // get elements
         var modal = $(ds.sel.modalEdit);
+        var modalIndex = modal.find('.modal-body > input[name="index"]');
+        var modalTitle = modal.find('.modal-title');
+        var modalSequence = modal.find('.modal-body .deform-sequence-container');
         var row = ds.target.table.row($(link).closest('tr'));
         var data = row.data();
+        console.log(data.sequence);
         // update modal
-        modal.find('.modal-body > input[name="index"]').val(row.index());
-        modal.find('.modal-title').text(ds.language.custom.edit + ' ' + data.name);
-        modal.find('.modal-body .deform-sequence-item').replaceWith(data.sequence);
+        modalIndex.val(row.index());
+        modalTitle.text(ds.language.custom.edit);
+        modalSequence.empty();
+        modalSequence.append(data.sequence);
         // open modal
         modal.modal('show');
         return false;
@@ -834,50 +854,54 @@ DatatableSequence.prototype = {
             },
 
             /**
-             * Generates a new create form, when create modal is closed.
+             * Generates a new create form, when create modal is opened.
              */
-            closeCreate: function() {
-                $(ds.sel.modalCreate).on('show.bs.modal', function (e) {
-                    // reset form
+            openCreate: function() {
+                $(ds.sel.modalCreate).on('show.bs.modal', function(e) {
+                    // new creation form
+                    var container = $(ds.sel.modalCreate).find(
+                        '.modal-body .deform-sequence-container');
                     var sequence = ds.newSequence();
-                    $(ds.sel.modalCreate).find('.modal-body').html(
-                        tmpl(ds.tpl.create, {
-                            ds: {
-                                registry: ds.registry,
-                                language: ds.language,
-                                sequence: sequence.html,
-                            }
-                        })
-                    );
+                    // append sequence
+                    var appendSequence = function() {
+                        var deferred = $.Deferred();
+                        container.empty();
+                        container.append(sequence.node);
+                        deferred.resolve();
+                        return deferred.promise();
+                    };
                     // process deform callbacks
-                    $(deform.callbacks).each(function(num, item) {
-                        var oid = item[0];
-                        var callback = item[1];
-                        var newid = sequence.idmap[oid];
-                        if (newid)
-                            callback(newid);
+                    appendSequence().done(function(){
+                        $(deform.callbacks).each(function(num, item) {
+                            var oid = item[0];
+                            var callback = item[1];
+                            var newid = sequence.idmap[oid];
+                            if (newid)
+                                callback(newid);
+                        });
+                        deform.clearCallbacks();
+                        var ce = jQuery.Event("change");
+                        $('#deform').trigger(ce);
                     });
-                    deform.clearCallbacks();
-                    var ce = jQuery.Event("change");
-                    $('#deform').trigger(ce);
                 });
             },
 
             /**
-             * Generates a new edit form, when edit modal is closed.
+             * Returns the creation form to the datatables row on cancel
              */
             closeEdit: function() {
-                $(ds.sel.modalEdit).on('hidden.bs.modal', function (e) {
-                    // reset form
-                    $(ds.sel.modalEdit).find('.modal-body').html(
-                        tmpl(ds.tpl.edit, {
-                            ds: {
-                                registry: ds.registry,
-                                language: ds.language,
-                                sequence: ds.newSequence().html,
-                            }
-                        })
-                    );
+                $(ds.sel.modalEdit).on('hidden.bs.modal', function(e) {
+                    var modal = $(ds.sel.modalEdit);
+                    var index = modal.find(
+                        '.modal-body > input[name="index"]').val();
+                    var sequence = modal.find(
+                        '.modal-body .deform-sequence-item');
+                    if(sequence.length) {
+                        var row = ds.target.table.row(index);
+                        var data = row.data();
+                        ds.updateSequence(sequence, data);
+                        row.data(data).draw();
+                    }
                 });
             },
 
@@ -951,7 +975,7 @@ DatatableSequence.prototype = {
             ds.updateSequence($htmlnode, data);
 
         return {
-            html: $htmlnode.prop('outerHTML'),
+            node: $htmlnode,
             idmap: idmap
         };
     },
@@ -1037,22 +1061,34 @@ DatatableSequence.prototype = {
         if(!(sequence instanceof jQuery))
             sequence = $($.parseHTML(sequence));
         // update mode
-        sequence.find("input[name='mode']").val(data.mode);
+        //sequence.find("input[name='mode']").val(data.mode);
+        sequence.find("input[name='mode']").attr('value', data.mode);
         // update data columns
         var query = '';
         $.each(ds.columns, function(index, column) {
             switch(column.datatableSequence.widgetType) {
-                // update textareas
+
+                case 'TextInputWidget':
+                    query = "input[name='" + column.name + "']";
+                    sequence.find(query).val(data[column.data]);
+                    sequence.find(query).attr('value', data[column.data]);
+                    break;
+
                 case 'TextAreaWidget':
                     query = "textarea[name='" + column.name + "']";
                     sequence.find(query).val(data[column.data]);
                     break;
-                // update input fields
-                case 'TextInputWidget':
-                    query = "input[name='" + column.name + "']";
-                    sequence.find(query).attr('value', data[column.data]);
+
+                case 'Select2Widget':
+                    query = "select[name='" + column.name + "']";
+                    var option = sequence.find(query + " option").filter(
+                        function () {
+                            return $(this).html() == data[column.data];
+                        }).val();
+                    if(option)
+                        sequence.find(query).val(option).trigger('change');
                     break;
-                // update hidden fields
+
                 case 'HiddenWidget':
                     query = "input[name='" + column.name + "']";
                     sequence.find(query).val(data[column.data]);
@@ -1072,34 +1108,41 @@ DatatableSequence.prototype = {
     updateData: function(data, form) {
         var ds = this;
         data.errors = "";
-        data.sequence = form;
         // update data columns
         $.each(ds.columns, function(index, column) {
             var element, value = false;
             switch(column.datatableSequence.widgetType) {
-                // update textareas
-                case 'TextAreaWidget':
-                    element = form.find("textarea[name='" + column.name + "']");
-                    // sanitiy checks
-                    if(element.length === 0)
-                        return;
-                    value = element.val();
-                    data[column.data] = value;
-                    break;
-                // update input fields
+
                 case 'TextInputWidget':
                     element = form.find("input[name='" + column.name + "']");
-                    // sanitiy checks
                     if(element.length === 0)
                         return;
                     value = element.val();
                     data[column.data] = value;
                     break;
-                // don't update hidden fields
-                case 'HiddenWidget':
+
+                case 'TextAreaWidget':
+                    element = form.find("textarea[name='" + column.name + "']");
+                    if(element.length === 0)
+                        return;
+                    value = element.val();
+                    data[column.data] = value;
                     break;
+
+                case 'Select2Widget':
+                    element = form.find("select[name='" + column.name + "']");
+                    if(element.length === 0)
+                        return;
+                    value = element.find("option:selected").text();
+                    data[column.data] = value;
+                    break;
+
+                case 'HiddenWidget':
+                    break;  // don't update hidden fields
             }
         });
+        // update sequence
+        ds.updateSequence(form, data);
     },
 
     /**
@@ -1120,7 +1163,7 @@ DatatableSequence.prototype = {
             if(typeof column.datatableSequence.createValue != "undefined")
                 data[column.data] = column.datatableSequence.createValue;
         });
-        data.sequence = ds.newSequence(data).html;
+        data.sequence = ds.newSequence(data).node;
         return data;
     },
 
@@ -1150,19 +1193,24 @@ DatatableSequence.prototype = {
             // get field
             var field, value = false;
             switch(column.datatableSequence.widgetType) {
-                // get textarea
+
                 case 'TextAreaWidget':
                     field = form.find("textarea[name='" + column.name + "']");
                     value = field.val();
                     break;
-                // get input field
+
                 case 'TextInputWidget':
                     field = form.find("input[name='" + column.name + "']");
                     value = field.val();
                     break;
-                // don't get hidden fields
+
+                case 'Select2Widget':
+                    field = form.find("select[name='" + column.name + "']");
+                    value = field.find("option:selected").text();
+                    break;
+                
                 case 'HiddenWidget':
-                    return;
+                    return;  // don't get hidden fields
             }
             // prevent emtpy required fields
             if(required && !value) {
