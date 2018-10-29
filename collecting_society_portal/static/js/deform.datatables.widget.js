@@ -74,7 +74,9 @@ if(typeof deform.datatableSequences == "undefined")
 
 var DatatableSequence = function(vars) {
 
-    // self reference
+    // self reference (singleton)
+    if(typeof deform.datatableSequences[vars.oid] !== "undefined")
+        return deform.datatableSequences[vars.oid];
     var ds = this;
 
     // deform
@@ -95,7 +97,7 @@ var DatatableSequence = function(vars) {
     this.registry = "deform.datatableSequences." + ds.oid;
     this.sel = {
         base:           base,
-        html:           "." + base,
+        container:      "#" + ds.oid,
         targetTable:    "#" + base + "_target",
         targetArea:     "." + base + "_target_area",
         sourceTable:    "#" + base + "_source",
@@ -133,7 +135,7 @@ var DatatableSequence = function(vars) {
     };
 
     // datatable
-    this.language = $(ds.sel.html).data('language');
+    this.language = $(ds.sel.container).data('language');
     this.actions = vars.actions ? // enabled actions
                    $.parseJSON(vars.actions) :
                    ['add', 'create', 'edit'];
@@ -150,6 +152,7 @@ var DatatableSequence = function(vars) {
         'showHide',
         'redrawAdd',
         'redrawTab',
+        'renderSequence',
     ];
 
     // table meta objects
@@ -161,7 +164,7 @@ var DatatableSequence = function(vars) {
         // table html node selector
         tableId: ds.sel.targetTable,
         // initial data
-        data: $(ds.sel.html).data('data'),
+        data: $(ds.sel.container).data('data'),
     };
     this.source = {
         // datatable table
@@ -182,10 +185,16 @@ DatatableSequence.prototype = {
     **************************************************************************/
 
     /**
-      * Loads the sequence templates and calls init
+      * Loads the sequence templates and calls _init
       */
     init: function() {
         var ds = this;
+
+        // prevent reinitialization
+        if(typeof deform.datatableSequences[ds.oid] !== "undefined")
+            return;
+        
+        // load templates and call _init
         $(ds.sel.tmplContainer).load(
             "/static/portal/tmpl/sequence.tmpl",
             function() { ds._init(); }
@@ -225,7 +234,7 @@ DatatableSequence.prototype = {
             };
 
             // generate table html
-            $(ds.sel.html).append(
+            $(ds.sel.container).append(
                 tmpl(ds.tpl.sequence, {
                     lableClass: ds.minLen ? "required" : "",
                     errormsg: ds.errormsg,
@@ -279,6 +288,7 @@ DatatableSequence.prototype = {
 
             // initialize target table
             ds.target.table = $(ds.sel.targetTable).DataTable({
+                retrieve: true,
                 data: ds.target.data,
                 language: ds.language,
                 paging: false,
@@ -312,6 +322,7 @@ DatatableSequence.prototype = {
             
             // initialize source table
             ds.source.table = $(ds.sel.sourceTable).DataTable({
+                retrieve: true,
                 language: ds.language,
                 processing: true,
                 serverSide: true,
@@ -349,7 +360,8 @@ DatatableSequence.prototype = {
             });
 
             // bind events
-            ds.events = ds.events();
+            if(ds.events instanceof Function)
+                ds.events = ds.events();
             $.each(ds.bind, function(index, event) { ds.events[event](); });
 
             // redraw (to display zoom icon in more column)
@@ -463,17 +475,8 @@ DatatableSequence.prototype = {
                 className: "sequence hidden",
                 orderable: false,
                 searchable: false,
-                render: function(data, type, row, meta) {
-                    if(data instanceof jQuery) {
-                        var $row = $(ds.target.table.row(meta.row).node());
-                        var sequence = $row.children(".sequence");
-                        if(sequence)
-                            sequence.empty();
-                            sequence.append(data);
-                        return "";
-                    }
-                    return data;
-                },
+                render: null,
+                defaultContent: "",
             },
             customCols.invisible,
             {
@@ -658,7 +661,12 @@ DatatableSequence.prototype = {
         if(ds.locked())
             return false;
         // get form
-        var form = $(link).closest('.modal-body').find('.deform-sequence-item');
+        var modal = $(ds.sel.modalCreate);
+        var form = modal
+            .find('.modal-body')
+            .children('.deform-sequence-container')
+            .children('.deform-sequence-item')
+            .first();
         // validate edit form
         if(!ds.validateForm(form))
             return false;
@@ -677,7 +685,7 @@ DatatableSequence.prototype = {
         ds.updateData(data, form);
         ds.target.table.row.add(data).draw();
         // close modal
-        $(ds.sel.modalCreate).modal('hide');
+        modal.modal('hide');
         return false;
     },
 
@@ -694,17 +702,21 @@ DatatableSequence.prototype = {
         var ds = this;
         // get elements
         var modal = $(ds.sel.modalEdit);
-        var modalIndex = modal.find('.modal-body > input[name="index"]');
-        var modalTitle = modal.find('.modal-title');
-        var modalSequence = modal.find('.modal-body .deform-sequence-container');
+        var index = modal
+            .find('.modal-body > input[name="index"]');
+        var title = modal
+            .find('.modal-header > .modal-title');
+        var sequence = modal
+            .find('.modal-body')
+            .children('.deform-sequence-container')
+            .first();
         var row = ds.target.table.row($(link).closest('tr'));
         var data = row.data();
-        console.log(data.sequence);
         // update modal
-        modalIndex.val(row.index());
-        modalTitle.text(ds.language.custom.edit);
-        modalSequence.empty();
-        modalSequence.append(data.sequence);
+        index.val(row.index());
+        title.text(ds.language.custom.edit);
+        sequence.empty();
+        sequence.append(data.sequence);
         // open modal
         modal.modal('show');
         return false;
@@ -725,9 +737,13 @@ DatatableSequence.prototype = {
         if(ds.locked())
             return false;
         // get elements
-        var modal = $(link).closest('.modal');
-        var index = modal.find('.modal-body > input[name="index"]').val();
-        var form = modal.find('.deform-sequence-item');
+        var modal = $(ds.sel.modalEdit);
+        var index = modal
+            .find('.modal-body')
+            .children('input[name="index"]').val();
+        var form = modal.find('.modal-body')
+            .children('.deform-sequence-container')
+            .children('.deform-sequence-item').first();
         // validate edit form
         if(!ds.validateForm(form))
             return false;
@@ -786,6 +802,36 @@ DatatableSequence.prototype = {
             redrawAdd: function() {
                 $(ds.sel.modalAdd).on('show.bs.modal', function (e) {
                     setTimeout(ds.source.table.columns.adjust, 200);
+                });
+            },
+
+            /**
+             * Detaches and appends the sequence to the column node.
+             * 
+             * Binds to the datatables pre draw and draw event.
+             */
+            renderSequence: function() {
+                ds.target.table.on('preDraw', function() {
+                    ds.target.table.rows().every(function() {
+                        var sequence = $(this.node())
+                            .children(".sequence").first()
+                            .children(".deform-sequence-item").first();
+                        if(sequence.length !== 0) {
+                            var data = this.data();
+                            data.sequence = sequence.detach();
+                            this.data(data);
+                        }
+                    });
+                });
+                ds.target.table.on('draw', function() {
+                    ds.target.table.rows().every(function() {
+                        var data = this.data();
+                        if(!(data.sequence instanceof jQuery))
+                            return;
+                        $(this.node())
+                            .children(".sequence").first()
+                            .empty().append(data.sequence);
+                    });
                 });
             },
 
@@ -892,11 +938,14 @@ DatatableSequence.prototype = {
              */
             openCreate: function() {
                 $(ds.sel.modalCreate).on('show.bs.modal', function(e) {
-                    // new creation form
-                    var container = $(ds.sel.modalCreate).find(
-                        '.modal-body .deform-sequence-container');
+                    // get elements
+                    var modal = $(ds.sel.modalCreate);
+                    var container = modal
+                        .find('.modal-body')
+                        .children('.deform-sequence-container')
+                        .first();
+                    // append new sequence
                     var sequence = ds.newSequence();
-                    // append sequence
                     var appendSequence = function() {
                         var deferred = $.Deferred();
                         container.empty();
@@ -925,12 +974,16 @@ DatatableSequence.prototype = {
              */
             closeEdit: function() {
                 $(ds.sel.modalEdit).on('hidden.bs.modal', function(e) {
+                    // get elements
                     var modal = $(ds.sel.modalEdit);
-                    var index = modal.find(
-                        '.modal-body > input[name="index"]').val();
-                    var sequence = modal.find(
-                        '.modal-body .deform-sequence-item');
-                    if(sequence.length) {
+                    var index = modal
+                        .find('.modal-body > input[name="index"]').val();
+                    var sequence = modal
+                        .find('.modal-body')
+                        .children('.deform-sequence-container')
+                        .children('.deform-sequence-item')
+                        .first();
+                    if(sequence.length !== 0) {
                         var row = ds.target.table.row(index);
                         var data = row.data();
                         ds.updateSequence(sequence, data);
@@ -987,10 +1040,11 @@ DatatableSequence.prototype = {
         var genid = deform.randomString(6);
         var idmap = {};
 
+        // add postfix to id
         $idnodes.each(function(idx, node) {
             var $node = $(node);
             var oldid = $node.attr('id');
-            var newid = oldid.replace(fieldmatch, "deformField$1-" + genid);
+            var newid = oldid.replace(fieldmatch, "deformField$1_" + genid);
             $node.attr('id', newid);
             idmap[oldid] = newid;
             var labelselector = 'label[for=' + oldid + ']';
@@ -998,12 +1052,20 @@ DatatableSequence.prototype = {
             $fornodes.attr('for', newid);
             });
 
+        // add postfix to names 
         $namednodes.each(function(idx, node) {
             var $node = $(node);
             var oldname = $node.attr('name');
-            var newname = oldname.replace(fieldmatch, "deformField$1-" + genid);
+            var newname = oldname.replace(fieldmatch, "deformField$1_" + genid);
             $node.attr('name', newname);
             });
+
+        // add postfix to datatable sequences
+        var script = $htmlnode
+            .find('script.datatable_sequence_default_settings')[0];
+        if(typeof script !== "undefined")
+            script.innerHTML = script.innerHTML
+                .replace(fieldmatch, "deformField$1_" + genid);
 
         if(data)
             ds.updateSequence($htmlnode, data);
@@ -1095,37 +1157,43 @@ DatatableSequence.prototype = {
         if(!(sequence instanceof jQuery))
             sequence = $($.parseHTML(sequence));
         // update mode
-        //sequence.find("input[name='mode']").val(data.mode);
-        sequence.find("input[name='mode']").attr('value', data.mode);
+        sequence
+            .children("input[name='mode']")
+            .attr('value', data.mode);
         // update data columns
-        var query = '';
         $.each(ds.columns, function(index, column) {
             switch(column.datatableSequence.widgetType) {
 
-                case 'TextInputWidget':
-                    query = "input[name='" + column.name + "']";
-                    sequence.find(query).val(data[column.data]);
-                    sequence.find(query).attr('value', data[column.data]);
-                    break;
+                case 'HiddenWidget':
+                    sequence
+                        .children("input[name='" + column.name + "']")
+                        .val(data[column.data]);                    
+                    return;
 
-                case 'TextAreaWidget':
-                    query = "textarea[name='" + column.name + "']";
-                    sequence.find(query).val(data[column.data]);
+                case 'TextInputWidget':
+                    sequence
+                        .children(".item-" + column.name)
+                        .children("input[name='" + column.name + "']")
+                        .val(data[column.data])
+                        .attr('value', data[column.data]);
                     break;
 
                 case 'Select2Widget':
-                    query = "select[name='" + column.name + "']";
-                    var option = sequence.find(query + " option").filter(
-                        function () {
-                            return $(this).html() == data[column.data];
-                        }).val();
+                    var element = sequence
+                        .children(".item-" + column.name)
+                        .children("select[name='" + column.name + "']");
+                    var option = element
+                        .children("option")
+                        .filter(function () {
+                            return $(this).html() == data[column.data]; })
+                        .val();
                     if(option)
-                        sequence.find(query).val(option).trigger('change');
+                        element.val(option).trigger('change');
                     break;
 
-                case 'HiddenWidget':
-                    query = "input[name='" + column.name + "']";
-                    sequence.find(query).val(data[column.data]);
+                case 'DatatableSequenceWidget':
+                    break;
+                
             }
         });
         // save updated html code back into the row data again
@@ -1144,35 +1212,43 @@ DatatableSequence.prototype = {
         data.errors = "";
         // update data columns
         $.each(ds.columns, function(index, column) {
-            var element, value = false;
+            var element = false;
             switch(column.datatableSequence.widgetType) {
 
-                case 'TextInputWidget':
-                    element = form.find("input[name='" + column.name + "']");
-                    if(element.length === 0)
-                        return;
-                    value = element.val();
-                    data[column.data] = value;
-                    break;
+                case 'HiddenWidget':
+                    return;  // don't update hidden fields
 
-                case 'TextAreaWidget':
-                    element = form.find("textarea[name='" + column.name + "']");
+                case 'TextInputWidget':
+                    element = form
+                        .children(".item-" + column.name)
+                        .children("input[name='" + column.name + "']");
                     if(element.length === 0)
                         return;
-                    value = element.val();
-                    data[column.data] = value;
+                    data[column.data] = element
+                        .val();
                     break;
 
                 case 'Select2Widget':
-                    element = form.find("select[name='" + column.name + "']");
+                    element = form
+                        .children(".item-" + column.name)
+                        .children("select[name='" + column.name + "']");
                     if(element.length === 0)
                         return;
-                    value = element.find("option:selected").text();
-                    data[column.data] = value;
+                    data[column.data] = element
+                        .children("option:selected")
+                        .text();
                     break;
 
-                case 'HiddenWidget':
-                    break;  // don't update hidden fields
+                case 'DatatableSequenceWidget':
+                    element = form
+                        .children(".datatable_sequence")
+                        .children(".item-" + column.name)
+                        .find(".dataTable")
+                        .first();
+                    data[column.data] = element
+                        .DataTable()
+                        .data();
+                    break;
             }
         });
         // update sequence
@@ -1219,7 +1295,7 @@ DatatableSequence.prototype = {
         // for all columns
         $.each(ds.columns, function(index, column) {
             // get form group
-            group = $(form).find('.item-' + column.name);
+            group = form.find('.item-' + column.name);
             if(!group)
                 return;
             // get required
@@ -1228,23 +1304,34 @@ DatatableSequence.prototype = {
             var field, value = false;
             switch(column.datatableSequence.widgetType) {
 
+                case 'HiddenWidget':
+                    return;  // don't get hidden fields
+
                 case 'TextAreaWidget':
-                    field = form.find("textarea[name='" + column.name + "']");
+                    field = form
+                        .find("textarea[name='" + column.name + "']");
                     value = field.val();
                     break;
 
                 case 'TextInputWidget':
-                    field = form.find("input[name='" + column.name + "']");
+                    field = form
+                        .find("input[name='" + column.name + "']");
                     value = field.val();
                     break;
 
                 case 'Select2Widget':
-                    field = form.find("select[name='" + column.name + "']");
-                    value = field.find("option:selected").text();
+                    field = form
+                        .find("select[name='" + column.name + "']")
+                        .find("option:selected");
+                    value = field.text();
                     break;
-                
-                case 'HiddenWidget':
-                    return;  // don't get hidden fields
+
+                case 'DatatableSequenceWidget':
+                    field = form
+                        .find(".item-" + column.name)
+                        .find(".dataTable > tbody > tr > .dataTables_empty");
+                    value = !field.length;
+                    break;
             }
             // prevent emtpy required fields
             if(required && !value) {

@@ -19,30 +19,33 @@
                        errormsg field.errormsg">
 
     <!-- sequence -->
-    <div class="datatable_sequence_${oid}"
-         data-data="${data}" data-language="${language}"></div>
+    <div id="${oid}" class="datatable_sequence datatable_sequence_${oid}"
+         data-data="${data}" data-language="${language}">
+        
+        <!-- slot: settings -->
+        <script metal:define-slot="settings" />
 
-    <!-- slot: settings -->
-    <script metal:define-slot="settings" />
+        <!-- default settings -->
+        <script class="datatable_sequence_default_settings">
+            datatableSequenceSettings = $.extend(true, {
+                oid: "${oid}",
+                name: "${name}",
+                title: "${title}",
+                actions: '${actions}',
+                minLen: "${min_len}",
+                maxLen: "${max_len}",
+                orderable: "${orderable}",
+                proto: "${prototype}",
+                errormsg: "${errormsg}",
+                api: "${api}",
+            }, datatableSequenceSettings);
+        </script>
 
-    <script>
-      datatableSequenceSettings = $.extend(true, {
-        oid: "${oid}",
-        name: "${name}",
-        title: "${title}",
-        actions: '${actions}',
-        minLen: "${min_len}",
-        maxLen: "${max_len}",
-        orderable: "${orderable}",
-        proto: "${prototype}",
-        errormsg: "${errormsg}",
-        api: "${api}",
-      }, datatableSequenceSettings);
-    </script>
-
-    <!-- slot: init -->
-    <script metal:define-slot="init">
-      new deform.DatatableSequence(datatableSequenceSettings).init();
-    </script>
+        <!-- slot: init -->
+        <script metal:define-slot="init">
+            new deform.DatatableSequence(datatableSequenceSettings).init();
+        </script>   
+    
+    </div>
 
 </tal:block>
