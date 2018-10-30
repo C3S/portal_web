@@ -7,7 +7,6 @@ Helper functions for the creation of the pyramid app.
 
 import os
 import logging
-import pprint
 from pkgutil import iter_modules
 import ConfigParser
 
@@ -134,6 +133,8 @@ def add_templates(event):
             'templates/base.pt').implementation(),
         'frontend': get_renderer(
             'templates/frontend.pt').implementation(),
+        'backend': get_renderer(
+            'templates/backend.pt').implementation(),
         'backend363': get_renderer(
             'templates/backend363.pt').implementation(),
         'backend39': get_renderer(

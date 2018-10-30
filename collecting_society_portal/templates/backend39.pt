@@ -8,19 +8,24 @@
 
     - Two columns (3-9)
 
-    Slots filled (base):
+    Slots filled:
 
-    - css
-    - content
+    - content (backend)
 
     Slots defined:
 
     - content-left
     - content-right
 
+    Slots passed:
+
+    - css (base)
+    - js-head (base)
+    - content (base)
+    - js-body (base)
+
     Content defined:
 
-    - css               (static:   static/css/backend.css)
     - logo              (registry: static/logo)
     - sidebar widgets   (registry: widgets/content-right/*)
     - main menue tabs   (registry: menues/roles)
@@ -29,19 +34,8 @@
     - flashmessages     (request)
 
 -->
-<tal:block metal:extend-macro="base" i18n:domain="collecting_society_portal">
-
-    <!-- css -->
-    <tal:block metal:fill-slot="css">
-        <link href="${request.static_path(
-                  'collecting_society_portal:static/css/backend.css'
-              )}"
-              type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
-    </tal:block>
-
-    <!-- js -->
-    <tal:block metal:fill-slot="js-head" />
-    <tal:block metal:fill-slot="js-body" />
+<tal:block metal:extend-macro="backend"
+           i18n:domain="collecting_society_portal">
 
     <!-- content -->
     <tal:block metal:fill-slot="content">

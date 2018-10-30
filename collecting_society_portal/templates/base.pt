@@ -34,7 +34,8 @@
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
-<html xmlns="http://www.w3.org/1999/xhtml" i18n:domain="collecting_society_portal">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      i18n:domain="collecting_society_portal">
 
     <head>
 
@@ -155,14 +156,14 @@
         <!-- registry: js head -->
         <script tal:condition="context.registry['static']['js']['head']|False"
                 tal:repeat="js context.registry['static']['js']['head']"
-                tal:attributes="src js"></script>
+                tal:attributes="src js['src'];
+                                type js['type']|'text/javascript';
+                                id js['id']|False"></script>
 
     </head>
 
     <body>
 
-        <!-- container for javascript templates -->
-        <div id="cs-tmpl-container" class="hidden"></div>
         <!-- container for bootstrap modals -->
         <div id="cs-modal-container"></div>
 
@@ -175,7 +176,9 @@
         <!-- registry: js body -->
         <script tal:condition="context.registry['static']['js']['body']|False"
                 tal:repeat="js context.registry['static']['js']['body']"
-                tal:attributes="src js"></script>
+                tal:attributes="src js['src'];
+                                type js['type']|'text/javascript';
+                                id js['id']|False"></script>
 
     </body>
 
