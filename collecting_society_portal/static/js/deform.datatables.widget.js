@@ -141,9 +141,12 @@ var DatatableSequence = function(vars) {
     this.columns = vars.columns;  // custom datatable columns
     this.unique = vars.unique;    // definition of uniqueness of data
 
+    // modals
+    this.parentModal = false;
+
     // events
     this.bind = [
-        'embedModals',
+        'queueModals',
         'closeAdd',
         'openCreate',
         'closeEdit',
@@ -203,8 +206,6 @@ DatatableSequence.prototype = {
             if(typeof deform.datatableSequences[ds.oid] !== "undefined")
                 return;
 
-            console.time(ds.oid + ": init");
-
             // initialize columns
             ds.target.columns = ds.targetColumns();
             ds.source.columns = ds.sourceColumns();
@@ -223,7 +224,6 @@ DatatableSequence.prototype = {
                 sequence: '',
             };
 
-            console.time(ds.oid + ": generate table html");
             // generate table html
             $(ds.sel.container).append(
                 tmpl(ds.tpl.sequence, {
@@ -232,10 +232,8 @@ DatatableSequence.prototype = {
                     ds: dsTmpl
                 })
             );
-            console.timeEnd(ds.oid + ": generate table html");
             
             // generate modal html
-            console.time(ds.oid + ": generate modal html");
             if($.inArray('add', ds.actions) > -1)
                 $(ds.sel.modalContainer).append(
                     tmpl(ds.tpl.modal, {
@@ -264,7 +262,6 @@ DatatableSequence.prototype = {
                         ds: dsTmpl
                     })
                 );
-            console.timeEnd(ds.oid + ": generate modal html");
 
             // prepare orderable table
             var order = [
@@ -281,7 +278,6 @@ DatatableSequence.prototype = {
             }
 
             // initialize target table
-            console.time(ds.oid + ": init target table");
             ds.target.table = $(ds.sel.targetTable).DataTable({
                 retrieve: true,
                 data: ds.target.data,
@@ -314,10 +310,8 @@ DatatableSequence.prototype = {
                 },
                 order: order
             });
-            console.timeEnd(ds.oid + ": init target table");
             
             // initialize source table
-            console.time(ds.oid + ": init source table");
             if($.inArray('add', ds.actions) > -1)
                 ds.source.table = $(ds.sel.sourceTable).DataTable({
                     retrieve: true,
@@ -356,24 +350,17 @@ DatatableSequence.prototype = {
                         [ 1, "asc" ]  // first displayed row
                     ]
                 });
-            console.timeEnd(ds.oid + ": init source table");
 
             // bind events
-            console.time(ds.oid + ": bind events");
             if(ds.events instanceof Function)
                 ds.events = ds.events();
             $.each(ds.bind, function(index, event) { ds.events[event](); });
-            console.timeEnd(ds.oid + ": bind events");
 
             // redraw (to display zoom icon in more column)
-            console.time(ds.oid + ": redraw");
             ds.target.table.rows().invalidate('data').draw(false);
-            console.timeEnd(ds.oid + ": redraw");
 
             // add datatable sequence to registry (for global access)
             deform.datatableSequences[ds.oid] = ds;
-
-            console.timeEnd(ds.oid + ": init");
 
         });
     },
@@ -398,32 +385,6 @@ DatatableSequence.prototype = {
             });
         // clone custom columns
         var customCols = $.extend(true, {}, ds.getSortedColumns());
-        // render first field
-        // customCols.displayed[0].render = function(data, type, row, meta) {
-        //     if(type !== 'display')
-        //         return data;
-        //     if(row.mode === "add")
-        //         return tmpl.encode(data);
-        //     // show data, if column is the only create field
-        //     var count = 0;
-        //     var show = [];
-        //     $.each(ds.columns, function(index, column) {
-        //         if(column.datatableSequence &&
-        //            column.datatableSequence.createShow) {
-        //             show.push(column);
-        //             count++;
-        //         }
-        //     });
-        //     if(count == 1 && show[0].data == customCols.displayed[0].data)
-        //         return tmpl.encode(data);
-        //     // show table with all created row data
-        //     return tmpl(ds.tpl.target.show, {
-        //         data: data,
-        //         row: row,
-        //         columns: show,
-        //         language: ds.language,
-        //     });
-        // };
         // return merged columns
         var targetColumns = [
             {
@@ -686,8 +647,10 @@ DatatableSequence.prototype = {
             data.order = orderNum + 1;
         }
         // update data and redraw row
-        ds.updateData(data, form);
-        ds.target.table.row.add(data).draw();
+        setTimeout(function() {
+            ds.updateData(data, form);
+            ds.target.table.row.add(data).draw();
+        }, 200);
         // close modal
         modal.modal('hide');
         return false;
@@ -722,7 +685,7 @@ DatatableSequence.prototype = {
         sequence.empty();
         sequence.append(data.sequence);
         // open modal
-        modal.modal('show');
+        modal.modal('show', link);
         return false;
     },
 
@@ -754,8 +717,10 @@ DatatableSequence.prototype = {
         // update data and draw row
         var row = ds.target.table.row(index);
         var data = row.data();
-        ds.updateData(data, form);
-        row.data(data).draw();
+        setTimeout(function() {
+            ds.updateData(data, form);
+            row.data(data).draw();
+        }, 200);
         // close modal
         modal.modal('hide');
         return false;
@@ -789,21 +754,37 @@ DatatableSequence.prototype = {
             /**
              * Prevents opening several modals, embeds content instead
              */
-            // embedModals: function() {
-            //     if($.inArray('add', ds.actions) != -1)
-            //         $(ds.sel.modalAdd).on('show.bs.modal', function(e) {
-            //             if(!$("body").hasClass("modal-open"))
-            //                 return;
-            //             var content = $(e.target)
-            //                 .find(".modal-body")
-            //                 .children(".datatable_sequence_source_area");
-            //             $(e.relatedTarget)
-            //                 .closest(".form-group")
-            //                 .children(ds.sel.embedContainer)
-            //                 .append(content);
-            //             return false;
-            //         });
-            // },
+            queueModals: function() {
+                modals = [];
+                if($.inArray('add', ds.actions) != -1)
+                    modals.push(ds.sel.modalAdd);
+                if($.inArray('create', ds.actions) != -1)
+                    modals.push(ds.sel.modalCreate);
+                if($.inArray('edit', ds.actions) != -1)
+                    modals.push(ds.sel.modalEdit);
+                $.each(modals, function(_, modal) {
+                    $(modal).on('show.bs.modal', function(e) {
+                        if(!$("body").hasClass("modal-open"))
+                            return;
+                        ds.parentModal = $(e.relatedTarget)
+                            .closest(".modal");
+                        ds.parentModal.queued = true;
+                        ds.parentModal.modal('hide');
+                    });
+                    $(modal).on('hide.bs.modal', function(e) {
+                        if(!ds.parentModal)
+                            return;
+                        ds.parentModal.modal('show', {queued: true});
+                    });
+                    $(modal).on('hidden.bs.modal', function(e) {
+                        if(!ds.parentModal)
+                            return;
+                        $("body").addClass('modal-open');
+                        ds.parentModal = false;
+                        e.stopImmediatePropagation();
+                    });
+                });
+            },
         
             /**
              * Redraws target and source table after changing a navigation tab.
@@ -953,6 +934,9 @@ DatatableSequence.prototype = {
                 if($.inArray('add', ds.actions) == -1)
                     return;
                 $(ds.sel.modalAdd).on('hidden.bs.modal', function(e) {
+                    // do nothing, if called from a child modal
+                    if(e.relatedTarget && e.relatedTarget.queued)
+                        return;
                     // consider pin
                     if($(ds.sel.modalAdd + ' .pin').hasClass('pinned'))
                         return;
@@ -974,6 +958,9 @@ DatatableSequence.prototype = {
                 if($.inArray('create', ds.actions) == -1)
                     return;
                 $(ds.sel.modalCreate).on('show.bs.modal', function(e) {
+                    // do nothing, if called from a child modal
+                    if(e.relatedTarget && e.relatedTarget.queued)
+                        return;
                     // get elements
                     var modal = $(ds.sel.modalCreate);
                     var container = modal
