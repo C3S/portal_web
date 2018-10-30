@@ -33,6 +33,7 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
     def rows(self, field, cstruct, kw):
         if not cstruct:
             return
+        # prepare data
         data = []
         for subfield in [x[1] for x in kw['subfields']]:
             row = subfield.cstruct
@@ -45,7 +46,7 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
                 if isinstance(item.widget, deform.widget.SelectWidget):
                     for option in item.widget.values:
                         if option[0] == row[item.name]:
-                            row[item.name] = option[1]
+                            row[item.name] = item.translate(option[1])
             # provide rendered sequence
             row['sequence'] = subfield.render_template(
                 self.item_template, parent=field)

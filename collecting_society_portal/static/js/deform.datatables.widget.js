@@ -133,12 +133,13 @@ var DatatableSequence = function(vars) {
     };
 
     // datatable
+    this.datatableSequence = true; // for object checks
     this.language = $(ds.sel.container).data('language');
-    this.actions = vars.actions ? // enabled actions
+    this.actions = vars.actions ?  // enabled actions
                    $.parseJSON(vars.actions) :
                    ['add', 'create', 'edit'];
-    this.columns = vars.columns;  // custom datatable columns
-    this.unique = vars.unique;    // definition of uniqueness of data
+    this.columns = vars.columns;   // custom datatable columns
+    this.unique = vars.unique;     // definition of uniqueness of data
 
     // modals
     this.parentModal = false;    
@@ -685,6 +686,12 @@ DatatableSequence.prototype = {
         index.val(row.index());
         title.text(ds.language.custom.edit);
         sequence.empty();
+        // sequence.append(data.sequence);
+        if(!(data.sequence instanceof jQuery))
+            data.sequence = $(row.node())
+                .children('.sequence')
+                .children('.deform-sequence-item');
+            row.data(data);
         sequence.append(data.sequence);
         // open modal
         modal.modal('show', link);
@@ -825,18 +832,24 @@ DatatableSequence.prototype = {
              */
             renderSequence: function() {
                 ds.target.table.on('preDraw', function() {
+                    if(typeof deform.datatableSequences[ds.oid] === "undefined")
+                        return;
                     ds.target.table.rows().every(function() {
+                        var data = this.data();
+                        if(!(data.sequence instanceof jQuery))
+                            return;
                         var sequence = $(this.node())
                             .children(".sequence").first()
                             .children(".deform-sequence-item").first();
                         if(sequence.length !== 0) {
-                            var data = this.data();
                             data.sequence = sequence.detach();
                             this.data(data);
                         }
                     });
                 });
                 ds.target.table.on('draw', function() {
+                    if(typeof deform.datatableSequences[ds.oid] === "undefined")
+                        return;
                     ds.target.table.rows().every(function() {
                         var data = this.data();
                         if(!(data.sequence instanceof jQuery))
@@ -944,7 +957,7 @@ DatatableSequence.prototype = {
                 if($.inArray('add', ds.actions) == -1)
                     return;
                 $(ds.sel.modalAdd).on('hidden.bs.modal', function(e) {
-                    // do nothing, if called from a child modal
+                    // prevent for subsequences
                     if(e.relatedTarget && e.relatedTarget.queued)
                         return;
                     // consider pin
@@ -968,7 +981,7 @@ DatatableSequence.prototype = {
                 if($.inArray('create', ds.actions) == -1)
                     return;
                 $(ds.sel.modalCreate).on('show.bs.modal', function(e) {
-                    // do nothing, if called from a child modal
+                    // prevent for subsequences
                     if(e.relatedTarget && e.relatedTarget.queued)
                         return;
                     // get elements
@@ -1003,23 +1016,35 @@ DatatableSequence.prototype = {
             },
 
             /**
-             * Saves the data of all subsequences on edit
+             * Saves data of subsequences on edit, adds datatable sequence to
+             * data.sequence, if needed.
              */
             openEdit: function() {
                 if($.inArray('edit', ds.actions) == -1)
                     return;
                 var modal = $(ds.sel.modalEdit);
                 modal.on('show.bs.modal', function(e) {
-                    // prevent on subsequences
+                    // prevent for subsequences
                     if(e.relatedTarget && e.relatedTarget.queued)
                         return;
                     // get elements
                     var index = modal
                         .find('.modal-body > input[name="index"]').val();
-                    var data = ds.target.table.row(index).data();
+                    var row = ds.target.table.row(index);
+                    var data = row.data();
                     $.each(ds.columns, function(index, column) {
                         switch(column.datatableSequence.widgetType) {
                             case 'DatatableSequenceWidget':
+                                // add datatable sequence to data.sequence
+                                if(data[column.data].datatableSequence !== true) {
+                                    var oid = modal
+                                        .find(".item-" + column.data)
+                                        .parents(".datatable_sequence").first()
+                                        .attr("id");
+                                    data[column.data] = deform.datatableSequences[oid];
+                                    row.data(data);
+                                }
+                                // save state
                                 var target = data[column.data].target;
                                 target.history = target.table.rows().data();
                                 break;
@@ -1039,9 +1064,6 @@ DatatableSequence.prototype = {
                     var open = $(ds.sel.modalContainer + " .modal:visible");
                     if(open.length > 0)
                         return;
-                    // prevent on subsequences
-                    // if(e.relatedTarget && e.relatedTarget.queued)
-                    //     return;
                     // get elements
                     var modal = $(ds.sel.modalEdit);
                     var index = modal
