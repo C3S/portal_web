@@ -46,8 +46,7 @@ if(typeof deform.datatableSequences == "undefined")
     Additional column attributes for custom columns:
 
         datatableSequence: {
-            targetPosition: "displayed" | "collapsed" | "invisible"
-            sourcePosision: "displayed" | "collapsed" | "invisible"
+            posision:       "displayed" | "collapsed" | "invisible"
             widgetType:     string (deform widget type)
             footerSearch:   true | false (creates footer search field)
             createValue:    string (default: "")
@@ -142,13 +141,14 @@ var DatatableSequence = function(vars) {
     this.unique = vars.unique;    // definition of uniqueness of data
 
     // modals
-    this.parentModal = false;
+    this.parentModal = false;    
 
     // events
     this.bind = [
         'queueModals',
         'closeAdd',
         'openCreate',
+        'openEdit',
         'closeEdit',
         'search',
         'more',
@@ -168,6 +168,8 @@ var DatatableSequence = function(vars) {
         tableId: ds.sel.targetTable,
         // initial data
         data: $(ds.sel.container).data('data'),
+        // history data
+        history: false
     };
     this.source = {
         // datatable table
@@ -764,24 +766,28 @@ DatatableSequence.prototype = {
                     modals.push(ds.sel.modalEdit);
                 $.each(modals, function(_, modal) {
                     $(modal).on('show.bs.modal', function(e) {
-                        if(!$("body").hasClass("modal-open"))
+                        var open = $(ds.sel.modalContainer + " .modal:visible");
+                        if(open.length === 0)
                             return;
                         ds.parentModal = $(e.relatedTarget)
                             .closest(".modal");
-                        ds.parentModal.queued = true;
                         ds.parentModal.modal('hide');
                     });
                     $(modal).on('hide.bs.modal', function(e) {
-                        if(!ds.parentModal)
-                            return;
-                        ds.parentModal.modal('show', {queued: true});
+                        if(ds.parentModal !== false) {
+                            ds.parentModal.modal('show', {queued: true});
+                        }
                     });
                     $(modal).on('hidden.bs.modal', function(e) {
+                        var open = $(ds.sel.modalContainer + " .modal:visible");
+                        if(open.length > 0)
+                            $("body").addClass('modal-open');
+                        else
+                            $("body").removeClass('modal-open');
                         if(!ds.parentModal)
                             return;
-                        $("body").addClass('modal-open');
+                        // e.stopImmediatePropagation();
                         ds.parentModal = false;
-                        e.stopImmediatePropagation();
                     });
                 });
             },
@@ -862,8 +868,12 @@ DatatableSequence.prototype = {
                         $(ds.sel.controls).show();
                     else {
                         $(ds.sel.controls).hide();
-                        if($.inArray('add', ds.actions) != -1)
-                            $(ds.sel.modalAdd).modal('hide');
+                        if($.inArray('add', ds.actions) == -1)
+                            return;
+                        var open = $(ds.sel.modalContainer + " .modal:visible");
+                        if(open.length > 0)
+                            return;
+                        $(ds.sel.modalAdd).modal('hide');
                     }
                 });
             },
@@ -993,12 +1003,45 @@ DatatableSequence.prototype = {
             },
 
             /**
+             * Saves the data of all subsequences on edit
+             */
+            openEdit: function() {
+                if($.inArray('edit', ds.actions) == -1)
+                    return;
+                var modal = $(ds.sel.modalEdit);
+                modal.on('show.bs.modal', function(e) {
+                    // prevent on subsequences
+                    if(e.relatedTarget && e.relatedTarget.queued)
+                        return;
+                    // get elements
+                    var index = modal
+                        .find('.modal-body > input[name="index"]').val();
+                    var data = ds.target.table.row(index).data();
+                    $.each(ds.columns, function(index, column) {
+                        switch(column.datatableSequence.widgetType) {
+                            case 'DatatableSequenceWidget':
+                                var target = data[column.data].target;
+                                target.history = target.table.rows().data();
+                                break;
+                        }
+                    });
+                });
+            },
+
+            /**
              * Returns the creation form to the datatables row on cancel
              */
             closeEdit: function() {
                 if($.inArray('edit', ds.actions) == -1)
                     return;
                 $(ds.sel.modalEdit).on('hidden.bs.modal', function(e) {
+                    // prevent for subsequences
+                    var open = $(ds.sel.modalContainer + " .modal:visible");
+                    if(open.length > 0)
+                        return;
+                    // prevent on subsequences
+                    // if(e.relatedTarget && e.relatedTarget.queued)
+                    //     return;
                     // get elements
                     var modal = $(ds.sel.modalEdit);
                     var index = modal
@@ -1011,7 +1054,7 @@ DatatableSequence.prototype = {
                     if(sequence.length !== 0) {
                         var row = ds.target.table.row(index);
                         var data = row.data();
-                        ds.updateSequence(sequence, data);
+                        ds.updateSequence(sequence, data, true);
                         row.data(data).draw();
                     }
                 });
@@ -1176,7 +1219,7 @@ DatatableSequence.prototype = {
      *   sequence (string): Html code for sequence item data.
      *   data (array): Datatables row data.
      */
-    updateSequence: function(sequence, data) {
+    updateSequence: function(sequence, data, reset) {
         var ds = this;
         // parse string if sequence is not a jquery node object
         if(!(sequence instanceof jQuery))
@@ -1217,8 +1260,16 @@ DatatableSequence.prototype = {
                     break;
 
                 case 'DatatableSequenceWidget':
+                    var target = data[column.data].target;
+                    if(reset !== true || !target.history)
+                        return;
+                    target.table
+                        .clear()
+                        .rows
+                        .add(target.history)
+                        .invalidate()
+                        .draw(false);
                     break;
-                
             }
         });
         // save updated html code back into the row data again
@@ -1267,12 +1318,9 @@ DatatableSequence.prototype = {
                 case 'DatatableSequenceWidget':
                     element = form
                         .children(".datatable_sequence")
-                        .children(".item-" + column.name)
-                        .find(".dataTable")
-                        .first();
-                    data[column.data] = element
-                        .DataTable()
-                        .data();
+                        .first()
+                        .attr('id');
+                    data[column.data] = deform.datatableSequences[element];
                     break;
             }
         });
