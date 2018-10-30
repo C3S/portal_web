@@ -5,6 +5,7 @@
 Base resources including base, web-/apirootfactory, back-/frontend, debug
 """
 
+import os
 import logging
 import pprint
 from copy import deepcopy
@@ -14,6 +15,7 @@ from collections import (
     OrderedDict
 )
 
+from pyramid import threadlocal
 from pyramid.security import (
     Allow,
     Authenticated,
@@ -23,6 +25,10 @@ from .models import Tdb
 
 log = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
+
+
+class PrettyDefaultdict(defaultdict):
+    __repr__ = dict.__repr__
 
 
 class ResourceBase(object):
@@ -77,15 +83,10 @@ class ResourceBase(object):
     __name__ = None
     __parent__ = None
     __children__ = None
-    __registry__ = {
-        'meta': {},
-        'content': {},
-        'static': {},
-        'menues': {},
-        'widgets': {}
-    }
+    __registry__ = {}
     __acl__ = []
     _write = []
+    _rdbglog = "/ado/tmp/registry.log"
 
     def __init__(self, request):
         Parent = self.__parent__
@@ -134,6 +135,19 @@ class ResourceBase(object):
             pp.pformat(self.__children__),
             pp.pformat(self.registry),
         )
+
+    @classmethod
+    def _rdbg(cls, caller, original, update, extended):
+            settings = threadlocal.get_current_registry().settings
+            if 'debug.res.registry' not in settings:
+                return
+            if settings['debug.res.registry'] == 'true':
+                with open(cls._rdbglog, "a") as f:
+                    f.write(("-"*3 + " %s.%s() " + "-"*60 + "\n\n"
+                             "original: %s\nupdate: %s\nextended: %s\n\n") % (
+                             cls.__name__, caller, pp.pformat(original),
+                             pp.pformat(update), pp.pformat(extended)))
+                os.chmod(cls._rdbglog, 775)
 
     @classmethod
     def add_child(cls, val):
@@ -233,13 +247,17 @@ class ResourceBase(object):
         Returns:
             None
         """
-        _orig_reg = cls.__registry__
+        _original_registry = cls.__registry__
 
         def _registry_extension(self):
-            orig_dict = _orig_reg
-            if isinstance(orig_dict, property):
-                orig_dict = orig_dict.fget(self)
-            return cls.merge_registry(dict(orig_dict), func(self))
+            if isinstance(_original_registry, property):
+                original = _original_registry.fget(self)
+            else:
+                original = deepcopy(_original_registry)
+            update = func(self)
+            extended = cls.merge_registry(original, update)
+            self._rdbg("extend_registry", _original_registry, update, extended)
+            return extended
         cls.__registry__ = property(_registry_extension)
 
     @property
@@ -256,14 +274,18 @@ class ResourceBase(object):
             dict: Current registry
         """
         if not hasattr(self, '_registry_cache'):
-            orig_dict = ResourceBase.__registry__
-            if self.__parent__:
-                orig_dict = self.__parent__.registry
-            if isinstance(orig_dict, property):
-                orig_dict = orig_dict.fget(self)
-            self._registry_cache = self.merge_registry(
-                deepcopy(orig_dict), self.__registry__
-            )
+            if not self.__parent__:
+                parent = {}
+                update = self.__registry__
+                extended = update
+            else:
+                parent = self.__parent__.registry
+                if isinstance(parent, property):
+                    parent = parent.fget(self)
+                update = self.__registry__
+                extended = self.merge_registry(deepcopy(parent), update)
+            self._registry_cache = extended
+            self._rdbg("registry", parent, update, extended)
         return self._registry_cache
 
     def dict(self):
@@ -284,7 +306,7 @@ class ResourceBase(object):
                 }
             }
         """
-        return defaultdict(self.dict)
+        return PrettyDefaultdict(self.dict)
 
     # triggered by ContextFound event to load resources after traversal
     def _context_found(self):
@@ -368,6 +390,13 @@ class FrontendResource(ResourceBase):
     __name__ = ""
     __parent__ = None
     __children__ = {}
+    __registry__ = {
+        'meta': {},
+        'content': {},
+        'static': {},
+        'menues': {},
+        'widgets': {}
+    }
     __acl__ = []
     _write = ['register', 'verify_email']
 
@@ -385,6 +414,13 @@ class BackendResource(ResourceBase):
     __name__ = ""
     __parent__ = None
     __children__ = {}
+    __registry__ = {
+        'meta': {},
+        'content': {},
+        'static': {},
+        'menues': {},
+        'widgets': {}
+    }
     __acl__ = [
         (Allow, Authenticated, 'authenticated')
     ]
