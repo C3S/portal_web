@@ -681,6 +681,7 @@ DatatableSequence.prototype = {
             .children('.deform-sequence-container')
             .first();
         var row = ds.target.table.row($(link).closest('tr'));
+        var sourceModal = $(link).closest('.modal-body');
         var data = row.data();
         // update modal
         index.val(row.index());
@@ -694,7 +695,7 @@ DatatableSequence.prototype = {
             row.data(data);
         sequence.append(data.sequence);
         // open modal
-        modal.modal('show', link);
+        modal.modal('show', sourceModal);
         return false;
     },
 
