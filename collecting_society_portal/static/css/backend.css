@@ -35,6 +35,7 @@ h6, .h6 {}
 .table > tbody > tr > td.cs-datatables-col-controls { padding-top:3px; padding-bottom:3px; }
 .cs-datatables-controls { margin-left:10px; }
 .cs-datatables-row-show { padding-right:4px; font-style:italic; }
+.deform-sequence-container .required::after { color: #e32; content: '*'; display: inline;}
 
 .select2-container { width:100%!important; }
 
