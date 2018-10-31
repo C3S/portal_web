@@ -455,6 +455,7 @@ DatatableSequence.prototype = {
                 visible: false,
                 orderable: false,
                 searchable: false,
+                defaultContent: "",
             },
             {
                 name: "mode",
