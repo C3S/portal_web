@@ -290,6 +290,7 @@ DatatableSequence.prototype = {
                 searching: false,
                 autoWidth: false,
                 fixedHeader: false,
+                rowId: 'oid',
                 rowReorder: ds.orderable ? {
                     dataSrc: 'order',
                     selector: 'td:nth-child(1)'
@@ -324,6 +325,7 @@ DatatableSequence.prototype = {
                     searchDelay: 600,
                     autoWidth: false,
                     fixedHeader: false,
+                    rowId: 'oid',
                     ajax: {
                         type: "POST",
                         contentType: "application/json; charset=utf-8",
@@ -447,6 +449,13 @@ DatatableSequence.prototype = {
                 defaultContent: "",
             },
             customCols.invisible,
+            {
+                name: "oid",
+                data: "oid",
+                visible: false,
+                orderable: false,
+                searchable: false,
+            },
             {
                 name: "mode",
                 data: "mode",
