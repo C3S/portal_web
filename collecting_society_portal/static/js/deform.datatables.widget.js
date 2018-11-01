@@ -1269,6 +1269,9 @@ DatatableSequence.prototype = {
         sequence
             .children("input[name='mode']")
             .attr('value', data.mode);
+        sequence
+            .children("input[name='oid']")
+            .attr('value', data.oid);
         // update data columns
         $.each(ds.columns, function(index, column) {
             switch(column.datatableSequence.widgetType) {
