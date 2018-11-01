@@ -537,6 +537,14 @@ DatatableSequence.prototype = {
                     });
                 },
             },
+            {
+                name: "oid",
+                data: "oid",
+                visible: false,
+                orderable: false,
+                searchable: false,
+                defaultContent: "",
+            },
             customCols.collapsed,
             customCols.invisible,
         ].flat();
