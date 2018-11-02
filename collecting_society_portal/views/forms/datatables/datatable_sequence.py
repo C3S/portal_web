@@ -10,19 +10,36 @@ from ....services import _
 log = logging.getLogger(__name__)
 
 
-class DatatableSequence(colander.SequenceSchema):
-    def __init__(self, *arg, **kw):
-        if 'min_len' in kw and kw['min_len'] > 0:
+@colander.deferred
+def defered_datatable_sequence_validator(node, kw):
+    missing = getattr(node, 'missing')
+    min_len = getattr(node, 'min_len', False)
+    if missing == colander.required:
+        if min_len and min_len > 0:
             min_err = _(u'Please add at least one entry.')
-            if kw['min_len'] > 1:
+            if min_len > 1:
                 min_err = _(
                     u'Please add at least a total of {} entries.'
                 ).format(kw['min_len'])
-            self.validator = colander.Length(
-                min=kw['min_len'],
+            return colander.Length(
+                min=min_len,
                 min_err=_(min_err)
             )
+
+
+class DatatableSequence(colander.SequenceSchema):
+    def __init__(self, *arg, **kw):
+        min_len = kw.get('min_len')
+        if min_len:
+            self.min_len = min_len
+        max_len = kw.get('max_len')
+        if max_len:
+            self.max_len = max_len
+        missing = kw.get('missing')
+        if missing:
+            self.missing = missing
         super(DatatableSequence, self).__init__(*arg, **kw)
+    validator = defered_datatable_sequence_validator
 
 
 class DatatableSequenceWidget(deform.widget.SequenceWidget):
