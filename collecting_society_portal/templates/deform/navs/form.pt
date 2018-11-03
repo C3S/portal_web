@@ -84,9 +84,11 @@
                     <!-- Form Controls -->
                     <div class="cs-navform-controls">
                         <div class="btn-group pull-right" role="group" aria-label="...">
-                            <button class="btn btnPrevious" type="button" i18n:translate=""
+                            <button class="btn btn-default btnPrevious"
+                                    type="button" i18n:translate=""
                                     tal:condition="not repeat.child.start">Previous</button>
-                            <button class="btn btnNext" type="button" i18n:translate=""
+                            <button class="btn btn-default btnNext"
+                                    type="button" i18n:translate=""
                                     tal:condition="not repeat.child.end">Next</button>
                             <tal:loop tal:repeat="button buttons">
                                 <button tal:define="btn_disposition repeat.button.start
@@ -152,9 +154,6 @@
         }
         $(document).ready(function(){
             redraw_formcontrols();
-        });
-        $(document).ready(function(){
-            // $("#${formid}").find("button[type='submit']").hide();
         });
     </script>
 

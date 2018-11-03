@@ -50,30 +50,26 @@
 
             <div tal:repeat="child field" tal:replace="structure child.render_template(item_template)"/>
 
-            <div class="form-group">
-                <tal:loop tal:repeat="button buttons">
-                    <button tal:define="btn_disposition repeat.button.start and 'btn-primary' or 'btn-default';
-                                        btn_icon button.icon|None"
-                            tal:attributes="disabled button.disabled if button.disabled else None"
-                            id="${formid+button.name}"
-                            name="${button.name}"
-                            type="${button.type}"
-                            class="btn ${btn_disposition} ${button.css_class}"
-                            value="${button.value}">
-                        <i tal:condition="btn_icon" class="${btn_icon}"> </i>
-                        ${button.title}
-                    </button>
-                </tal:loop>
+            <div class="form-group cs-form-controls-bottom">
+                <div class="pull-right">
+                    <tal:loop tal:repeat="button buttons">
+                        <button tal:define="btn_disposition repeat.button.start and 'btn-primary' or 'btn-default';
+                                            btn_icon button.icon|None"
+                                tal:attributes="disabled button.disabled if button.disabled else None"
+                                id="${formid+button.name}"
+                                name="${button.name}"
+                                type="${button.type}"
+                                class="btn ${btn_disposition} ${button.css_class}"
+                                value="${button.value}">
+                            <i tal:condition="btn_icon" class="${btn_icon}"> </i>
+                            ${button.title}
+                        </button>
+                    </tal:loop>
+                </div>
             </div>
         </div>
 
     </fieldset>
-
-    <script type="text/javascript">
-        $(document).ready(function(){
-            // $("#${formid}").find("button[type='submit']").hide();
-        });
-    </script>
 
     <script type="text/javascript" tal:condition="use_ajax">
     deform.addCallback(
