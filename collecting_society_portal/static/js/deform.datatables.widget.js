@@ -275,9 +275,10 @@ DatatableSequence.prototype = {
                 order = [
                     [ 0, "asc" ]  // order column
                 ];
-                $.each(ds.target.data, function(index, data) {
-                    data.order = index + 1;
-                });
+                if(typeof ds.target.data != "undefined")
+                    $.each(ds.target.data, function(index, data) {
+                        data.order = index + 1;
+                    });
             }
 
             // initialize target table
@@ -395,14 +396,14 @@ DatatableSequence.prototype = {
             {
                 name: "order",
                 data: "order",
-                className: "text-center all more",
+                className: "text-center all more dt-order",
                 width: "30px",
                 orderable: false,
                 searchable: false,
                 render: function(data, type, row, meta) {
                     if(type !== 'display')
                         return data;
-                    return '<span class="glyphicon glyphicon-move"></span>';
+                    return '<span class="badge">' + data + '</span>';
                 }
             },
             {
@@ -623,12 +624,19 @@ DatatableSequence.prototype = {
         }
         // remove row
         row.remove().draw();
+        // set order number for orderable tables
+        if(ds.orderable) {
+            ds.target.table.cells('.dt-order').every(function(i) {
+                this.data(i + 1);
+            });
+        }
         // close modal, if not pinned
         var pin = $(ds.sel.modalAdd + ' .pin').first();
         if(!pin || !pin.hasClass('pinned'))
             $(ds.sel.modalAdd).modal('hide');
         // redraw source table (to update controls)
-        ds.source.table.draw(false);
+        if($.inArray('add', ds.actions) != -1)
+            ds.source.table.draw(false);
         return false;
     },
 
