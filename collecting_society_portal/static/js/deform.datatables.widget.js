@@ -272,9 +272,7 @@ DatatableSequence.prototype = {
                 [ 1, "asc" ]  // first displayed row
             ];
             if(ds.orderable) {
-                order = [
-                    [ 0, "asc" ]  // order column
-                ];
+                order = [];
                 if(typeof ds.target.data != "undefined")
                     $.each(ds.target.data, function(index, data) {
                         data.order = index + 1;
