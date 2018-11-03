@@ -27,6 +27,17 @@ if(typeof deform.datatableSequences == "undefined")
             widget = deform.widget.HiddenWidget()
             validator = colander.OneOf(['add', 'create', 'edit'])
     
+        When saving GUI content to a db, use 'mode' as a hint what to do:
+        mode 'edit' makes the entry editable and adds a remove button.
+        mode 'create' indicates that an entry has to be created in the
+            database along with a relation (for example a metatable).
+        mode 'add' indicates that an existing item was added and
+            only a relation has to be created in the database.
+
+                ___________mm__(O O)__mm_________
+                           ""    U    ""
+                        Alex was not here (yet)
+
     Initialization in template:
 
         <tal:block metal:extend-macro="sequence"
