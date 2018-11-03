@@ -26,17 +26,20 @@ if(typeof deform.datatableSequences == "undefined")
             schema_type = colander.String
             widget = deform.widget.HiddenWidget()
             validator = colander.OneOf(['add', 'create', 'edit'])
+        
+    The mode is a flag, which indicates, if the entry was created by the
+    client (create) or not (add, edit). New entries created by the gui have the
+    mode 'create'. Other than that, the mode is never changed by the gui.
+    Entries with mode 'create' or 'edit' are editable by the user.
     
-        When saving GUI content to a db, use 'mode' as a hint what to do:
-        mode 'edit' makes the entry editable and adds a remove button.
-        mode 'create' indicates that an entry has to be created in the
-            database along with a relation (for example a metatable).
-        mode 'add' indicates that an existing item was added and
-            only a relation has to be created in the database.
+    For persisting the entries, one could use the mode flag as a switch, if the
+    db entry needs to be created (create), edited (edit) or fetched (add).
+    Already persisted entries should be initialized with mode = 'add'
+    (readonly by the gui) or 'edit' (writable).
 
                 ___________mm__(O O)__mm_________
                            ""    U    ""
-                        Alex was not here (yet)
+                        Alex was here
 
     Initialization in template:
 
