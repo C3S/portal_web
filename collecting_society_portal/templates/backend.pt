@@ -125,7 +125,8 @@
 
             <!-- template modal -->
             <script type="text/x-tmpl" id="datatable_sequence_tpl_modal">
-              <div class="modal fade cs-modal" id="{%=o.ds.sel.base%}_modal_{%=o.role%}" 
+              <div class="modal fade cs-modal cs-modal-{%=o.role%}" 
+                   id="{%=o.ds.sel.base%}_modal_{%=o.role%}" 
                    aria-labelledby="{%=o.ds.sel.base%}_modal_{%=o.role%}_header"
                    tabindex="-1" role="dialog">
                 <div class="modal-dialog modal-lg" role="document">

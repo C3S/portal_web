@@ -45,9 +45,20 @@
 
             <div class="row equal">
 
-                <!-- registry: logo -->
-                <img tal:attributes="src context.registry['static']['logo']"
-                     class="cs-logo col-md-12 hidden-md hidden-lg" />
+                <div class="cs-logo-container hidden-md hidden-lg">
+                    <!-- registry: logo -->
+                    <img tal:attributes="src context.registry['static']['logo']"
+                         class="cs-logo" />
+                    <!-- registry: language flags -->
+                    <div tal:condition="context.registry['meta']['languages']|False"
+                         class="cs-langflags">
+                        <a tal:repeat="language context.registry['meta']['languages']"
+                           tal:attributes="href '?_LOCALE_='+language['id']">
+                            <img src="${language['icon']}"
+                                alt="${language['name']}"/>
+                        </a>
+                    </div>
+                </div>
 
                 <!-- column left -->
                 <div class="cs-content-left col-md-3">
@@ -80,19 +91,20 @@
                 <div class="cs-content-right col-md-9">
                     <div class="col-md-12">
 
-                        <!-- registry: language flags -->
-                        <div tal:condition="context.registry['meta']['languages']|False"
-                            class="cs-langflags">
-                            <a tal:repeat="language context.registry['meta']['languages']"
-                            tal:attributes="href '?_LOCALE_='+language['id']">
-                                <img src="${language['icon']}"
-                                    alt="${language['name']}"/>
-                            </a>
+                        <div class="cs-logo-container hidden-xs hidden-sm">
+                            <!-- registry: logo -->
+                            <img tal:attributes="src context.registry['static']['logo']"
+                                 class="cs-logo" />
+                            <!-- registry: language flags -->
+                            <div tal:condition="context.registry['meta']['languages']|False"
+                                 class="cs-langflags">
+                                <a tal:repeat="language context.registry['meta']['languages']"
+                                   tal:attributes="href '?_LOCALE_='+language['id']">
+                                    <img src="${language['icon']}"
+                                        alt="${language['name']}"/>
+                                </a>
+                            </div>
                         </div>
-
-                        <!-- registry: logo -->
-                        <img tal:attributes="src context.registry['static']['logo']"
-                             class="cs-logo hidden-xs hidden-sm" />
 
                         <!-- registry: top menue -->
                         <tal:block metal:use-macro="m['navbar']"

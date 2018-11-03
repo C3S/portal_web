@@ -23,11 +23,13 @@ h4, .h4 { font-family: "Signika", "Arial"; }
 h5, .h5 { font-family: "Signika", "Arial"; }
 h6, .h6 { font-family: "Signika", "Arial"; }
 
+.block { display:block; }
 .fixed { position:fixed; }
 .pull-bottom { position: absolute; bottom:0; }
 .clear { clear:both; }
 .prewrap { white-space:pre-wrap; }
 .fullwidth { width:100%; }
+.minwidth { width:1%; }
 
 /* collapsable panels 
  * cf. http://stackoverflow.com/questions/18325779/bootstrap-3-collapse-show-state-with-chevron-icon/18568997#18568997 */

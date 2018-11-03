@@ -31,102 +31,86 @@
       i18n:domain="collecting_society_portal">
 
     
+    <fieldset class="deformFormFieldset">
 
-    <input type="hidden" name="_charset_" />
-    <input type="hidden" name="__formid__" value="${formid}"/>
+        <h1 tal:condition="title" class="cs-form-header">${title}</h1>
 
-    <h1 tal:condition="title">${title}</h1>
+        <input type="hidden" name="_charset_" />
+        <input type="hidden" name="__formid__" value="${formid}"/>
 
-    <div class="alert alert-danger" tal:condition="field.error">
-        <div class="errorMsgLbl" tal:condition="not field.errormsg" i18n:translate="">
-            There was a problem with your submission. Please check the fields below.
-        </div>
-        <p class="errorMsg">${field.errormsg}</p>
-    </div>
-
-    <p class="section first" tal:condition="description">
-        ${description}
-    </p>
-
-    <div class="form-group pull-right">
-        <tal:loop tal:repeat="button buttons">
-            <button tal:define="btn_disposition repeat.button.start
-                                and 'btn-primary' or 'btn-default';
-                                btn_icon button.icon|None"
-                    tal:attributes="disabled button.disabled
-                                    if button.disabled else None"
-                    id="${formid+button.name}"
-                    name="${button.name}"
-                    type="${button.type}"
-                    class="btn ${btn_disposition} ${button.css_class}"
-                    value="${button.value}">
-                <i tal:condition="btn_icon" class="${btn_icon}"> </i>
-                ${button.title}
-            </button>
-        </tal:loop>
-    </div>
-
-    <div class="panel panel-default">
-        <!-- Nav -->
-        <div class="panel-heading">
-            <ul class="nav nav-${navstyle} cs-nav-${navstyle}" role="tablist">
-                <li role="presentation"
-                    tal:repeat="schema field.children"
-                    tal:attributes="class 'active' if repeat.schema.start else ''"
-                    id="cs-navform-item-menu-${schema.name}">
-                    <a href="#cs-navform-item-content-${schema.name}"
-                       aria-controls="${schema.oid}" 
-                       role="tab"
-                       data-toggle="tab"
-                       data-anchor="cs-navform-item-content-${schema.name}"
-                       tal:attributes="class 'cs-navform-item-menu cs-error'
-                                       if schema.error
-                                       else 'cs-navform-item-menu'">
-                       ${schema.title}
-                    </a>
-                </li>
-            </ul>
+        <div class="alert alert-danger" tal:condition="field.error">
+            <div class="errorMsgLbl" tal:condition="not field.errormsg" i18n:translate="">
+                There was a problem with your submission. Please check the fields below.
+            </div>
+            <p class="errorMsg">${field.errormsg}</p>
         </div>
 
-        <!-- Content -->
-        <div class="panel-body tab-content cs-navform-item-content">
-            <div role="tabpanel"
-                 tal:repeat="child field"
-                 id="cs-navform-item-content-${child.name}"
-                 tal:attributes="class 'tab-pane active' if repeat.child.start
-                                 else 'tab-pane'">
-                <div class="cs-navform-form">
-                    <div tal:replace="structure child.render_template(item_template)"/>
-                </div>
-                <!-- Form Controls -->
-                <div class="cs-navform-controls">
-                    <div class="btn-group pull-right" role="group" aria-label="...">
-                        <button class="btn btnPrevious" type="button" i18n:translate=""
-                                tal:condition="not repeat.child.start">Previous</button>
-                        <button class="btn btnNext" type="button" i18n:translate=""
-                                tal:condition="not repeat.child.end">Next</button>
-                        <tal:loop tal:repeat="button buttons">
-                            <button tal:define="btn_disposition repeat.button.start
-                                                and 'btn-primary' or 'btn-default';
-                                                btn_icon button.icon|None"
-                                    tal:attributes="disabled button.disabled
-                                                    if button.disabled else None"
-                                    id="${formid+button.name}"
-                                    name="${button.name}"
-                                    type="${button.type}"
-                                    class="btn ${btn_disposition} ${button.css_class}"
-                                    value="${button.value}"
-                                    tal:condition="repeat.child.end and
-                                                   button.name == 'submit'">
-                                <i tal:condition="btn_icon" class="${btn_icon}"> </i>
-                                ${button.title}
-                            </button>
-                        </tal:loop>
+        <p class="section first" tal:condition="description">
+            ${description}
+        </p>
+
+        <div class="panel panel-default">
+            <!-- Nav -->
+            <div class="panel-heading">
+                <ul class="nav nav-${navstyle} cs-nav-${navstyle}" role="tablist">
+                    <li role="presentation"
+                        tal:repeat="schema field.children"
+                        tal:attributes="class 'active' if repeat.schema.start else ''"
+                        id="cs-navform-item-menu-${schema.name}">
+                        <a href="#cs-navform-item-content-${schema.name}"
+                           aria-controls="${schema.oid}" 
+                           role="tab"
+                           data-toggle="tab"
+                           data-anchor="cs-navform-item-content-${schema.name}"
+                           tal:attributes="class 'cs-navform-item-menu cs-error'
+                                           if schema.error
+                                           else 'cs-navform-item-menu'">
+                           ${schema.title}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Content -->
+            <div class="panel-body tab-content cs-navform-item-content">
+                <div role="tabpanel"
+                     tal:repeat="child field"
+                     id="cs-navform-item-content-${child.name}"
+                     tal:attributes="class 'tab-pane active' if repeat.child.start
+                                     else 'tab-pane'">
+                    <div class="cs-navform-form">
+                        <div tal:replace="structure child.render_template(item_template)"></div>
+                    </div>
+                    <!-- Form Controls -->
+                    <div class="cs-navform-controls">
+                        <div class="btn-group pull-right" role="group" aria-label="...">
+                            <button class="btn btnPrevious" type="button" i18n:translate=""
+                                    tal:condition="not repeat.child.start">Previous</button>
+                            <button class="btn btnNext" type="button" i18n:translate=""
+                                    tal:condition="not repeat.child.end">Next</button>
+                            <tal:loop tal:repeat="button buttons">
+                                <button tal:define="btn_disposition repeat.button.start
+                                                    and 'btn-primary' or 'btn-default';
+                                                    btn_icon button.icon|None"
+                                        tal:attributes="disabled button.disabled
+                                                        if button.disabled else None"
+                                        id="${formid+button.name}"
+                                        name="${button.name}"
+                                        type="${button.type}"
+                                        class="btn ${btn_disposition} ${button.css_class}"
+                                        value="${button.value}"
+                                        tal:condition="repeat.child.end and
+                                                       button.name == 'submit'">
+                                    <i tal:condition="btn_icon" class="${btn_icon}"> </i>
+                                    ${button.title}
+                                </button>
+                            </tal:loop>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </fieldset>
 
     <script type="text/javascript">
         formcontrols = 0;
@@ -168,6 +152,9 @@
         }
         $(document).ready(function(){
             redraw_formcontrols();
+        });
+        $(document).ready(function(){
+            // $("#${formid}").find("button[type='submit']").hide();
         });
     </script>
 

@@ -50,8 +50,7 @@ h6, .h6 {}
 
 /* Content Middle */
 
-.cs-menue-top { background-color:transparent; border:none; font-size:90%; }
-.cs-navform { margin-top:25px; }
+.cs-menue-top { background-color:transparent; border:none; font-size:90%; margin-bottom:10px; min-height:60px; }
 .cs-navform .panel-heading > .nav-tabs { border-bottom: none; margin-bottom: -10px; }
 .cs-navform-title { float:left; margin:7px 25px 0 0; }
 .cs-navform .cs-navform-nav > li > .cs-error { color:#b94a48; font-weight:bold; }
@@ -60,7 +59,9 @@ h6, .h6 {}
 
 .cs-content-right { background-color:#eee; }
 
-.cs-logo { max-width:130px; margin-top:10px; margin:0 auto; padding:25px 0; }
+.cs-logo-container { text-align:right; padding:10px; }
+.cs-logo { max-width:130px; }
+.cs-langflags { margin-right:47px; }
 
 .select2-container { width: 100%!important; } /* widgets in follow-up tabs were too narrow */
 
@@ -110,10 +111,8 @@ h6, .h6 {}
 
     .cs-content-right { min-height:100%; }
 
-    .cs-logo { margin-top:20px; margin-bottom:20px; padding:0; }
-    .cs-backend-39 .cs-logo { float:right; margin-right:27px; }
-
-
+    .cs-logo-container { float:right; padding:0; }
+    .cs-logo { margin-top:13px; }
 
 }
 
@@ -138,6 +137,5 @@ h6, .h6 {}
     .cs-menue-top { font-size:100%; }
 
     /* Content Right */
-    .cs-backend-39 .cs-logo { margin-right:52px; }
     
 }
