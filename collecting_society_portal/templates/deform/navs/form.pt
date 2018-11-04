@@ -83,30 +83,32 @@
                     </div>
                     <!-- Form Controls -->
                     <div class="cs-navform-controls">
-                        <div class="btn-group pull-right" role="group" aria-label="...">
-                            <button class="btn btn-default btnPrevious"
-                                    type="button" i18n:translate=""
-                                    tal:condition="not repeat.child.start">Previous</button>
-                            <button class="btn btn-default btnNext"
-                                    type="button" i18n:translate=""
-                                    tal:condition="not repeat.child.end">Next</button>
-                            <tal:loop tal:repeat="button buttons">
-                                <button tal:define="btn_disposition repeat.button.start
-                                                    and 'btn-primary' or 'btn-default';
-                                                    btn_icon button.icon|None"
-                                        tal:attributes="disabled button.disabled
-                                                        if button.disabled else None"
-                                        id="${formid+button.name}"
-                                        name="${button.name}"
-                                        type="${button.type}"
-                                        class="btn ${btn_disposition} ${button.css_class}"
-                                        value="${button.value}"
-                                        tal:condition="repeat.child.end and
-                                                       button.name == 'submit'">
-                                    <i tal:condition="btn_icon" class="${btn_icon}"> </i>
-                                    ${button.title}
-                                </button>
-                            </tal:loop>
+                        <div class="cs-navform-controls-wrap">
+                            <div class="btn-group" role="group" aria-label="...">
+                                <button class="btn btn-default btnPrevious"
+                                        type="button" i18n:translate=""
+                                        tal:condition="not repeat.child.start">Previous</button>
+                                <button class="btn btn-default btnNext"
+                                        type="button" i18n:translate=""
+                                        tal:condition="not repeat.child.end">Next</button>
+                                <tal:loop tal:repeat="button buttons">
+                                    <button tal:define="btn_disposition repeat.button.start
+                                                        and 'btn-primary' or 'btn-default';
+                                                        btn_icon button.icon|None"
+                                            tal:attributes="disabled button.disabled
+                                                            if button.disabled else None"
+                                            id="${formid+button.name}"
+                                            name="${button.name}"
+                                            type="${button.type}"
+                                            class="btn ${btn_disposition} ${button.css_class}"
+                                            value="${button.value}"
+                                            tal:condition="repeat.child.end and
+                                                           button.name == 'submit'">
+                                        <i tal:condition="btn_icon" class="${btn_icon}"> </i>
+                                        ${button.title}
+                                    </button>
+                                </tal:loop>
+                            </div>
                         </div>
                     </div>
                 </div>

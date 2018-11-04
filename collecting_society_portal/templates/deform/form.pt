@@ -30,7 +30,7 @@
 
     <fieldset class="deformFormFieldset">
 
-        <h1 tal:condition="title" class="cs-form-header">${title}</h1>
+        <label tal:condition="title" class="cs-form-header h1">${title}</label>
 
         <div class="container-fluid">
 
@@ -51,7 +51,7 @@
             <div tal:repeat="child field" tal:replace="structure child.render_template(item_template)"/>
 
             <div class="form-group cs-form-controls-bottom">
-                <div class="pull-right">
+                <div class="cs-form-controls-bottom-wrap">
                     <tal:loop tal:repeat="button buttons">
                         <button tal:define="btn_disposition repeat.button.start and 'btn-primary' or 'btn-default';
                                             btn_icon button.icon|None"
