@@ -37,9 +37,14 @@ if(typeof deform.datatableSequences == "undefined")
     Already persisted entries should be initialized with mode = 'add'
     (readonly by the gui) or 'edit' (writable).
 
+    The concept may be hard to grasp as it mixes different levels of the whole
+    system (api, ajax calls, form controller, etc.). Maybe it helps to
+    permutate the modes in the context they are used: 'editABLE' when
+    initialized by the form controller or 'createD' when parsing the form data.
+                                ___
                 ___________mm__(O O)__mm_________
                            ""    U    ""
-                        Alex was here
+                           Alex was here
 
     Initialization in template:
 
