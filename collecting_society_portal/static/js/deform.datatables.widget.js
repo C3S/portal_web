@@ -1442,6 +1442,7 @@ DatatableSequence.prototype = {
                 return;
             // get required
             var required = group.find('.required');
+            console.log(group, required);
             // get field
             var field, value = false;
             switch(column.datatableSequence.widgetType) {
@@ -1476,7 +1477,7 @@ DatatableSequence.prototype = {
                     break;
             }
             // prevent emtpy required fields
-            if(required && !value) {
+            if(required.length > 0 && !value) {
                 valid = false;
                 group.addClass('has-error');
             } else {
