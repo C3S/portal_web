@@ -440,7 +440,9 @@ DatatableSequence.prototype = {
                     });
                 },
             },
-            customCols.displayed,
+        ];
+        targetColumns = targetColumns.concat(customCols.displayed);
+        targetColumns = targetColumns.concat(
             {
                 name: "controls",
                 data: null,
@@ -456,8 +458,10 @@ DatatableSequence.prototype = {
                         language:  ds.language,
                     });
                 },
-            },
-            customCols.collapsed,
+            }
+        );
+        targetColumns = targetColumns.concat(customCols.collapsed);
+        targetColumns = targetColumns.concat(
             {
                 name: "sequence",
                 data: "sequence",
@@ -465,8 +469,10 @@ DatatableSequence.prototype = {
                 orderable: false,
                 searchable: false,
                 defaultContent: "",
-            },
-            customCols.invisible,
+            }
+        );
+        targetColumns = targetColumns.concat(customCols.invisible);
+        targetColumns = targetColumns.concat(
             {
                 name: "oid",
                 data: "oid",
@@ -504,7 +510,7 @@ DatatableSequence.prototype = {
                 orderable: false,
                 searchable: false,
             }
-        ].flat();
+        );
         if(!ds.orderable)
             targetColumns.shift();
         return targetColumns;
@@ -538,8 +544,10 @@ DatatableSequence.prototype = {
                         language: ds.language,
                     });
                 },
-            },
-            customCols.displayed,
+            }
+        ];
+        sourceColumns = sourceColumns.concat(customCols.displayed);
+        sourceColumns = sourceColumns.concat(
             {
                 name: "controls",
                 data: null,
@@ -562,10 +570,10 @@ DatatableSequence.prototype = {
                 orderable: false,
                 searchable: false,
                 defaultContent: "",
-            },
-            customCols.collapsed,
-            customCols.invisible,
-        ].flat();
+            }
+        );
+        sourceColumns = sourceColumns.concat(customCols.collapsed);
+        sourceColumns = sourceColumns.concat(customCols.invisible);
         return sourceColumns;
     },
 
@@ -1442,7 +1450,6 @@ DatatableSequence.prototype = {
                 return;
             // get required
             var required = group.find('.required');
-            console.log(group, required);
             // get field
             var field, value = false;
             switch(column.datatableSequence.widgetType) {
