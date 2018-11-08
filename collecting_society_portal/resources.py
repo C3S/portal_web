@@ -440,6 +440,7 @@ class ProfileResource(ResourceBase):
     __parent__ = BackendResource
     __children__ = {}
     __acl__ = []
+    _write = ['edit']
 
 
 class DebugResource(ResourceBase):
