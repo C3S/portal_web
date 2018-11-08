@@ -16,9 +16,7 @@
     <tal:errors condition="field.error and not hidden"
                 define="errstr 'error-%s' % oid"
                 repeat="msg field.error.messages()">
-        <p tal:condition="msg"
-           id="${errstr if repeat.msg.index==0
-                 else '%s-%s' % (errstr, repeat.msg.index)}"
+        <p tal:condition="msg" id="${errstr if repeat.msg.index==0 else '%s-%s' % (errstr, repeat.msg.index)}"
            class="${error_class} help-block"
            i18n:translate="">${msg}</p>
     </tal:errors>
