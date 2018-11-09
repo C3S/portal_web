@@ -77,7 +77,7 @@
                      tal:repeat="child field"
                      id="cs-navform-item-content-${child.name}"
                      tal:attributes="class 'tab-pane active' if repeat.child.start
-                                     else 'tab-pane'">
+                                     else 'tab-pane fade'">
                     <div class="cs-navform-form">
                         <div tal:replace="structure child.render_template(item_template)"></div>
                     </div>
