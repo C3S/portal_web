@@ -28,6 +28,7 @@ h6, .h6 { font-family: "Signika", "Arial"; }
 .pull-bottom { position: absolute; bottom:0; }
 .clear { clear:both; }
 .prewrap { white-space:pre-wrap; }
+.nowrap { white-space:nowrap; }
 .fullwidth { width:100%; }
 .minwidth { width:1%; }
 
