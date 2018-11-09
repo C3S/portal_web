@@ -1,133 +1,291 @@
-<!-- For copyright / license terms, see COPYRIGHT.rst (top level of repository)
-     Repository: https://github.com/C3S/collecting_society -->
+<!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+      Repository: https://github.com/C3S/collecting_society.portal -->
+<!--!
 
-<tal:block metal:extend-macro="base">
+    Bootstrap based, responsive base template for the backend.
+
+    Slots filled:
+
+    - content (base)
+
+    Slots defined:
+
+    - content
+
+    Slots passed:
+
+    - css (base)
+    - js-head (base)
+    - js-body (base)
+
+    Content defined:
+
+    - css   (static: static/css/backend.css)
+
+-->
+<tal:block metal:extend-macro="base"
+           i18n:domain="collecting_society_portal">
 
     <!-- css -->
     <tal:block metal:fill-slot="css">
-        <link href="${request.static_path('collecting_society_portal:static/css/backend.css')}"
-                  type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
-        <link tal:condition="context.registry['static']['css']|False"
-              tal:repeat="css context.registry['static']['css']"
-              tal:attributes="href css"
+        <link href="${request.static_path(
+                  'collecting_society_portal:static/css/backend.css'
+              )}"
               type="text/css" rel="stylesheet" media="screen" charset="utf-8" />
-    </tal:block>
-
-    <!-- js -->
-    <tal:block metal:fill-slot="js-head">
-        <script tal:condition="context.registry['static']['js-head']|False"
-                tal:repeat="js context.registry['static']['js-head']"
-                tal:attributes="src js"></script>
-    </tal:block>
-    <tal:block metal:fill-slot="js-body">
-        <script tal:condition="context.registry['static']['js-body']|False"
-                tal:repeat="js context.registry['static']['js-body']"
-                tal:attributes="src js"></script>
     </tal:block>
 
     <!-- content -->
     <tal:block metal:fill-slot="content">
+        
+        <!-- datatable sequence tmpl -->
+        <div id="cs-sequence-tmpl">
 
-        <!-- columns -->
-        <div class="cs-content cs-backend container">
-            <div class="row equal">
+            <!-- template sequence -->
+            <script type="text/x-tmpl" id="datatable_sequence_tpl_sequence">
+              <div class="form-group {%=(o.errormsg?'has-error':'')%} item-{%=o.ds.name%}">
+                {% if (o.ds.title) { %}
+                  <label class="control-label {%=o.lableClass%}"
+                         for="{%=o.ds.name%}">
+                    {%=o.ds.title%}
+                  </label>
+                {% } %}
 
-                <!-- column right -->
-                <div class="cs-content-right col-md-3 col-md-push-9">
-                    <div class="col-md-12">
+                {% include( o.ds.tpl.controls,
+                            { add: true,
+                              create: true,
+                              ds: o.ds }); %}
+              
+                {% include( o.ds.tpl.target.table,
+                            { ds: o.ds }); %}
 
-                        <!-- logo -->
-                        <img tal:attributes="src context.registry['static']['logo']"
-                             class="cs-logo img-responsive" />
+                {% if (o.errormsg) { %}
+                    <p class="help-block" id="error-{%=o.ds.oid%}">
+                      {%=o.errormsg%}
+                    </p>
+                {% } %}
 
-                        <!-- sidebar widgets -->
-                        <div class="cs-sidebar-widgets" tal:define="group 'sidebar-widgets'">
-                            <tal:block tal:condition="context.registry['widgets']['content-right']|None"
-                                       tal:repeat="widget context.registry['widgets']['content-right']">
-                                <tal:block metal:use-macro="m['panel-collapsed']"
-                                           tal:define="panel widget(request);
-                                                       heading panel.heading;
-                                                       body structure: panel.body;
-                                                       id repeat.widget.number;
-                                                       visible True" />
-                            </tal:block>
-                        </div>
+                <div class="datatable_sequence_tpl_embed"></div>
+              </div>
+            </script>
 
-                        <!-- slot: content right -->
-                        <tal:block metal:define-slot="content-right" />
+            <!-- template controls -->
+            <script type="text/x-tmpl" id="datatable_sequence_tpl_sequence_controls">
+              <div class="btn-group cs-datatables-controls {%=o.ds.sel.base%}_controls"
+                   role="group" aria-label="SequenceControls">
+                {% if (o.add && o.ds.actions.indexOf('add') != -1) { %}
+                  <button type="button" class="btn btn-default"
+                          data-toggle="modal" data-target="{%=o.ds.sel.modalAdd%}">
+                    {%=o.ds.language.custom.add%}
+                  </button>
+                {% } %}
+                {% if (o.create && o.ds.actions.indexOf('create') != -1) { %}
+                  <button type="button" class="btn btn-default"
+                          data-toggle="modal" data-target="{%=o.ds.sel.modalCreate%}">
+                    {%=o.ds.language.custom.create%}
+                  </button>
+                {% } %}
+              </div>
+            </script>
 
+            <!-- template target table -->
+            <script type="text/x-tmpl" id="datatable_sequence_tpl_target">
+              <div class="{%=o.ds.sel.base%}_target_area">
+                <input type="hidden" name="__start__" value="{%=o.ds.name%}:sequence" />
+                <table id="{%=o.ds.sel.base%}_target"
+                       class="table table-hover cs-datatables"></table>
+                <input type="hidden" name="__end__" value="{%=o.ds.name%}:sequence" />
+              </div>
+            </script>
+
+            <!-- template source table -->
+            <script type="text/x-tmpl" id="datatable_sequence_tpl_source">
+              <div class="{%=o.ds.sel.base%}_source_area 
+                          datatable_sequence_source_area">
+                  <table id="{%=o.ds.sel.base%}_source"
+                         class="table table-hover responsive cs-datatables">
+                    <tfoot>
+                      <tr>
+                        {% for (var i=0; i<o.ds.source.columns.length; i++) { %}
+                          {% if (o.ds.source.columns[i].datatableSequence
+                                 && o.ds.source.columns[i]
+                                    .datatableSequence.footerSearch) { %}
+                            <th class="multifilter"> 
+                              <input type="text"
+                                     placeholder="{%=o.ds.language.custom.search%} {%=o.ds.source.columns[i].title%}" />
+                            </th>
+                          {% } else { %}
+                            <th></th>
+                          {% } %}
+                        {% } %}
+                      </tr>
+                    </tfoot>
+                  </table>
+              </div>
+            </script>
+
+            <!-- template modal -->
+            <script type="text/x-tmpl" id="datatable_sequence_tpl_modal">
+              <div class="modal fade cs-modal cs-modal-{%=o.role%}" 
+                   id="{%=o.ds.sel.base%}_modal_{%=o.role%}" 
+                   aria-labelledby="{%=o.ds.sel.base%}_modal_{%=o.role%}_header"
+                   tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-lg" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header cs-modal-header">
+                      <button type="button" class="close"
+                              data-dismiss="modal" aria-label="Close">
+                        <span class="glyphicon glyphicon-remove"></span>
+                      </button>
+                      {% if (o.pin) { %}
+                        <button type="button" class="close pin" aria-label="Pin"
+                                onclick="return {%=o.ds.registry%}.pinModal(this);">
+                          <span class="glyphicon glyphicon-pushpin"></span>
+                        </button>
+                      {% } %}
+                      {% if (o.title) { %}
+                        <h4 id="{%=o.ds.sel.base%}_modal_{%=o.role%}_header"
+                            class="modal-title">
+                          {%=o.title%}
+                        </h4>
+                      {% } %}
                     </div>
-                </div>
-
-                <!-- column left -->
-                <div class="cs-content-left col-md-3 col-md-pull-3">
-                    <div class="col-md-12">
-
-                        <!-- menue roles -->
-                        <tal:block metal:use-macro="m['nav']"
-                                   tal:define="name 'roles'; style 'nav-tabs nav-justified'" />
-
-                        <!-- menue main -->
-                        <tal:block metal:use-macro="m['navbar']"
-                                   tal:define="name 'main'; style 'navbar-stacked'">
-                            <tal:block metal:fill-slot="links">
-                                <a tal:attributes="href menu.url" class="clearfix">
-                                    <img tal:attributes="src menu.icon" class="cs-icon img-responsive" />
-                                    <div class="cs-title">${menu.name}</div>
-                                </a>
-                            </tal:block>
-                        </tal:block>
-
-                        <!-- slot: content left -->
-                        <tal:block metal:define-slot="content-left" />
-
+                    <div class="modal-body">
+                      {% include(o.content, o); %}
                     </div>
+                    {% if (o.footer) { %}
+                      <div class="modal-body">
+                        {% include(o.footer, o); %}
+                      </div>
+                    {% } %}
+                  </div>
                 </div>
+              </div>
+            </script>
 
-                <!-- column middle -->
-                <div class="cs-content-middle col-md-6 col-md-pull-3">
-                    <div class="col-md-12">
+            <!-- template create -->
+            <script type="text/x-tmpl" id="datatable_sequence_tpl_modal_create">
+              <div class='deform-sequence-container'></div>
+              <div class="btn-group" role="group">
+                <a href="#" class="btn btn-default cs-datatables-apply" role="button"
+                   onclick="return {%=o.ds.registry%}.createRow(this);">
+                  {%=o.ds.language.custom.apply%}
+                </a>
+                <a href="#" class="btn btn-default" role="button"
+                   data-dismiss="modal" aria-label="Close">
+                  {%=o.ds.language.custom.cancel%}
+                </a>
+              </div>
+            </script>
 
-                        <!-- menue portal -->
-                        <tal:block metal:use-macro="m['navbar']"
-                                   tal:define="name 'portal'" />
+            <!-- template edit -->
+            <script type="text/x-tmpl" id="datatable_sequence_tpl_modal_edit">
+              <input name="index" type="hidden" value="">
+              <div class='deform-sequence-container'></div>
+              <div class="btn-group" role="group">
+                <a href="#" class="btn btn-default cs-datatables-apply" role="button"
+                   onclick="return {%=o.ds.registry%}.saveRow(this);">
+                  {%=o.ds.language.custom.apply%}
+                </a>
+                <a href="#" class="btn btn-default" role="button"
+                   data-dismiss="modal" aria-label="Close">
+                  {%=o.ds.language.custom.cancel%}
+                </a>
+              </div>
+            </script>
 
-                        <!-- alerts -->
-                        <div tal:condition="request.session.peek_flash('main-alert-success')"
-                             class="alert alert-success" role="alert">
-                            <p tal:repeat="message request.session.pop_flash('main-alert-success')">
-                                ${message}
-                            </p>
-                        </div>
-                        <div tal:condition="request.session.peek_flash('main-alert-info')"
-                             class="alert alert-info" role="alert">
-                            <p tal:repeat="message request.session.pop_flash('main-alert-info')">
-                                ${message}
-                            </p>
-                        </div>
-                        <div tal:condition="request.session.peek_flash('main-alert-warning')"
-                             class="alert alert-warning" role="alert">
-                            <p tal:repeat="message request.session.pop_flash('main-alert-warning')">
-                                ${message}
-                            </p>
-                        </div>
-                        <div tal:condition="request.session.peek_flash('main-alert-danger')"
-                            class="alert alert-danger" role="alert">
-                            <p tal:repeat="message request.session.pop_flash('main-alert-danger')">
-                                ${message}
-                            </p>
-                        </div>
+            <!-- template target column controls -->
+            <script type="text/x-tmpl" id="datatable_sequence_tpl_target_controls">
+              <div class="btn-group-vertical cs-row-controls" role="group">
+                {% if (o.data.mode !== "add" && o.actions.indexOf('edit') != -1) { %}
+                  <a href="#" role="button" onclick="return {%=o.registry%}.editRow(this);"
+                     class="btn btn-sm {%=o.editClass%} cs-datatables-row-edit">
+                      {%=o.language.custom.edit%}
+                  </a>
+                {% } %}
+                <a href="#" role="button" onclick="return {%=o.registry%}.removeRow(this);"
+                   class="btn btn-default btn-sm cs-datatables-row-remove">
+                    {%=o.language.custom.remove%}
+                </a>
+              </div>
+            </script>
 
-                        <!-- slot: content middle -->
-                        <tal:block metal:define-slot="content-middle" />
+            <!-- template target column show -->
+            <script type="text/x-tmpl" id="datatable_sequence_tpl_target_show">
+              <table>
+                {% for (var i=0; i<o.columns.length; i++) { %}
+                  {% if (o.row[o.columns[i].name]) { %}
+                      <tr>
+                        <td class="cs-datatables-row-show">
+                          <small>{%=o.columns[i].title%}</small>
+                        </td>
+                        <td class="fullwidth">
+                          {%=o.row[o.columns[i].name]%}
+                        </td>
+                      </tr>
+                  {% } %}
+                {% } %}
+                {% if (o.row.errors) { %}
+                  <tr>
+                    <td colspan="2">
+                      {%#o.row.errors%}
+                    </td>
+                  </tr>
+                {% } %}
+              </table>
+            </script>
 
-                    </div>
-                </div>
+            <!-- template source column controls -->
+            <script type="text/x-tmpl" id="datatable_sequence_tpl_source_controls">
+              <div class="btn-group-vertical cs-row-controls" role="group">
+                {% if (o.added) { %}
+                  <a href="#" role="button" class="btn btn-default btn-sm"
+                     onclick="return {%=o.registry%}.removeRow({%=o.added.index()%});">
+                      {%=o.language.custom.remove%}
+                  </a>
+                {% } else { %}
+                  <a href="#" role="button" class="btn btn-default btn-sm"
+                     onclick="return {%=o.registry%}.addRow({%=o.meta.row%});">
+                      {%=o.language.custom.add%}
+                  </a>
+                {% } %}
+              </div>
+            </script>
 
-            </div>
+            <!-- template target and source column more -->
+            <script type="text/x-tmpl" id="datatable_sequence_tpl_column_more">
+              {% if (o.data.mode === "create") { %}
+                <i><small>{%=o.language.custom.new%}</small></i>
+              {% } else { %}
+                {% if (o.hidden) { %}
+                  <span class="more">
+                    <span class="glyphicon glyphicon-zoom-in"></span>
+                  </span>
+                {% } %}
+              {% } %}
+            </script>
+
+            <!-- template target and source details -->
+            <script type="text/x-tmpl" id="datatable_sequence_tpl_row_details">
+              <table class="table cs-datatables-row-details">
+                {% for (var i=0; i<o.columns.length; i++) { %}
+                  {% if (o.columns[i].data && o.columns[i].hidden) { %}
+                      <tr>
+                        <td>
+                          <small>{%=o.columns[i].title%}<small>
+                        </td>
+                        <td class="fullwidth">
+                          {%=o.columns[i].data%}
+                        </td>
+                      </tr>
+                  {% } %}
+                {% } %}
+              </table>
+            </script>
         </div>
+        
+        <!-- slot: content -->
+        <tal:block metal:define-slot="content" />
 
     </tal:block>
-
 
 </tal:block>

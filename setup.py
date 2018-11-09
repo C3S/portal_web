@@ -22,7 +22,7 @@ install_requires = [
     'c3s_collecting_society',
     'cornice',
     'cryptacular',
-    'deform==2.0a2',
+    'deform',
     'pyramid',
     'pyramid_beaker',
     'pyramid_chameleon',
@@ -36,11 +36,12 @@ test_requires = [
     'coverage',
     'nose',
     'webtest',
+    'selenium',
 ]
 
 setup(
     name='%s_%s' % (PREFIX, MODULE),
-    version='0.1',
+    version='0.2',
     description=(
         'Web portal including: Tryton wrapper, Web user management, ',
         'Web frontend, Plugin system.'

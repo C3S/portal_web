@@ -24,6 +24,21 @@ h4, .h4 {}
 h5, .h5 {}
 h6, .h6 {}
 
+.cs-img-center { margin:0 auto; }
+.cs-txt-center { text-align:center; }
+.cs-red { color:#fc2a00; }
+
+.cs-modal .pin { margin-right:10px; }
+.cs-modal .pinned { color:#ff0000; opacity:0.9; }
+
+.cs-datatables-row-details tr td:first-child { padding-left:45px; }
+.table > tbody > tr > td.cs-datatables-col-controls { padding-top:3px; padding-bottom:3px; }
+.cs-datatables-controls { margin-left:10px; }
+.cs-datatables-row-show { padding-right:4px; font-style:italic; }
+.deform-sequence-container .required::after { color: #e32; content: '*'; display: inline;}
+
+.select2-container { width:100%!important; }
+
 /* Content Left */
 
 .cs-content-left { background-color:#eee; }
@@ -35,14 +50,20 @@ h6, .h6 {}
 
 /* Content Middle */
 
-.cs-menue-portal { background-color:transparent; border:none; font-size:90%; }
+.cs-menue-top { background-color:transparent; border:none; font-size:90%; margin-bottom:10px; min-height:60px; }
+.cs-navform .panel-heading > .nav-tabs { border-bottom: none; margin-bottom: -10px; }
+.cs-navform-title { float:left; margin:7px 25px 0 0; }
+.cs-navform .cs-navform-nav > li > .cs-error { color:#b94a48; font-weight:bold; }
 
 /* Content Right */
 
 .cs-content-right { background-color:#eee; }
 
-.cs-logo { max-width:130px; margin-top:10px; margin:0 auto; padding:25px 0; }
+.cs-logo-container { text-align:right; padding:10px; }
+.cs-logo { max-width:130px; }
+.cs-langflags { margin-right:47px; }
 
+.select2-container { width: 100%!important; } /* widgets in follow-up tabs were too narrow */
 
 /*******************************************************************************
 
@@ -61,7 +82,6 @@ h6, .h6 {}
     /* Content Right */
 
 }
-
 
 /*******************************************************************************
 
@@ -85,14 +105,15 @@ h6, .h6 {}
 
     /* Content Middle */
 
-    .cs-menue-portal { font-size:90%; }
+    .cs-menue-top { font-size:90%; }
 
     /* Content Right */
 
     .cs-content-right { min-height:100%; }
 
-    .cs-logo { margin:20px 0; padding:0; }
-    
+    .cs-logo-container { float:right; padding:0; }
+    .cs-logo { margin-top:13px; }
+
 }
 
 
@@ -113,7 +134,7 @@ h6, .h6 {}
 
     /* Content Middle */
 
-    .cs-menue-portal { font-size:100%; }
+    .cs-menue-top { font-size:100%; }
 
     /* Content Right */
     

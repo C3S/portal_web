@@ -1,6 +1,10 @@
-<!-- For copyright / license terms, see COPYRIGHT.rst (top level of repository)
-     Repository: https://github.com/C3S/collecting_society -->
+<!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+      Repository: https://github.com/C3S/collecting_society.portal -->
+<!--!
 
+    Customized deform form rendering.
+
+-->
 <form tal:define="style style|field.widget.style;
                   css_class css_class|string:${field.widget.css_class or field.css_class or ''};
                   item_template item_template|field.widget.item_template;
@@ -26,38 +30,43 @@
 
     <fieldset class="deformFormFieldset">
 
-        <legend tal:condition="title">${title}</legend>
+        <label tal:condition="title" class="cs-form-header h1">${title}</label>
 
-        <input type="hidden" name="_charset_" />
-        <input type="hidden" name="__formid__" value="${formid}"/>
+        <div class="container-fluid">
 
-        <div class="alert alert-danger" tal:condition="field.error">
-            <div class="errorMsgLbl" tal:condition="not field.errormsg" i18n:translate="">
-                There was a problem with your submission. Please check the fields below.
+            <input type="hidden" name="_charset_" />
+            <input type="hidden" name="__formid__" value="${formid}"/>
+
+            <div class="alert alert-danger" tal:condition="field.error">
+                <div class="errorMsgLbl" tal:condition="not field.errormsg" i18n:translate="">
+                    There was a problem with your submission. Please check the fields below.
+                </div>
+                <p class="errorMsg">${field.errormsg}</p>
             </div>
-            <p class="errorMsg">${field.errormsg}</p>
-        </div>
 
-        <p class="section first" tal:condition="description">
-            ${description}
-        </p>
+            <p class="section first" tal:condition="description">
+                ${description}
+            </p>
 
-        <div tal:repeat="child field" tal:replace="structure child.render_template(item_template)"/>
+            <div tal:repeat="child field" tal:replace="structure child.render_template(item_template)"/>
 
-        <div class="form-group">
-            <tal:loop tal:repeat="button buttons">
-                <button tal:define="btn_disposition repeat.button.start and 'btn-primary' or 'btn-default';
-                                    btn_icon button.icon|None"
-                        tal:attributes="disabled button.disabled if button.disabled else None"
-                        id="${formid+button.name}"
-                        name="${button.name}"
-                        type="${button.type}"
-                        class="btn ${btn_disposition} ${button.css_class}"
-                        value="${button.value}">
-                    <i tal:condition="btn_icon" class="${btn_icon}"> </i>
-                    ${button.title}
-                </button>
-            </tal:loop>
+            <div class="form-group cs-form-controls-bottom">
+                <div class="cs-form-controls-bottom-wrap">
+                    <tal:loop tal:repeat="button buttons">
+                        <button tal:define="btn_disposition repeat.button.start and 'btn-primary' or 'btn-default';
+                                            btn_icon button.icon|None"
+                                tal:attributes="disabled button.disabled if button.disabled else None"
+                                id="${formid+button.name}"
+                                name="${button.name}"
+                                type="${button.type}"
+                                class="btn ${btn_disposition} ${button.css_class}"
+                                value="${button.value}">
+                            <i tal:condition="btn_icon" class="${btn_icon}"> </i>
+                            ${button.title}
+                        </button>
+                    </tal:loop>
+                </div>
+            </div>
         </div>
 
     </fieldset>

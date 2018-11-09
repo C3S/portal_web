@@ -1,6 +1,12 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
 # Repository: https://github.com/C3S/collecting_society.portal
 
+"""
+Main module for the pyramid app.
+"""
+
+import os
+import logging
 from logging.config import fileConfig
 
 from pyramid.config import Configurator
@@ -10,7 +16,8 @@ from pyramid_beaker import session_factory_from_settings
 
 from .config import (
     replace_environment_vars,
-    get_plugins
+    get_plugins,
+    notfound
 )
 from .models import (
     Tdb,
@@ -21,118 +28,182 @@ from .resources import (
     ApiRootFactory
 )
 
+log = logging.getLogger(__name__)
+
 
 def main(global_config, **settings):
     """
-    Configures and creates the app
+    Configures and creates the app.
+
+    Handles configuration of
+
+    - app config
+    - tryton database
+    - session
+    - policies
+    - subscribers
+    - route predicates
+    - view predicates
+    - request methods
+    - translation directories
+    - logging
+    - root factories
+    - resources
+    - registry
+    - views
+
+    Contains the main logic of the plugin system by including settings,
+    translation directories, logging configuration, views, ressources and
+    registry information of the plugins in a well defined order.
 
     Args:
-      global_config: Global configuration
-      **settings (dict): Settings configured in .ini file
+        global_config (dict): Parsed [DEFAULT] section of .ini file.
+        **settings (dict): Parsed [app:main] section of .ini file.
 
     Returns:
-      obj: a Pyramid WSGI application
+        obj: a Pyramid WSGI application.
     """
 
-    # plugins
+    # get plugin configuration
     plugins = get_plugins(settings)
 
-    # config
+    # update portal settings with plugin settings and replace environment vars
     for priority in sorted(plugins, reverse=True):
         settings.update(plugins[priority]['settings'])
     settings = replace_environment_vars(settings)
+
+    # init app config
     config = Configurator(settings=settings)
 
-    # db
+    # configure tryton database
     Tdb._db = settings['tryton.database']
     Tdb._company = settings['tryton.company']
     Tdb._user = settings['tryton.user']
     Tdb._configfile = settings['tryton.configfile']
     Tdb.init()
 
-    # session
+    # configure session
     config.set_session_factory(factory=session_factory_from_settings(settings))
 
-    # policies
+    # configure policies
     config.set_authorization_policy(policy=ACLAuthorizationPolicy())
     config.set_authentication_policy(
         policy=AuthTktAuthenticationPolicy(
             secret=settings['authentication.secret'],
             hashalg='sha512',
-            callback=WebUser.groupfinder
-        )
-    )
+            callback=WebUser.groupfinder))
     config.set_default_permission('administrator')
 
-    # subscribers
+    # configure subscribers
     config.add_subscriber(
         subscriber='.config.add_templates',
-        iface='pyramid.events.BeforeRender'
-    )
+        iface='pyramid.events.BeforeRender')
     config.add_subscriber(
         subscriber='.config.add_helpers',
-        iface='pyramid.events.BeforeRender'
-    )
+        iface='pyramid.events.BeforeRender')
     config.add_subscriber(
         subscriber='.config.add_locale',
-        iface='pyramid.events.NewRequest'
-    )
+        iface='pyramid.events.NewRequest')
+    config.add_subscriber(
+        subscriber='.config.open_db_connection',
+        iface='pyramid.events.BeforeTraversal')
+    config.add_subscriber(
+        subscriber='.config.context_found',
+        iface='pyramid.events.ContextFound')
+    config.add_subscriber(
+        subscriber='.config.close_db_connection',
+        iface='pyramid.events.NewRequest')
     if settings['env'] == 'development':
         config.add_subscriber(
             subscriber='.config.debug_request',
-            iface='pyramid.events.NewRequest'
-        )
+            iface='pyramid.events.NewRequest')
+        config.add_subscriber(
+            subscriber='.config.debug_context',
+            iface='pyramid.events.ContextFound')
+        config.add_subscriber(
+            subscriber='.config.debug_response',
+            iface='pyramid.events.NewResponse')
 
-    # request methods
+    # configure predicates
+    config.add_route_predicate(
+        name='environment', factory='.config.Environment')
+    config.add_view_predicate(
+        name='environment', factory='.config.Environment')
+
+    # configure request methods
     config.add_request_method(
-        callable=WebUser.current_web_user,
-        name='user',
-        reify=True
-    )
+        callable='.config.web_user', name='web_user', reify=True)
+    config.add_request_method(
+        callable='.config.party', name='party', reify=True)
+    config.add_request_method(
+        callable='.config.user', name='user', reify=True)
+    config.add_request_method(
+        callable='.config.roles', name='roles', reify=True)
 
-    config.commit()
+    # configure translation directories for portal and plugins
+    config.add_translation_dirs(
+        'colander:locale/',
+        'deform:locale/',
+        'collecting_society_portal:locale/')
+    for priority in sorted(plugins):
+        translation_dir = os.path.join(
+            plugins[priority]['path'], plugins[priority]['name'], 'locale')
+        if os.path.isdir(translation_dir):
+            config.add_translation_dirs(translation_dir)
 
-    # logging
+    # configure logging for portal and plugins
     for priority in sorted(plugins):
         fileConfig(
             plugins[priority]['path'] + '/' + settings['env'] + '.ini',
-            disable_existing_loggers=False
-        )
+            disable_existing_loggers=False)
 
-    # webfrontend
-    api_in_web = False
+    # commit config with basic settings
+    config.commit()
+
+    # not found view (404 Error)
+    config.add_notfound_view(notfound)
+
+    # configure mailer
+    if int(settings['mail.to_real_world']):
+        config.include('pyramid_mailer')
+    else:
+        config.include('pyramid_mailer.testing')
+
+    # configure webfrontend for portal and plugins
     if settings['service'] == 'portal':
-        # root factory
+        # web root factory
         config.set_root_factory(factory=WebRootFactory)
-        # resources
-        config.include('.resources.include_web_resources')
+        # web resources
+        config.include('.includes.web_resources')
         for priority in sorted(plugins):
-            config.include(plugins[priority]['name']+'.include_web_resources')
-        # views
+            config.include(plugins[priority]['name']+'.includes.web_resources')
+        # web registry
+        config.include('.includes.web_registry')
+        for priority in sorted(plugins):
+            config.include(plugins[priority]['name']+'.includes.web_registry')
+        # web views
         for priority in sorted(plugins, reverse=True):
-            config.include(plugins[priority]['name'] + '.include_web_views')
-        config.include('.config.include_web_views')
-
-        if api_in_web:
-            # modules
+            config.include(plugins[priority]['name'] + '.includes.web_views')
+        config.include('.includes.web_views')
+        # api views
+        if settings['api.in_web'] == 'true':
             config.include('cornice')
-            # views
             for priority in sorted(plugins, reverse=True):
                 config.include(
-                    plugins[priority]['name'] + '.config.include_api_views',
-                    route_prefix='/api'
-                )
-            config.include('.config.include_api_views', route_prefix='/api')
+                    plugins[priority]['name'] + '.includes.api_views',
+                    route_prefix=settings['api.in_web_path'])
+            config.include(
+                '.includes.api_views',
+                route_prefix=settings['api.in_web_path'])
 
-    # api
+    # configure api for portal and plugins
     if settings['service'] == 'api':
-        # modules
         config.include('cornice')
-        # root factory
+        # api root factory
         config.set_root_factory(factory=ApiRootFactory)
-        # views
+        # api views
         for priority in sorted(plugins, reverse=True):
-            config.include(plugins[priority]['name'] + '.include_api_views')
-        config.include('.config.include_api_views')
+            config.include(plugins[priority]['name'] + '.includes.api_views')
+        config.include('.includes.api_views')
 
     return config.make_wsgi_app()

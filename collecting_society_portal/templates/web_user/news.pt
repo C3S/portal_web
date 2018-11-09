@@ -1,7 +1,19 @@
-<!-- For copyright / license terms, see COPYRIGHT.rst (top level of repository)
-     Repository: https://github.com/C3S/collecting_society -->
+<!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+      Repository: https://github.com/C3S/collecting_society.portal -->
+<!--!
 
-<tal:block metal:use-macro="backend">
+    Template to list news article in the backend.
+
+    Slots filled (backend):
+
+    - content-middle
+
+    Content defined:
+
+    - news
+
+-->
+<tal:block metal:use-macro="backend363" i18n:domain="collecting_society_portal">
 
     <!-- content left -->
     <tal:block metal:fill-slot="content-left"></tal:block>
@@ -9,8 +21,8 @@
     <!-- content middle -->
     <tal:block metal:fill-slot="content-middle">
 
-        <!-- static site -->
-        <h1>News</h1>
+        <!-- news -->
+        <h1 i18n:translate="">News</h1>
 
         <ul class="list-group"
             tal:define="news context.registry['content']['news']">

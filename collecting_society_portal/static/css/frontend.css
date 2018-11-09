@@ -15,7 +15,7 @@
 /* Main */
 
 html { height:100%; }
-body { height:100%; padding-top:50px; background-color:#ddd; }
+body { height:100%; padding-top:50px; background-color:#fff; }
 
 h1, .h1 { margin-top:50px; }
 h2, .h2 {}
@@ -25,19 +25,28 @@ h5, .h5 {}
 h6, .h6 {}
 
 .cs-widget { margin-top:40px; }
+.cs-img-center { margin:0 auto; }
+.cs-txt-center { text-align:center; }
+.cs-red { color:#fc2a00; }
 
 /* Content Left */
 
-.cs-logo { max-width:200px; margin-top:40px; }
+.cs-logo { max-width:200px; margin:0 auto; margin-top:40px; }
 
 /* Content Middle */
 
-.cs-content-middle { background-color:#fff; margin-top:40px; padding-top:40px; padding-bottom:40px; }
+.cs-content { position:relative; }
 
-.cs-menue-page { background-color:transparent; border:none; }
-.cs-menue-page .container > div { background-color:#fff; }
+.cs-content-middle { background-color:#fff; margin-top:40px; padding-top:40px; padding-bottom:40px; }
+.cs-content-middle h1:first-child { margin-top:0; padding-top:0; }
+
+.cs-menue-top { background-color:transparent; border:none; }
+.cs-menue-top .container > div { background-color:#fff; }
 
 /* Content Right */
+
+.cs-content-right { z-index: 2000; }
+.cs-langflags { position:fixed; top:14px; }
 
 
 /*******************************************************************************
@@ -54,7 +63,14 @@ h6, .h6 {}
 
     /* Content Middle */
 
+    .cs-content-middle h1:first-child { margin-top:0; padding-top:0; }
+
     /* Content Right */
+
+    .cs-content-right { z-index: 0; }
+    .cs-content-right .cs-widget { margin-top:75px; }
+
+    .cs-langflags { position:relative; top:50px; }
 
 }
 
@@ -69,7 +85,7 @@ h6, .h6 {}
 
     /* Main */
 
-    body { background: #ddd url('../img/bg.png') no-repeat right bottom fixed; }
+    body { background-color: #ddd; }
 
     .cs-content { min-height:100%; height:100%; }
 
@@ -77,7 +93,7 @@ h6, .h6 {}
 
     .cs-content-left { min-height:100%; height:100%; }
 
-    .cs-logo { max-width:175px; margin-bottom:150px; }
+    .cs-logo { max-width:175px; margin-bottom:150px; margin-left:0; }
 
     /* Content Middle */
 
@@ -85,7 +101,11 @@ h6, .h6 {}
 
     /* Content Right */
     
+    .cs-content-right { z-index: 2000; }
     .cs-content-right { min-height:100%; height:100%; }
+    .cs-content-right .cs-widget { margin-top:40px; }
+
+    .cs-langflags { position:fixed; top:14px; }
     
 }
 

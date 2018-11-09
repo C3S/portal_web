@@ -12,15 +12,25 @@
 
 *******************************************************************************/
 
-h1, .h1 {}
-h2, .h2 {}
-h3, .h3 {}
-h4, .h4 {}
-h5, .h5 {}
-h6, .h6 {}
+@font-face { font-family: "Signika"; src: local("Signika-Light"), url("static/portal/font/Signika-Light.ttf") format("sans-serif"); }
 
+body { font-family: "Signika", "Arial"; }
+
+h1, .h1 { font-family: "Signika", "Arial"; }
+h2, .h2 { font-family: "Signika", "Arial"; }
+h3, .h3 { font-family: "Signika", "Arial"; }
+h4, .h4 { font-family: "Signika", "Arial"; }
+h5, .h5 { font-family: "Signika", "Arial"; }
+h6, .h6 { font-family: "Signika", "Arial"; }
+
+.block { display:block; }
 .fixed { position:fixed; }
 .pull-bottom { position: absolute; bottom:0; }
+.clear { clear:both; }
+.prewrap { white-space:pre-wrap; }
+.nowrap { white-space:nowrap; }
+.fullwidth { width:100%; }
+.minwidth { width:1%; }
 
 /* collapsable panels 
  * cf. http://stackoverflow.com/questions/18325779/bootstrap-3-collapse-show-state-with-chevron-icon/18568997#18568997 */

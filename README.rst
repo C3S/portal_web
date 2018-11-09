@@ -83,6 +83,57 @@ Logging
 The logging configuration of plugins will spawn new logger
 
 
+Translations
+------------
+
+Explanation
+```````````
+
+- **.pot**: "Portable Object Template" file, list of message identifiers, template for **.po** files
+- **.po**: "Portable Object" file, human editable list of translated messages
+- **.mo**: "Machine Object" file, machine readable list of messages, created from a **.po** file
+
+Installation
+````````````
+
+- **poedit**: ``$apt-get install poedit``
+- **gettext**: ``$apt-get install gettext``
+- **lingua**: ``$pip install lingua``
+
+**Note**: If you are running different python versions on the host, you need to ensure, that the right ``pip`` (e.g. ``pip2.7``) is called.
+
+Updates
+```````
+
+e.g. for project **collecting_society.portal** and language **de**
+
+- only once, to start translation of a project, create the **.pot** file for the project
+    - ``$cd c3s.ado/ado/src/collecting_society.portal``
+    - ``$mkdir collecting_society_portal/locale``
+    - ``$pot-create -o collecting_society_portal/locale/collecting_society_portal.pot collecting_society_portal``
+- only once, if you need a new language, create the **.po** file for the language
+    - ``$cd c3s.ado/ado/src/collecting_society.portal/collecting_society_portal/locale``
+    - ``$mkdir -p de/LC_MESSAGES``
+    - ``$msginit -l de -o de/LC_MESSAGES/collecting_society_portal.po``
+- each time, the code or templates changed, recreate the **.pot** file:
+    - ``$cd c3s.ado/ado/src/collecting_society.portal``
+    - ``$pot-create -o collecting_society_portal/locale/collecting_society_portal.pot collecting_society_portal``
+- every time the **.pot** file changed, recreate the **.po** files for all languages
+    - ``$cd c3s.ado/ado/src/collecting_society.portal``
+    - ``$msgmerge --update collecting_society_portal/locale/*/LC_MESSAGES/collecting_society_portal.po collecting_society_portal/locale/collecting_society_portal.pot``
+- to edit translations, change the **.po** file via poedit
+    - ``$cd c3s.ado/ado/src/collecting_society.portal``
+    - ``$poedit collecting_society_portal/locale/de/LC_MESSAGES/collecting_society_portal.po``
+- every time the **.po** file changed, create a **.mo** file
+    - ``$cd c3s.ado/ado/src/collecting_society.portal``
+    - ``$msgfmt -o collecting_society_portal/locale/de/LC_MESSAGES/collecting_society_portal.mo collecting_society_portal/locale/de/LC_MESSAGES/collecting_society_portal.po``
+
+Further information
+```````````````````
+
+- see `pyramid documentation <http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/i18n.html#working-with-gettext-translation-files>`_
+
+
 Copyright / License
 -------------------
 

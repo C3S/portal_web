@@ -10,134 +10,161 @@ log = logging.getLogger(__name__)
 
 class WebUser(Tdb):
     """
-    Model wrapper for Tryton model object 'web.user'
+    Model wrapper for Tryton model object 'web.user'.
     """
 
     __name__ = 'web.user'
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def current_web_user(cls, request):
         """
-        Fetches the currently logged in web_user
+        Gets the currently logged in web user.
 
         Args:
-          request (obj): request object of pyramid
+            request (pyramid.request.Request): Current request.
 
         Returns:
-          obj: web.user
-          None: if no web_user is logged in
+            obj (web.user): Web user.
+            None: If no web user is logged in.
         """
-        return cls.search_by_email(request.unauthenticated_userid)
+        userid = request.authenticated_userid
+        if not userid:
+            return None
+        return cls.search_by_email(userid)
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def current_party(cls, request):
         """
-        Fetches the party of currently logged web_user
+        Gets the party of the currently logged in web user.
 
         Args:
-          request (obj): request object of pyramid
+            request (pyramid.request.Request): Current request.
 
         Returns:
-          obj: web.user.party
-          None: if no party is logged in
+            obj (web.user.party): Party of the web user.
+            None: If no web user is logged in
         """
-        return cls.current_web_user(request).party
+        if not request.web_user:
+            return None
+        return request.web_user.party
 
     @classmethod
-    @Tdb.transaction(readonly=True)
+    def current_user(cls, request):
+        """
+        Gets the party of the currently logged in web user.
+
+        Args:
+            request (pyramid.request.Request): Current request.
+
+        Returns:
+            obj (web.user.party): Party of the web user.
+            None: If no web user is logged in
+        """
+        if not request.web_user:
+            return None
+        return request.web_user.user
+
+    @classmethod
     def current_roles(cls, request):
         """
-        Fetches the roles of currently logged in web_user
+        Gets the roles of the currently logged in web user.
 
         Args:
-          request (obj): request object of pyramid
+            request (pyramid.request.Request): Current request.
 
         Returns:
-          list: list of roles of current web_user
-          None: if no web_user is logged in
+            list: List of roles of the current web user.
+            None: If no web user is logged in.
         """
-        current = cls.current_web_user(request)
-        if current:
-            return cls.roles(current)
-        return None
+        if not request.web_user:
+            return None
+        return [role.code for role in request.web_user.roles]
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def groupfinder(cls, email, request):
         """
-        Fetches roles of a web_user for effective principals
+        Gets the roles of a web user for effective principals.
 
         Args:
-          email (str): email of web_user
-          request (obj): request object of pyramid
+            email (str): Email of the web user.
+            request (pyramid.request.Request): Current request.
 
         Returns:
-          list: list of roles of current web_user
-          None: if no web_user is logged in
+            list: List of roles of the current web user.
+            None: If no web user is logged in.
         """
-        if not email:
-            return cls.current_roles(request)
-        current = cls.search_by_email(email)
-        if current:
-            return cls.roles(current)
+        web_user = cls.search_by_email(email)
+        if web_user:
+            return cls.roles(web_user)
         return None
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def roles(cls, web_user):
         """
-        Fetches the roles of web_user
+        Gets the roles of a web user.
 
         Args:
-          web_user (obj): web.user
+            web_user (obj[web.user]): Web user.
 
         Returns:
-          list: roles of web_user
+            list: List of roles of the web user.
         """
-        return [role.name for role in web_user.roles]
+        return [role.code for role in web_user.roles]
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def authenticate(cls, email, password):
         """
-        Checks authentication of web_user with email and password
+        Checks authentication of a web user with email and password.
 
         Args:
-          email (string): email of web_user
-          password (string): password of web_user
+            email (str): Email of the web user.
+            password (str): Password of the web user.
 
         Returns:
-          obj: web.user
-          None: if authentication check failed
+            obj (web.user): Web user.
+            None: If authentication check failed.
         """
         return cls.get().authenticate(email, password)
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def search_all(cls):
         """
-        Fetches all web_user
+        Gets all web users.
 
         Returns:
-          list: web.user
-          None: if no match is found
+            list (obj[web.user]): List of web users.
+            None: if no match is found.
         """
         return cls.get().search([])
 
     @classmethod
-    @Tdb.transaction(readonly=True)
-    def search_by_email(cls, email):
+    def search_by_id(cls, uid):
         """
-        Searches a web_user by email
+        Searches a web user by id.
 
         Args:
-          email (string): email of web_user
+            uid (string): Id of the web user.
 
         Returns:
-          obj: web.user
-          None: if no match is found
+            obj (web.user): Web user.
+            None: If no match is found.
+        """
+        if uid is None:
+            return None
+        result = cls.get().search([('id', '=', uid)])
+        return result[0] if result else None
+
+    @classmethod
+    def search_by_email(cls, email):
+        """
+        Searches a web user by email.
+
+        Args:
+            email (str): Email of the web user.
+
+        Returns:
+            obj (web.user): Web user.
+            None: If no match is found.
         """
         if email is None:
             return None
@@ -145,30 +172,105 @@ class WebUser(Tdb):
         return result[0] if result else None
 
     @classmethod
-    @Tdb.transaction(readonly=False)
-    def create(cls, vlist):
+    def search_by_opt_in_uuid(cls, opt_in_uuid):
         """
-        Creates web_user
+        Searches a web user by opt in uuid.
 
         Args:
-          vlist (list): list of dicts with attributes to create web_user::
-
-            [
-                {
-                    'email': str (required),
-                    'password': str (required)
-                },
-                {
-                    ...
-                }
-            ]
-
-        Raises:
-          KeyError: if required field is missing
+            opt_in_uuid (string): Opt in uuid of the web user.
 
         Returns:
-          list: created web.user
-          None: if no object was created
+            obj (web.user): Web user.
+            None: If no match is found.
+        """
+        if opt_in_uuid is None:
+            return None
+        result = cls.get().search([('opt_in_uuid', '=', opt_in_uuid)])
+        return result[0] if result else None
+
+    @classmethod
+    def get_opt_in_uuid_by_id(cls, uid):
+        """
+        Searches an opt in uuid by web user id.
+
+        Args:
+            uid (string): Id of the web user.
+
+        Returns:
+            str: Opt in uuid.
+            None: If no match is found.
+        """
+        if uid is None:
+            return None
+        web_user = cls.search_by_id(uid)
+        if web_user:
+            return web_user.opt_in_uuid
+        return None
+
+    @classmethod
+    def get_opt_in_state_by_email(cls, email):
+        """
+        Searches the opt in state for the web user by email.
+
+        Args:
+            email (string): Email of the web user.
+
+        Returns:
+            str: Opt in state.
+            None: If no match is found.
+        """
+        if email is None:
+            return None
+        web_user = cls.search_by_email(email)
+        if web_user:
+            return web_user.opt_in_state
+        return None
+
+    @classmethod
+    def update_opt_in_state(cls, opt_in_uuid, state):
+        """
+        Sets the opt in state for the web user.
+
+        Args:
+            opt_in_uuid (string): Opt in uuid of the web user.
+            state (string): New opt in state.
+
+        Returns:
+            True: If update was successful.
+            False: Otherwise.
+        """
+        if opt_in_uuid is None:
+            return False
+        web_user = cls.search_by_opt_in_uuid(opt_in_uuid)
+        if web_user:
+            web_user.opt_in_state = state
+            web_user.save()
+            return True
+        return False
+
+    @classmethod
+    def create(cls, vlist):
+        """
+        Creates web users.
+
+        Args:
+            vlist (list): List of dictionaries with attributes of a web user.
+                [
+                    {
+                        'email': str (required),
+                        'password': str (required)
+                    },
+                    {
+                        ...
+                    }
+                ]
+
+        Returns:
+            list (obj[web.user]): List of created web users.
+            None: If no object was created.
+
+        Raises:
+            KeyError: If required field is missing.
         """
         for values in vlist:
             if 'email' not in values:

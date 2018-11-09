@@ -13,23 +13,23 @@ from psycopg2 import (
     OperationalError
 )
 
+from ..services import benchmarks
 from ..models import Tdb
 from ..views import ViewBase
 
 log = logging.getLogger(__name__)
 
 
-@view_defaults(permission=NO_PERMISSION_REQUIRED)
+@view_defaults(
+    context='..resources.DebugResource',
+    permission=NO_PERMISSION_REQUIRED,
+    environment="development")
 class DebugViews(ViewBase):
-
-    def development(context, request):
-        return request.registry.settings['env'] == 'development'
 
     @view_config(
         name='tryton',
         renderer='../templates/debug/tryton.pt',
-        decorator=Tdb.transaction(),
-        custom_predicates=[development])
+        decorator=Tdb.transaction())
     def check_tryton(request):
         '''
         This view should display some useful information
@@ -98,3 +98,9 @@ class DebugViews(ViewBase):
             log.debug('hit the KeyError: %s' % ke)
 
         return the_result
+
+    @view_config(
+        name='benchmark',
+        renderer='../templates/debug/benchmark.pt')
+    def benchmark(request):
+        return benchmarks()

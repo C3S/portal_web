@@ -49,6 +49,8 @@ class LoginWebuser(FormController):
 def authentication_is_successful(values):
     if not WebUser.search_by_email(values['email']):
         return _(u'Login failed')
+    if not (WebUser.get_opt_in_state_by_email(values['email']) == 'opted-in'):
+        return _(u'User mail address not verified yet')
     if WebUser.authenticate(values['email'], values['password']):
         return True
     log.info("web_user login failed: %s" % values['email'])
@@ -60,13 +62,13 @@ def authentication_is_successful(values):
 # --- Fields ------------------------------------------------------------------
 
 class EmailField(colander.SchemaNode):
-    oid = "email"
+    oid = "login-email"
     schema_type = colander.String
     validator = colander.Email()
 
 
 class PasswordField(colander.SchemaNode):
-    oid = "password"
+    oid = "login-password"
     schema_type = colander.String
     widget = deform.widget.PasswordWidget()
 
@@ -74,7 +76,6 @@ class PasswordField(colander.SchemaNode):
 # --- Schemas -----------------------------------------------------------------
 
 class LoginSchema(colander.MappingSchema):
-    title = _(u"Login")
     email = EmailField(
         title=_(u"Email")
     )

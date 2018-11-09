@@ -10,23 +10,22 @@ log = logging.getLogger(__name__)
 
 class Company(Tdb):
     """
-    Model wrapper for Tryton model object 'company.company'
+    Model wrapper for Tryton model object 'company.company'.
     """
 
     __name__ = 'company.company'
 
     @classmethod
-    @Tdb.transaction(readonly=True)
     def search_by_id(cls, company_id):
         """
-        Searches a company by company id
+        Searches a company by company id.
 
         Args:
-          company_id (int): company.id
+            company_id (int): Company id.
 
         Returns:
-          obj: artist
-          None: if no match is found
+            obj: Company.
+            None: if no match is found.
         """
         result = cls.get().search([('id', '=', company_id)])
         return result[0] or None
