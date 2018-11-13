@@ -41,7 +41,7 @@ test_requires = [
 
 setup(
     name='%s_%s' % (PREFIX, MODULE),
-    version='0.1',
+    version='0.2',
     description=(
         'Web portal including: Tryton wrapper, Web user management, ',
         'Web frontend, Plugin system.'
