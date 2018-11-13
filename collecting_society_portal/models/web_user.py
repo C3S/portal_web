@@ -124,7 +124,15 @@ class WebUser(Tdb):
             obj (web.user): Web user.
             None: If authentication check failed.
         """
-        return cls.get().authenticate(email, password)
+
+        # code copied from ado/src/web_user/user.py and 
+        # modified to support case-insensitive email addresses
+        users = cls.get().search([('email', 'ilike', cls.escape(email))])
+        if not users:
+            return
+        user, = users
+        if cls.get().check_password(password, user.password_hash):
+            return user
 
     @classmethod
     def search_all(cls):
@@ -168,7 +176,7 @@ class WebUser(Tdb):
         """
         if email is None:
             return None
-        result = cls.get().search([('email', '=', email)])
+        result = cls.get().search([('email', 'ilike', cls.escape(email))])
         return result[0] if result else None
 
     @classmethod
