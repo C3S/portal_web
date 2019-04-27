@@ -424,6 +424,7 @@ class BackendResource(ResourceBase):
     __acl__ = [
         (Allow, Authenticated, 'authenticated')
     ]
+    _write = ['register', 'verify_email']
 
 
 class ProfileResource(ResourceBase):
