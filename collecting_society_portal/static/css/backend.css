@@ -69,6 +69,8 @@ h6, .h6 {}
 
 .select2-container { width: 100%!important; } /* widgets in follow-up tabs were too narrow */
 
+.fileupload-buttonbar { display:none; } /* only displayed on file added */
+
 /*******************************************************************************
 
    Small devices (tablets, 768px and up)

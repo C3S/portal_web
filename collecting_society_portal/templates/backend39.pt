@@ -37,6 +37,14 @@
 <tal:block metal:extend-macro="backend"
            i18n:domain="collecting_society_portal">
 
+    <!-- js -->
+    <tal:block metal:fill-slot="js-head" />
+    <tal:block metal:fill-slot="js-body">
+        <script src="${request.static_path(
+                    'collecting_society_portal:static/js/portal.js'
+                )}"></script>
+    </tal:block>
+
     <!-- content -->
     <tal:block metal:fill-slot="content">
 
