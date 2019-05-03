@@ -61,7 +61,11 @@ h6, .h6 {}
 
 .cs-logo-container { text-align:right; padding:10px; }
 .cs-logo { max-width:130px; }
-.cs-langflags { margin-right:47px; }
+.cs-langflags {
+    margin-right: 47px;
+    position: relative;
+    z-index: 100;
+}
 
 .select2-container { width: 100%!important; } /* widgets in follow-up tabs were too narrow */
 
