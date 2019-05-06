@@ -13,11 +13,38 @@ portal = {
     }
 }
 
+function hookFunction(object, functionName, callback) {
+    (function(originalFunction) {
+        object[functionName] = function () {
+            var returnValue = originalFunction.apply(this, arguments);
+
+            callback.apply(this, [returnValue, originalFunction, arguments]);
+
+            return returnValue;
+        };
+    }(object[functionName]));
+}
+
 $(document).ready(function(){
     var form = $('.deform')
     if (form.length > 0) {
         var inputs = form.find('input');
         inputs.change(portal.preventExitPage)
         form.submit(portal.allowExitPage)
+        if (deform && deform.DatatableSequence && deform.DatatableSequence.prototype)
+        {
+            hookFunction(deform.DatatableSequence.prototype, 'addRow', function() {
+                portal.preventExitPage();
+            });   
+            hookFunction(deform.DatatableSequence.prototype, 'removeRow', function() {
+                portal.preventExitPage();
+            });  
+            hookFunction(deform.DatatableSequence.prototype, 'createRow', function() {
+                portal.preventExitPage();
+            });  
+            hookFunction(deform.DatatableSequence.prototype, 'editRow', function() {
+                portal.preventExitPage();
+            }); 
+        }
     }    
 })
