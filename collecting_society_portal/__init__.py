@@ -37,6 +37,7 @@ def main(global_config, **settings):
 
     Handles configuration of
 
+    - ptvsd debugging
     - app config
     - tryton database
     - session
@@ -74,6 +75,20 @@ def main(global_config, **settings):
 
     # init app config
     config = Configurator(settings=settings)
+
+    # enable ptvsd debugging (open port 51000 for portal and 51001 for api!)
+    if settings['env'] == 'development':
+        import ptvsd
+        debugging_port = 0
+        if settings['service'] == 'portal':            
+            debugging_port = 51000
+        if settings['service'] == 'api':            
+            debugging_port = 51001
+        log.debug(settings['service'] + " debugger listening to port " +
+                  str(debugging_port))
+        ptvsd.enable_attach(address=("0.0.0.0", debugging_port), 
+                            redirect_output=True)
+        # ptvsd.break_into_debugger()
 
     # configure tryton database
     Tdb._db = settings['tryton.database']

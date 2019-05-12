@@ -13,7 +13,6 @@
   
     <div tal:condition="field.parent.__class__.__name__ != 'Form'">
         <legend tal:condition="title">${title}</legend>
-        <p tal:condition="description">${description}</p>
     </div>
     <div class="container-fluid cs-nav-form-tabcontent">
         ${field.start_mapping()}
