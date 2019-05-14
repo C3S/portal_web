@@ -84,11 +84,12 @@ def main(global_config, **settings):
             debugging_port = 51000
         if settings['service'] == 'api':            
             debugging_port = 51001
-        log.debug(settings['service'] + " debugger listening to port " +
-                  str(debugging_port))
-        ptvsd.enable_attach(address=("0.0.0.0", debugging_port), 
-                            redirect_output=True)
-        # ptvsd.break_into_debugger()
+        if debugging_port > 0:
+            log.debug(settings['service'] + " debugger listening to port " +
+                      str(debugging_port))
+            ptvsd.enable_attach(address=("0.0.0.0", debugging_port), 
+                                redirect_output=True)
+            # ptvsd.break_into_debugger()
 
     # configure tryton database
     Tdb._db = settings['tryton.database']
