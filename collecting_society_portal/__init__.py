@@ -209,7 +209,6 @@ def main(global_config, **settings):
 
     # enable ptvsd debugging (open port 51000 for portal and 51001 for api!)
     if settings['env'] == 'development':
-        import ptvsd
         debugging_port = 0
         if settings['service'] == 'portal':            
             debugging_port = 51000
@@ -218,8 +217,15 @@ def main(global_config, **settings):
         if debugging_port > 0:
             log.debug(settings['service'] + " debugger listening to port " +
                       str(debugging_port))
-            ptvsd.enable_attach(address=("0.0.0.0", debugging_port), 
-                                redirect_output=True)
-            # ptvsd.break_into_debugger()
+            try:
+                import ptvsd
+                ptvsd.enable_attach(address=("0.0.0.0", debugging_port), 
+                                    redirect_output=True)
+                # ptvsd.break_into_debugger()
+            except Exception as ex:
+                if hasattr(ex, 'message'):
+                    print(ex.message)
+                else:
+                    print('ptvsd debugging not possible: ' + ex.message)    
 
     return config.make_wsgi_app()
