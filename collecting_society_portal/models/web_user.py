@@ -285,6 +285,9 @@ class WebUser(Tdb):
                 raise KeyError('email is missing')
             if 'password' not in values:
                 raise KeyError('password is missing')
-        log.debug('create web_user:\n{}'.format(vlist))
         result = cls.get().create(vlist)
+        for wu in vlist:
+            if 'password' in wu:
+                wu['password'] = '********'
+        log.debug('create web_user:\n{}'.format(vlist))
         return result or None
