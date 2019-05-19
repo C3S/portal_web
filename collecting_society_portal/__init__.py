@@ -8,6 +8,7 @@ Main module for the pyramid app.
 import os
 import logging
 from logging.config import fileConfig
+import ptvsd
 
 from pyramid.config import Configurator
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -170,6 +171,30 @@ def main(global_config, **settings):
     else:
         config.include('pyramid_mailer.testing')
 
+    # enable ptvsd debugging (open port 51000 for portal and 51001 for api!)
+    if settings['env'] == 'development':
+        debugging_port = 0
+        if settings['service'] == 'portal':            
+            debugging_port = 51000
+        if settings['service'] == 'api':            
+            debugging_port = 51001
+        if debugging_port > 0:
+            log.debug(settings['service'] + " debugger listening to port " +
+                      str(debugging_port))
+            try:
+                ptvsd.enable_attach(address=("0.0.0.0", debugging_port), 
+                                    redirect_output=True)
+                # uncomment these three lines, if you need to debug
+                # initialization code like colander schema nodes:
+                # if debugging_port == 51000:
+                #     ptvsd.wait_for_attach()
+                #     ptvsd.break_into_debugger()
+            except Exception as ex:
+                if hasattr(ex, 'message'):
+                    print(ex.message)
+                else:
+                    print('ptvsd debugging not possible: ' + ex.message) 
+
     # configure webfrontend for portal and plugins
     if settings['service'] == 'portal':
         # web root factory
@@ -205,27 +230,6 @@ def main(global_config, **settings):
         # api views
         for priority in sorted(plugins, reverse=True):
             config.include(plugins[priority]['name'] + '.includes.api_views')
-        config.include('.includes.api_views')
-
-    # enable ptvsd debugging (open port 51000 for portal and 51001 for api!)
-    if settings['env'] == 'development':
-        debugging_port = 0
-        if settings['service'] == 'portal':            
-            debugging_port = 51000
-        if settings['service'] == 'api':            
-            debugging_port = 51001
-        if debugging_port > 0:
-            log.debug(settings['service'] + " debugger listening to port " +
-                      str(debugging_port))
-            try:
-                import ptvsd
-                ptvsd.enable_attach(address=("0.0.0.0", debugging_port), 
-                                    redirect_output=True)
-                # ptvsd.break_into_debugger()
-            except Exception as ex:
-                if hasattr(ex, 'message'):
-                    print(ex.message)
-                else:
-                    print('ptvsd debugging not possible: ' + ex.message)    
+        config.include('.includes.api_views')   
 
     return config.make_wsgi_app()
