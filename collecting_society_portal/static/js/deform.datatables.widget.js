@@ -291,7 +291,9 @@ DatatableSequence.prototype = {
                 [ 1, "asc" ]  // first displayed row
             ];
             if(ds.orderable) {
-                order = [];
+                order = [
+                    [ 0, "asc" ]  // order row
+                ];
                 if(typeof ds.target.data != "undefined")
                     $.each(ds.target.data, function(index, data) {
                         data.order = index + 1;
@@ -415,7 +417,7 @@ DatatableSequence.prototype = {
                 data: "order",
                 className: "text-center all more dt-order",
                 width: "30px",
-                orderable: false,
+                orderable: true,
                 searchable: false,
                 render: function(data, type, row, meta) {
                     if(type !== 'display')
