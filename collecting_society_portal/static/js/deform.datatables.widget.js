@@ -98,6 +98,9 @@ var DatatableSequence = function(vars) {
 
     // deform
     this.oid = vars.oid;
+    if(vars.dynamicOid)
+        this.oid = $("[id^=" + vars.oid + "]").not(".close").last().attr('id');
+    console.log(this.oid);
     this.name = vars.name;
     this.title = vars.title;
     this.minLen = vars.minLen ? parseInt(vars.minLen) : 0;
@@ -111,7 +114,7 @@ var DatatableSequence = function(vars) {
 
     // selectors
     var base = "datatable_sequence_" + ds.oid;
-    this.registry = "deform.datatableSequences." + ds.oid;
+    this.registry = "deform.datatableSequences['" + ds.oid + "']";
     this.sel = {
         base:           base,
         container:      "#" + ds.oid,

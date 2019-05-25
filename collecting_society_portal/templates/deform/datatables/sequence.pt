@@ -27,7 +27,13 @@
 
         <!-- default settings -->
         <script class="datatable_sequence_default_settings">
+            var dynamicOid = true;
+            var scripts = document.getElementsByTagName('script');
+            var script = scripts[scripts.length - 1];
+            if(script.parentNode && script.parentNode.id)
+                dynamicOid = false;
             datatableSequenceSettings = $.extend(true, {
+                dynamicOid: dynamicOid,
                 oid: "${oid}",
                 name: "${name}",
                 title: "${title}",
