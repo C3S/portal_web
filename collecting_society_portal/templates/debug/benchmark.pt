@@ -26,7 +26,7 @@
 
                     <h2 style="color:red;">
                         ${name}
-                        (${results[name]['mean']})
+                        (Mean: ${results[name]['mean']}, Sum: ${results[name]['sum']})
                     </h2>
 
                     <div tal:repeat="(uid,runs) benchmark.items()"
@@ -34,7 +34,7 @@
 
                         <h3 style="color:blue;">
                             ${uid}
-                            (${results[name]['means'][uid]})
+                            (Mean: ${results[name]['means'][uid]}, Sum: ${results[name]['sums'][uid]})
                         </h3>
 
                         <table class="table table-hover" style="color:black;">

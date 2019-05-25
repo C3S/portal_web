@@ -104,5 +104,4 @@ class DebugViews(ViewBase):
         renderer='../templates/debug/benchmark.pt')
     def benchmark(self):
         delete = ('delete' in self.request.POST or self.request.GET)
-        log.debug(self.request.POST)
         return benchmarks(delete)

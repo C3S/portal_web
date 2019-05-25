@@ -81,10 +81,10 @@ class benchmark():
                 'uid': self.uid,
                 'start': self.start,
                 'end': self.end,
-                'time': self.time,
+                'time': '%f' % self.time,
                 'normalize': self.normalize,
                 'scale': self.scale,
-                'result': self.result
+                'result': '%f' % self.result
             }
             csv_export(
                 path=benchmark_file,
@@ -124,14 +124,21 @@ def benchmarks(delete=False):
     results = {}
     for name in benchmarks:
         benchmark = benchmarks[name]
-        results[name] = {'means': {}}
+        results[name] = {'means': {}, 'sums': {}}
         for uid in benchmark:
             runs = benchmark[uid]
             uidsum = 0
             for run in runs:
                 uidsum += float(run['result'])
+            results[name]['sums'][uid] = uidsum
             results[name]['means'][uid] = uidsum / float(len(runs))
         means = results[name]['means']
-        results[name]['mean'] = sum(means.values()) / float(len(means))
+        sums = results[name]['sums']
+        results[name]['sum'] = '%f' % sum(sums.values())
+        results[name]['mean'] = '%f' % (
+            sum(means.values()) / float(len(means)))
+        for uid in benchmark:
+            results[name]['sums'][uid] = '%f' % results[name]['sums'][uid]
+            results[name]['means'][uid] = '%f' % results[name]['means'][uid]
 
     return {'benchmarks': benchmarks, 'results': results}
