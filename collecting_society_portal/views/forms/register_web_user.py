@@ -26,12 +26,10 @@ class RegisterWebuser(FormController):
     """
 
     def controller(self):
-
         self.form = register_form()
-
+        self.render()
         if self.submitted() and self.validate():
             self.register()
-
         return self.response
 
     # --- Stages --------------------------------------------------------------
