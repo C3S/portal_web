@@ -88,7 +88,8 @@ class FormController(object):
     def render(self, appstruct={}, form=None):
         if form is None:
             form = self.form
-        with benchmark(self.request, name='forms', uid=self.name):
+        with benchmark(self.request, name='forms.render', uid=self.name,
+                       scale=1000):
             self.response = {self.name: form.render(appstruct=appstruct)}
 
     def process(self, context, request):
