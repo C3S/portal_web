@@ -15,6 +15,12 @@
 
                 <h1 style="color:black;">Benchmarks</h1>
 
+                <form method="post">
+                    <button type="submit" name="delete" value="1"
+                            class="btn btn-danger"
+                            style="float:right;">delete</button>
+                </form>
+
                 <div tal:repeat="(name,benchmark) benchmarks.items()"
                      tal:condition="benchmarks">
 
