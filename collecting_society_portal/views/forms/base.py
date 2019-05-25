@@ -16,6 +16,7 @@ import colander
 import deform
 
 from ...resources import ResourceBase
+from ...services import benchmark
 
 log = logging.getLogger(__name__)
 
@@ -71,12 +72,10 @@ class FormController(object):
         return self._form
 
     @form.setter
-    def form(self, form, render=True):
+    def form(self, form):
         self._form = form
         if self._form.formid == 'deform':
             self._form.formid = self.name
-        if render:
-            self.response = {self.name: self._form.render()}
 
     @property
     def data(self):
@@ -89,7 +88,9 @@ class FormController(object):
     def render(self, appstruct={}, form=None):
         if form is None:
             form = self.form
-        self.response = {self.name: form.render(appstruct=appstruct)}
+        with benchmark(self.request, name='forms.render', uid=self.name,
+                       scale=1000):
+            self.response = {self.name: form.render(appstruct=appstruct)}
 
     def process(self, context, request):
         self.context = context

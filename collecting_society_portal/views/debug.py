@@ -30,7 +30,7 @@ class DebugViews(ViewBase):
         name='tryton',
         renderer='../templates/debug/tryton.pt',
         decorator=Tdb.transaction())
-    def check_tryton(request):
+    def check_tryton(self, request):
         '''
         This view should display some useful information
         about Tryton and the database backend.
@@ -102,5 +102,6 @@ class DebugViews(ViewBase):
     @view_config(
         name='benchmark',
         renderer='../templates/debug/benchmark.pt')
-    def benchmark(request):
-        return benchmarks()
+    def benchmark(self):
+        delete = ('delete' in self.request.POST or self.request.GET)
+        return benchmarks(delete)

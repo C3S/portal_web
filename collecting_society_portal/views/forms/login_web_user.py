@@ -22,12 +22,10 @@ class LoginWebuser(FormController):
     """
 
     def controller(self):
-
         self.form = login_form()
-
+        self.render()
         if self.submitted() and self.validate():
             self.login()
-
         return self.response
 
     # --- Stages --------------------------------------------------------------

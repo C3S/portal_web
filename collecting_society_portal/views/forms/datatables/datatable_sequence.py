@@ -5,7 +5,7 @@ import json
 
 from pyramid.renderers import get_renderer
 
-from ....services import _
+from ....services import _, benchmark
 
 log = logging.getLogger(__name__)
 
@@ -43,9 +43,29 @@ class DatatableSequence(colander.SequenceSchema):
 
 
 class DatatableSequenceWidget(deform.widget.SequenceWidget):
-
     category = 'structural'
     item_template = 'datatables/sequence_item'
+    prototypes = {}
+
+    def prototype(self, *args, **kwargs):
+        with benchmark(self.request, name='datatables.prototype',
+                       uid=self.template, scale=1000):
+            if self.item_template not in self.prototypes:
+                self.prototypes[self.item_template] = super(
+                    DatatableSequenceWidget, self).prototype(*args, **kwargs)
+            return self.prototypes[self.item_template]
+
+    def serialize(self, *args, **kwargs):
+        with benchmark(self.request, name='datatables.serialize',
+                       uid=self.template, scale=1000):
+            return super(
+                DatatableSequenceWidget, self).serialize(*args, **kwargs)
+
+    def deserialize(self, *args, **kwargs):
+        with benchmark(self.request, name='datatables.deserialize',
+                       uid=self.template, scale=1000):
+            return super(
+                DatatableSequenceWidget, self).deserialize(*args, **kwargs)
 
     def rows(self, field, cstruct, kw):
         if not cstruct:
@@ -124,11 +144,14 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
             settings['api.datatables.url'], '/',
             settings['api.datatables.version']
         ]))
+        with benchmark(self.request, name='datatables.load',
+                       uid=self.template, scale=1000):
+            data = self.rows(field, cstruct, kw)
         kw.update({
             'request': self.request,
             'dumps': json.dumps,
             'api': api,
-            'data': self.rows(field, cstruct, kw),
+            'data': data,
             'language': self.language(),
             'sequence': get_renderer(
                 "collecting_society_portal:"

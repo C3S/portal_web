@@ -3,11 +3,13 @@
 
 import os
 import time
+import datetime
+import logging
+
 from . import (
     csv_import,
     csv_export
 )
-
 
 benchmark_file = "/ado/tmp/benchmark/benchmark.csv"
 csv_config = {
@@ -25,15 +27,22 @@ csv_fieldnames = [
     'result'
 ]
 
+log = logging.getLogger(__name__)
 
-class benchmark(object):
-    def __init__(self, request, name, uid, normalize=1.0, scale=1.0,
-                 environment='development'):
+
+class benchmark():
+    def __init__(self, request, name,
+                 uid=datetime.datetime.now().strftime('%a, %d %b %Y %H:%M:%S'),
+                 normalize=1.0, scale=1.0, environment='development'):
         self.request = request
-        if self.request.registry.settings.get('benchmark.' + name) != 'true':
+        self.skip = False
+        if self.request.registry.settings['env'] != environment:
             self.skip = True
+        if self.request.registry.settings.get(
+                'benchmark.' + name) != 'true':
+            self.skip = True
+        if self.skip:
             return
-        self.skip = (self.request.registry.settings['env'] != environment)
         self.name = name
         self.uid = uid
         self.scale = scale
@@ -72,10 +81,10 @@ class benchmark(object):
                 'uid': self.uid,
                 'start': self.start,
                 'end': self.end,
-                'time': self.time,
+                'time': '%f' % self.time,
                 'normalize': self.normalize,
                 'scale': self.scale,
-                'result': self.result
+                'result': '%f' % self.result
             }
             csv_export(
                 path=benchmark_file,
@@ -86,7 +95,9 @@ class benchmark(object):
         return False
 
 
-def benchmarks():
+def benchmarks(delete=False):
+    if delete and os.path.isfile(benchmark_file):
+        os.remove(benchmark_file)
     if not os.path.isfile(benchmark_file):
         return {'benchmarks': None, 'results': None}
 
@@ -113,14 +124,21 @@ def benchmarks():
     results = {}
     for name in benchmarks:
         benchmark = benchmarks[name]
-        results[name] = {'means': {}}
+        results[name] = {'means': {}, 'sums': {}}
         for uid in benchmark:
             runs = benchmark[uid]
             uidsum = 0
             for run in runs:
                 uidsum += float(run['result'])
+            results[name]['sums'][uid] = uidsum
             results[name]['means'][uid] = uidsum / float(len(runs))
         means = results[name]['means']
-        results[name]['mean'] = sum(means.values()) / float(len(means))
+        sums = results[name]['sums']
+        results[name]['sum'] = '%f' % sum(sums.values())
+        results[name]['mean'] = '%f' % (
+            sum(means.values()) / float(len(means)))
+        for uid in benchmark:
+            results[name]['sums'][uid] = '%f' % results[name]['sums'][uid]
+            results[name]['means'][uid] = '%f' % results[name]['means'][uid]
 
     return {'benchmarks': benchmarks, 'results': results}
