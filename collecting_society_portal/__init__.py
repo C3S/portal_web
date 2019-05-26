@@ -172,7 +172,7 @@ def main(global_config, **settings):
         config.include('pyramid_mailer.testing')
 
     # enable ptvsd debugging (open port 51000 for portal and 51001 for api!)
-    if settings['env'] == 'development':
+    if settings['debugger'] == 'ptvsd':
         debugging_port = 0
         if settings['service'] == 'portal':            
             debugging_port = 51000
