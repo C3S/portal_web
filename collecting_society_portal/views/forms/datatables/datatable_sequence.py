@@ -29,7 +29,6 @@ def defered_datatable_sequence_validator(node, kw):
 
 class DatatableSequence(colander.SequenceSchema):
     def __init__(self, *arg, **kw):
-        log.debug("__init__ 1")
         min_len = kw.get('min_len')
         if min_len:
             self.min_len = min_len
@@ -54,10 +53,13 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
     def prototype(self, *args, **kwargs):
         with benchmark(self.request, name='datatables.prototype',
                        uid=self.template, scale=1000):
-            if self.item_template not in self.prototypes:
-                self.prototypes[self.item_template] = super(
-                    DatatableSequenceWidget, self).prototype(*args, **kwargs)
-            return self.prototypes[self.item_template]
+            return super(
+                DatatableSequenceWidget, self).prototype(*args, **kwargs)
+            # TODO: fix caching:
+            # if self.item_template not in self.prototypes:
+            #     self.prototypes[self.item_template] = super(
+            #         DatatableSequenceWidget, self).prototype(*args, **kwargs)
+            # return self.prototypes[self.item_template]
 
     def serialize(self, *args, **kwargs):
         with benchmark(self.request, name='datatables.serialize',
@@ -154,7 +156,6 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
                 "cancel": _("Cancel", d),
             }
         }
-        log.debug("language 1")
         if hasattr(self, "language_overrides"):
             return json.dumps(self.dictmerge(
                 self.language_overrides, langdict))

@@ -154,6 +154,7 @@ class FormController(object):
             return True
         except deform.ValidationFailure as e:
             self.validationfailure = e
+            log.debug(_data)
             self.response = {self.name: self.validationfailure.render()}
         return False
 
