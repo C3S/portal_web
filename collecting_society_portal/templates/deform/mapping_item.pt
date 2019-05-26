@@ -14,7 +14,7 @@
 
   <label for="${oid}"
          class="control-label ${required and 'required' or ''}"
-         tal:condition="not structural"
+         tal:condition="not structural and title"
          id="req-${oid}"
          >
     ${title}

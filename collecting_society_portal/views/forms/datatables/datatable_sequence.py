@@ -29,6 +29,7 @@ def defered_datatable_sequence_validator(node, kw):
 
 class DatatableSequence(colander.SequenceSchema):
     def __init__(self, *arg, **kw):
+        log.debug("__init__ 1")
         min_len = kw.get('min_len')
         if min_len:
             self.min_len = min_len
@@ -45,6 +46,7 @@ class DatatableSequence(colander.SequenceSchema):
 class DatatableSequenceWidget(deform.widget.SequenceWidget):
     category = 'structural'
     item_template = 'datatables/sequence_item'
+    language_overrides = {}
     prototypes = {}
     source_data = []
     source_data_total = False
@@ -102,10 +104,23 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
             data.append(row)
         return json.dumps(data)
 
+    def dictmerge(self, source, destination):
+        """
+        merges source dict int destinatio dict
+        """
+        for key, value in source.items():
+            if isinstance(value, dict):
+                # get node or create one
+                node = destination.setdefault(key, {})
+                self.dictmerge(value, node)
+            else:
+                destination[key] = value
+        return destination
+
     def language(self):
         _ = self.request.localizer.translate
         d = getattr(self, 'domain', 'collecting_society_portal')
-        return json.dumps({
+        langdict = {
             # en (https://datatables.net/plug-ins/i18n/English)
             "sEmptyTable": _("No data available in table", d),
             "sInfo": _("Showing _START_ to _END_ of _TOTAL_ entries", d),
@@ -138,7 +153,12 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
                 "create": _("Create", d),
                 "cancel": _("Cancel", d),
             }
-        })
+        }
+        log.debug("language 1")
+        if hasattr(self, "language_overrides"):
+            return json.dumps(self.dictmerge(
+                self.language_overrides, langdict))
+        return json.dumps(langdict)
 
     def get_template_values(self, field, cstruct, kw):
         settings = self.request.registry.settings
