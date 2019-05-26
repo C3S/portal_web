@@ -20,7 +20,8 @@
 
     <!-- sequence -->
     <div id="${oid}" class="datatable_sequence datatable_sequence_${oid}"
-         data-data="${data}" data-language="${language}">
+         data-language="${language}" data-target="${target}"
+         data-source="${source}" data-source-total="${source_total}" >
         
         <!-- slot: settings -->
         <script metal:define-slot="settings" />

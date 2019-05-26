@@ -100,7 +100,6 @@ var DatatableSequence = function(vars) {
     this.oid = vars.oid;
     if(vars.dynamicOid)
         this.oid = $("[id^=" + vars.oid + "]").not(".close").last().attr('id');
-    console.log(this.oid);
     this.name = vars.name;
     this.title = vars.title;
     this.minLen = vars.minLen ? parseInt(vars.minLen) : 0;
@@ -190,7 +189,7 @@ var DatatableSequence = function(vars) {
         // table html node selector
         tableId: ds.sel.targetTable,
         // initial data
-        data: $(ds.sel.container).data('data'),
+        data: $(ds.sel.container).data('target'),
         // history data
         history: false
     };
@@ -201,6 +200,10 @@ var DatatableSequence = function(vars) {
         columns: false,
         // table html node selector
         tableId: ds.sel.sourceTable,
+        // initial data
+        data: $(ds.sel.container).data('source'),
+        total: parseInt($(ds.sel.container).data('source-total')) > -1 ?
+               $(ds.sel.container).data('source-total') : null
     };
 };
 
@@ -342,6 +345,9 @@ DatatableSequence.prototype = {
             if($.inArray('add', ds.actions) > -1)
                 ds.source.table = $(ds.sel.sourceTable).DataTable({
                     retrieve: true,
+                    data: ds.source.data,
+                    deferLoading: ds.source.total,
+                    deferRender: false,
                     language: ds.language,
                     processing: true,
                     serverSide: true,

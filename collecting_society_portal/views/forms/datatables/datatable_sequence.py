@@ -46,6 +46,8 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
     category = 'structural'
     item_template = 'datatables/sequence_item'
     prototypes = {}
+    source_data = []
+    source_data_total = False
 
     def prototype(self, *args, **kwargs):
         with benchmark(self.request, name='datatables.prototype',
@@ -146,12 +148,14 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
         ]))
         with benchmark(self.request, name='datatables.load',
                        uid=self.template, scale=1000):
-            data = self.rows(field, cstruct, kw)
+            target_data = self.rows(field, cstruct, kw)
         kw.update({
             'request': self.request,
             'dumps': json.dumps,
             'api': api,
-            'data': data,
+            'target': target_data,
+            'source': json.dumps(self.source_data),
+            'source_total': self.source_data_total,
             'language': self.language(),
             'sequence': get_renderer(
                 "collecting_society_portal:"
