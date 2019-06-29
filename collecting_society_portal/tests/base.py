@@ -30,6 +30,11 @@ from .config import testconfig
 
 from .integration.pageobjects import *  # noqa
 
+from ..models import Tdb
+from trytond.transaction import Transaction
+from trytond.cache import Cache
+from trytond.pool import Pool
+
 
 class Net(object):
     """
@@ -281,6 +286,7 @@ class UnitTestBase(TestBase):
         Returns:
             None.
         """
+
         testing.tearDown()
 
 
@@ -324,6 +330,14 @@ class FunctionalTestBase(TestBase):
             wrapper='TestApp'
         )
 
+        user = Transaction().user  # pyramid subrequests have no cursor
+        cursor = Transaction().cursor and not Transaction().cursor._conn.closed
+        if not user and not cursor:
+            with Transaction().start(Tdb._db, 0):
+                pool = Pool(str(Tdb._db))
+                user = pool.get('res.user')
+                Cache.clean(Tdb._db)
+
     @classmethod
     def tearDownClass(cls):
         """
@@ -334,6 +348,12 @@ class FunctionalTestBase(TestBase):
         Returns:
             None.
         """
+
+        cursor = Transaction().cursor
+        if cursor and not Transaction().cursor._conn.closed:
+            Cache.resets(Tdb._db)
+            Transaction().stop()
+
         cls.net.stop_server()
 
     def session(self):
@@ -461,7 +481,7 @@ class IntegrationTestBase(TestBase):
             path = self.cfg['client']['screenshots']['path']
             if not os.path.isdir(path):
                 os.makedirs(path)
-            if filename is '':
+            if filename == '':
                 testtime = datetime.utcnow().strftime('%Y.%m.%d-%H:%M:%S.%f')
                 testclass = self.__class__.__name__
                 testname = self._testMethodName

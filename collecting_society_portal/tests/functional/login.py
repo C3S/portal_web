@@ -13,6 +13,7 @@ class TestLogin(FunctionalTestBase):
         """
         Is field email required?
         """
+
         res1 = self.url('', status=200)
         form = res1.forms['LoginWebuser']
         res2 = form.submit('LoginWebusersubmit')
