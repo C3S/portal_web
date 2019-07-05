@@ -65,7 +65,7 @@ class TestLogin(FunctionalTestBase):
         """
         res1 = self.url('', status=200)
         form = res1.forms['LoginWebuser']
-        form['email'] = 'meik@c3s.cc'
+        form['email'] = 'wilbert_webuser@c3s.cc'
         form['password'] = 'wrongpassword'
         res2 = form.submit('LoginWebusersubmit')
         self.assertIn('<p class="errorMsg">Login failed</p>', res2.body)
@@ -76,11 +76,12 @@ class TestLogin(FunctionalTestBase):
         """
         res1 = self.url('', status=200)
         form = res1.forms['LoginWebuser']
-        form['email'] = 'meik@c3s.cc'
-        form['password'] = 'meik'
+        form['email'] = 'wilbert_webuser@c3s.cc'
+        form['password'] = 'wu'
         res2 = form.submit('LoginWebusersubmit')
+
         self.assertIn('The resource was found at', res2.body)
-        res3 = res2.follow().follow().follow()
+        res3 = res2.follow().follow().follow()  # got a 403 here :(
         self.assertIn(
             '<div class="cs-content cs-backend', res3.body
         )

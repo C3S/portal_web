@@ -110,6 +110,10 @@ class Net(object):
         # Plugins
         self.plugins = get_plugins(self.appconfig)
 
+        # update portal settings with plugin settings and replace env vars
+        for priority in sorted(self.plugins, reverse=True):
+            self.appconfig.update(self.plugins[priority]['settings'])
+
         # Evironment
         self.appconfig = replace_environment_vars(self.appconfig)
 
@@ -150,6 +154,7 @@ class Net(object):
         """
         Starts the client.
 
+        Only relevant for Selenium.
         Client settings may be configured in `config.py` (client).
 
         Returns:
@@ -336,7 +341,10 @@ class FunctionalTestBase(TestBase):
             with Transaction().start(Tdb._db, 0):
                 pool = Pool(str(Tdb._db))
                 user = pool.get('res.user')
+                context = user.get_preferences(context_only=True)
                 Cache.clean(Tdb._db)
+            Transaction().start(
+                Tdb._db, Tdb._user, readonly=True, context=context)
 
     @classmethod
     def tearDownClass(cls):
