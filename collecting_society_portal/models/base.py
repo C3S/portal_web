@@ -119,7 +119,12 @@ class Tdb(object):
         DatabaseOperationalError = backend.get('DatabaseOperationalError')
         _tdbglog = "/ado/tmp/transaction.log"
 
-        def closed():
+        def is_open():
+            if Transaction().cursor and not Transaction().cursor._conn.closed:
+                return True
+            return False
+
+        def is_closed():
             if Transaction().cursor:
                 return Transaction().cursor._conn.closed
             return False
@@ -152,7 +157,7 @@ class Tdb(object):
                             lines[0].strip()))
                         f.write(
                             "\t"*(Tdb.wraps+1)+"- connection: %s, %s\n" % (
-                                closed() and "closed" or "open",
+                                is_closed() and "closed" or "open",
                                 readonly and "read" or "write"))
                         f.write("\t"*(Tdb.wraps+1)+"- calls:  %s" % (
                             " -> ".join(functions)))
@@ -178,7 +183,7 @@ class Tdb(object):
                 _tdbg(func, "WRAP", None, 1)
 
                 for count in range(_retry, 0, -1):
-                    if closed():
+                    if not is_open():
                         _tdbg(func, "CONNECT")
                         with Transaction().start(_db, 0):
                             Cache.clean(_db)
