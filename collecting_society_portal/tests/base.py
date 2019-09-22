@@ -148,6 +148,11 @@ class Net(object):
         Returns:
             None.
         """
+        # Stop any previous Transaction
+        if Tdb.is_open():
+            Transaction().stop()
+
+        # Stop server
         if isinstance(self.srv, StopableWSGIServer):
             self.srv.shutdown()
 
