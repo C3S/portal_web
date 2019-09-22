@@ -138,16 +138,16 @@ class ResourceBase(object):
 
     @classmethod
     def _rdbg(cls, caller, original, update, extended):
-            settings = threadlocal.get_current_registry().settings
-            if 'debug.res.registry' not in settings:
-                return
-            if settings['debug.res.registry'] == 'true':
-                with open(cls._rdbglog, "a") as f:
-                    f.write(("-"*3 + " %s.%s() " + "-"*60 + "\n\n"
-                             "original: %s\nupdate: %s\nextended: %s\n\n") % (
-                             cls.__name__, caller, pp.pformat(original),
-                             pp.pformat(update), pp.pformat(extended)))
-                os.chmod(cls._rdbglog, 775)
+        settings = threadlocal.get_current_registry().settings
+        if 'debug.res.registry' not in settings:
+            return
+        if settings['debug.res.registry'] == 'true':
+            with open(cls._rdbglog, "a") as f:
+                f.write(("-"*3 + " %s.%s() " + "-"*60 + "\n\n"
+                         "original: %s\nupdate: %s\nextended: %s\n\n") % (
+                         cls.__name__, caller, pp.pformat(original),
+                         pp.pformat(update), pp.pformat(extended)))
+            os.chmod(cls._rdbglog, 775)
 
     @classmethod
     def add_child(cls, val):

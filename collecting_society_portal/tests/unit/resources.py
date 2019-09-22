@@ -207,14 +207,6 @@ class TestResources(UnitTestBase):
         self.request = DummyRequest()
         rb = ResourceBaseChildMock(self.request)
         res = rb.__str__()
-        #
-        # "context: "
-        # "collecting_society_portal.tests.unit.resources.ResourceBaseChildMock\n"
-        # "context.__parent__: news\n"
-        # "context.__children__: {}\n"
-        # "context.registry:\n"
-        # "{'content': {}, 'widgets': {}, 'meta': {}, "
-        #  "'menues': {}, 'static': {}}"
 
         self.assertTrue("context" in res)
         self.assertTrue(
@@ -223,7 +215,7 @@ class TestResources(UnitTestBase):
                 "ResourceBaseChildMock\n"
             ) in res)
         self.assertTrue("context.__parent__: news\n" in res)
-        self.assertTrue("context.__children__: {}\n" in res)
+        self.assertTrue("context.__children__: {   }\n" in res)
         self.assertTrue("context.registry" in res)
 
 
@@ -234,7 +226,7 @@ class TestWebRootFactory(UnitTestBase):
         test webrootfactory frontend
         """
         self.request = DummyRequest()
-        self.request.web_user = None
+        self.config.testing_securitypolicy(userid=None, permissive=False)
         fr = WebRootFactory(self.request)
         self.assertIsInstance(fr, FrontendResource)
 
@@ -243,6 +235,6 @@ class TestWebRootFactory(UnitTestBase):
         test webrootfactory backend
         """
         self.request = DummyRequest()
-        self.request.web_user = 'foo'
+        self.config.testing_securitypolicy(userid=1, permissive=True)
         br = WebRootFactory(self.request)
         self.assertIsInstance(br, BackendResource)

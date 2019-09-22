@@ -8,7 +8,6 @@ Main module for the pyramid app.
 import os
 import logging
 from logging.config import fileConfig
-import ptvsd
 
 from pyramid.config import Configurator
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -174,15 +173,16 @@ def main(global_config, **settings):
     # enable ptvsd debugging (open port 51000 for portal and 51001 for api!)
     if settings['debugger'] == 'ptvsd':
         debugging_port = 0
-        if settings['service'] == 'portal':            
+        if settings['service'] == 'portal':
             debugging_port = 51000
-        if settings['service'] == 'api':            
+        if settings['service'] == 'api':
             debugging_port = 51001
         if debugging_port > 0:
             log.debug(settings['service'] + " debugger listening to port " +
                       str(debugging_port))
             try:
-                ptvsd.enable_attach(address=("0.0.0.0", debugging_port), 
+                import ptvsd  # unconditional import breaks test coverage
+                ptvsd.enable_attach(address=("0.0.0.0", debugging_port),
                                     redirect_output=True)
                 # uncomment these three lines, if you need to debug
                 # initialization code like colander schema nodes:
@@ -193,7 +193,7 @@ def main(global_config, **settings):
                 if hasattr(ex, 'message'):
                     print(ex.message)
                 else:
-                    print('ptvsd debugging not possible: ' + ex.message) 
+                    print('ptvsd debugging not possible: ' + ex.message)
 
     # configure webfrontend for portal and plugins
     if settings['service'] == 'portal':

@@ -85,4 +85,5 @@ class ViewBase(object):
             path = self.request.resource_path(resource, *args)
         elif isinstance(resource, type) and issubclass(resource, ResourceBase):
             path = self.request.resource_path(resource(self.request), *args)
+        assert path
         return HTTPFound(path, **kwargs)

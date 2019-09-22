@@ -78,6 +78,12 @@ class Tdb(object):
         with Transaction().start(str(cls._db), int(cls._user), readonly=True):
             Pool().init()
 
+    @staticmethod
+    def is_open():
+        if Transaction().cursor and not Transaction().cursor._conn.closed:
+            return True
+        return False
+
     def transaction(readonly=None, user=None, context=None):
         """
         Decorater function to wrap database communication with transactions.
@@ -119,19 +125,9 @@ class Tdb(object):
         DatabaseOperationalError = backend.get('DatabaseOperationalError')
         _tdbglog = "/ado/tmp/transaction.log"
 
-        def is_open():
-            if Transaction().cursor and not Transaction().cursor._conn.closed:
-                return True
-            return False
-
-        def is_closed():
-            if Transaction().cursor:
-                return Transaction().cursor._conn.closed
-            return False
-
         def _tdbg(func, mode, string=None, levelchange=0):
             settings = threadlocal.get_current_registry().settings
-            if 'debug.tdb.transactions' not in settings:
+            if not settings or 'debug.tdb.transactions' not in settings:
                 return
             if settings['debug.tdb.transactions'] == 'true':
                 import os
@@ -157,7 +153,7 @@ class Tdb(object):
                             lines[0].strip()))
                         f.write(
                             "\t"*(Tdb.wraps+1)+"- connection: %s, %s\n" % (
-                                is_closed() and "closed" or "open",
+                                Tdb.is_open() and "open" or "closed",
                                 readonly and "read" or "write"))
                         f.write("\t"*(Tdb.wraps+1)+"- calls:  %s" % (
                             " -> ".join(functions)))
@@ -183,7 +179,7 @@ class Tdb(object):
                 _tdbg(func, "WRAP", None, 1)
 
                 for count in range(_retry, 0, -1):
-                    if not is_open():
+                    if not Tdb.is_open():
                         _tdbg(func, "CONNECT")
                         with Transaction().start(_db, 0):
                             Cache.clean(_db)

@@ -7,7 +7,7 @@ Dictionary Merge Tests
 # from pyramid.httpexceptions import HTTPException
 from pyramid.httpexceptions import (
     exception_response,
-    HTTPException
+    HTTPFound
 )
 from pyramid.testing import (
     DummyRequest,
@@ -40,20 +40,15 @@ class FormControllerMockHTTPException():
         self.persistent = persistent
 
     def process(self, request, context):
-        # return HTTPException(404)
         return exception_response(404)
 
 
 class TestViewBase(UnitTestBase):
 
     def setUp(self):
-        # self.controller =
         self.request = DummyRequest()
         self.context = DummyResource()
-        self.request.session = {
-        }
-        # self.context = self.request.context
-        # import pdb; pdb.set_trace()
+        self.request.session = {}
 
     def test_viewbase(self):
         """
@@ -93,18 +88,25 @@ class TestViewBase(UnitTestBase):
         """
         my_viewbase = ViewBase(self.context, self.request)
         result = my_viewbase.redirect('/foo')
-        self.assertIsInstance(result, HTTPException)
+        self.assertIsInstance(result, HTTPFound)
 
-    def test_redirect_resource(self):
+    def test_redirect_resource_instance(self):
         """
-        Test redirect resource
+        Test redirect resource instance
         """
         my_viewbase = ViewBase(self.context, self.request)
-        mock_resource = DummyResource
-        # self.request.resource_path = '/foo
+        mock_resource = ResourceBase(self.request)
         result = my_viewbase.redirect(mock_resource, "foo")
-        # self.assertIsInstance(result, HTTPException)
-        self.assertNotIsInstance(result, ResourceBase)
+        self.assertIsInstance(result, HTTPFound)
+
+    def test_redirect_resource_class(self):
+        """
+        Test redirect resource class
+        """
+        my_viewbase = ViewBase(self.context, self.request)
+        mock_resource = ResourceBase
+        result = my_viewbase.redirect(mock_resource, "foo")
+        self.assertIsInstance(result, HTTPFound)
 
     def test_registerform_staticpath(self):
         """

@@ -2,11 +2,25 @@
 # Repository: https://github.com/C3S/collecting_society.portal
 
 from ..base import FunctionalTestBase
+from ..testdata import TestDataPortal
 
 
-class TestLogin(FunctionalTestBase):
+class TestLogin(FunctionalTestBase, TestDataPortal):
+
+    @classmethod
+    def createTestData(cls):
+        """
+        Creates test data.
+        """
+        cls.createWebUser(
+            email='right@username.test',
+            password='rightpassword'
+        )
 
     def setUp(self):
+        """
+        Renews the session for each test.
+        """
         self.session()
 
     def test_required_field_email(self):
@@ -65,7 +79,7 @@ class TestLogin(FunctionalTestBase):
         """
         res1 = self.url('', status=200)
         form = res1.forms['LoginWebuser']
-        form['email'] = 'wilbert_webuser@c3s.cc'
+        form['email'] = 'right@username.test'
         form['password'] = 'wrongpassword'
         res2 = form.submit('LoginWebusersubmit')
         self.assertIn('<p class="errorMsg">Login failed</p>', res2.body)
@@ -76,12 +90,9 @@ class TestLogin(FunctionalTestBase):
         """
         res1 = self.url('', status=200)
         form = res1.forms['LoginWebuser']
-        form['email'] = 'wilbert_webuser@c3s.cc'
-        form['password'] = 'wu'
+        form['email'] = 'right@username.test'
+        form['password'] = 'rightpassword'
         res2 = form.submit('LoginWebusersubmit')
-
-        self.assertIn('The resource was found at', res2.body)
-        res3 = res2.follow().follow().follow()  # got a 403 here :(
-        self.assertIn(
-            '<div class="cs-content cs-backend', res3.body
-        )
+        self.assertNotIn('<p class="errorMsg">Login failed</p>', res2.body)
+        res3 = res2.maybe_follow()
+        self.assertIn('<div class="cs-content cs-backend', res3.body)

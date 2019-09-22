@@ -140,6 +140,7 @@ class FormController(object):
             path = self.request.resource_path(resource, *args)
         elif isinstance(resource, type) and issubclass(resource, ResourceBase):
             path = self.request.resource_path(resource(self.request), *args)
+        assert path
         self.response = HTTPFound(path, **kwargs)
         self.remove()
 

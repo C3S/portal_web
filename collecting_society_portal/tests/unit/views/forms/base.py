@@ -2,9 +2,11 @@
 from pyramid.testing import (
     DummyRequest,
     DummyResource
-    )
+)
+from pyramid.httpexceptions import HTTPFound
 
 from ....base import UnitTestBase
+from .....resources import ResourceBase
 
 # from ....views.forms.base import FormController
 from collecting_society_portal.views.forms.base import (
@@ -119,7 +121,6 @@ class TestFormBase(UnitTestBase):
         my_form = FormControllerMock(
             context=self.context,
             request=self.request,
-
         )
         my_form.form = my_deform_form
         res = my_form.validate()
@@ -141,7 +142,6 @@ class TestFormBase(UnitTestBase):
         my_form = FormControllerMock(
             context=self.context,
             request=self.request,
-
         )
         my_form.form = my_deform_form
         res = my_form.validate()
@@ -155,13 +155,13 @@ class TestFormBase(UnitTestBase):
         post_dict = {"foo": "bar"}
         self.request = DummyRequest(post=post_dict)
         self.context = DummyResource()
+        self.request.registry.settings['env'] = 'testing'
 
         my_deform_form = DeformFormMockValidating()
 
         my_form = FormControllerMock(
             context=self.context,
             request=self.request,
-
         )
         my_form.form = my_deform_form
         res = my_form.render()
@@ -181,7 +181,6 @@ class TestFormBase(UnitTestBase):
         my_form = FormControllerMock(
             context=self.context,
             request=self.request,
-
         )
         my_form.form = my_deform_form
         res = my_form.process(self.context, self.request)
@@ -200,7 +199,6 @@ class TestFormBase(UnitTestBase):
         my_form = FormControllerMock(
             context=self.context,
             request=self.request,
-
         )
         my_form.form = my_deform_form
         res = my_form.data
@@ -219,7 +217,6 @@ class TestFormBase(UnitTestBase):
         my_form = FormControllerMock(
             context=self.context,
             request=self.request,
-
         )
         my_form.form = my_deform_form
         res = my_form.submitted()
@@ -238,7 +235,6 @@ class TestFormBase(UnitTestBase):
         my_form = FormControllerMock(
             context=self.context,
             request=self.request,
-
         )
         my_form.form = my_deform_form
         res = my_form.submitted()
@@ -260,7 +256,6 @@ class TestFormBase(UnitTestBase):
         my_form = FormControllerMock(
             context=self.context,
             request=self.request,
-
         )
         my_form.form = my_deform_form
         res = my_form.submitted()
@@ -283,7 +278,6 @@ class TestFormBase(UnitTestBase):
         my_form = FormControllerMock(
             context=self.context,
             request=self.request,
-
         )
         my_form.form = my_deform_form
         my_form.formid = "deform"
@@ -303,22 +297,36 @@ class TestFormBase(UnitTestBase):
         self.assertIn(
             self.request.session['forms']['FormControllerMock'],
             'form')
-
-        # my_deform_form = DeformFormMockValidating()
-
         my_form = FormControllerMock(
             context=self.context,
             request=self.request,
-
         )
         my_form.redirect(resource="/foo")
+        self.assertIsInstance(my_form.response, HTTPFound)
         # assert form has been removed from session
-        self.assertEqual(
-            self.request.session['forms'], {})
+        self.assertEqual(self.request.session['forms'], {})
 
-    def test_redirect_res(self):
+    def test_redirect_ressource_instance(self):
         """
-        Test redirect resource
+        Test redirect resource instance
+        """
+        self.request = DummyRequest()
+        self.request.session['forms'] = {
+            'FormControllerMock': 'form'}
+        self.context = DummyResource()
+        my_form = FormControllerMock(
+            context=self.context,
+            request=self.request,
+        )
+        mock_resource = ResourceBase(self.request)
+        my_form.redirect(mock_resource)
+        self.assertIsInstance(my_form.response, HTTPFound)
+        # assert form has been removed from session
+        self.assertEqual(self.request.session['forms'], {})
+
+    def test_redirect_ressource_class(self):
+        """
+        Test redirect resource class
         """
         self.request = DummyRequest()
         self.request.session['forms'] = {
@@ -330,9 +338,12 @@ class TestFormBase(UnitTestBase):
         my_form = FormControllerMock(
             context=self.context,
             request=self.request,
-
         )
-        my_form.redirect(DummyResource)
+        mock_resource = ResourceBase
+        my_form.redirect(mock_resource)
+        self.assertIsInstance(my_form.response, HTTPFound)
+        # assert form has been removed from session
+        self.assertEqual(self.request.session['forms'], {})
 
     def test_clean(self):
         """
@@ -348,7 +359,6 @@ class TestFormBase(UnitTestBase):
         my_form = FormControllerMock(
             context=self.context,
             request=self.request,
-
         )
         my_form.clean()
         self.assertTrue(my_form._form is None)

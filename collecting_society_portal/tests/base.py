@@ -19,21 +19,19 @@ from webtest import TestApp
 from webtest.http import StopableWSGIServer
 from selenium import webdriver
 from paste.deploy.loadwsgi import appconfig
-from pyramid import testing
 
+from pyramid import testing
+from trytond.transaction import Transaction
+
+from ..models import Tdb
 from ..config import (
     get_plugins,
     replace_environment_vars
 )
 from .. import main
+
 from .config import testconfig
-
 from .integration.pageobjects import *  # noqa
-
-from ..models import Tdb
-from trytond.transaction import Transaction
-from trytond.cache import Cache
-from trytond.pool import Pool
 
 
 class Net(object):
@@ -96,6 +94,9 @@ class Net(object):
             webtest.http.StopableWSGIServer: If StopableWSGIServer.
             webtest.TestApp: If TestApp.
         """
+        # Stop any previous Transaction
+        if Tdb.is_open():
+            Transaction().stop()
 
         # Appconfig
         self.appconfig = appconfig(
@@ -197,14 +198,55 @@ class TestBase(unittest.TestCase):
     Classattributes:
         cfg (dict): Test specific configuration for server/client.
         net (Net): Net containing server/client objects for tests.
+        data (list[obj]): Created tryton test objects.
     """
     cfg = testconfig
     net = Net()
+    data = []
 
     def __init__(self, *args, **kwargs):
         super(TestBase, self).__init__(*args, **kwargs)
         self._shortDescription = self.shortDescription
         self.shortDescription = self.prettyShortDescription
+
+    @classmethod
+    def createTestData(cls):
+        """
+        Custom test data for the scope of a test class.
+
+        Override this method to create test data.
+
+        Returns:
+            None.
+        """
+        pass
+
+    @classmethod
+    def setUpClass(cls):
+        """
+        Injects test data method and commits cursor.
+
+        Returns:
+            None.
+        """
+        cls.createTestData()
+        if Tdb.is_open():
+            Transaction().cursor.commit()
+
+    @classmethod
+    @Tdb.transaction(readonly=False)
+    def tearDownClass(cls):
+        """
+        Deletes tryton test data.
+
+        Returns:
+            None.
+        """
+        # Delete tryton test objects
+        if cls.data:
+            for instance in cls.data:
+                instance.delete([instance.id])
+            Transaction().cursor.commit()
 
     def prettyShortDescription(self):
         """
@@ -274,11 +316,17 @@ class UnitTestBase(TestBase):
         """
         Sets up test class.
 
+        Configures Tdb database parameters.
         Sets up pyramid registry and request for testing.
 
         Returns:
             None.
         """
+        Tdb._db = "test"
+        Tdb._user = 0
+        Tdb._configfile = "/ado/etc/trytond.conf"
+        Tdb._company = 1
+
         cls.config = testing.setUp()
 
     @classmethod
@@ -291,7 +339,6 @@ class UnitTestBase(TestBase):
         Returns:
             None.
         """
-
         testing.tearDown()
 
 
@@ -325,7 +372,7 @@ class FunctionalTestBase(TestBase):
         """
         Sets up test class.
 
-        Starts TestApp server injecting the class app settings.
+        Starts TestApp server.
 
         Returns:
             None.
@@ -334,17 +381,7 @@ class FunctionalTestBase(TestBase):
             settings=cls.settings(),
             wrapper='TestApp'
         )
-
-        user = Transaction().user  # pyramid subrequests have no cursor
-        cursor = Transaction().cursor and not Transaction().cursor._conn.closed
-        if not user and not cursor:
-            with Transaction().start(Tdb._db, 0):
-                pool = Pool(str(Tdb._db))
-                user = pool.get('res.user')
-                context = user.get_preferences(context_only=True)
-                Cache.clean(Tdb._db)
-            Transaction().start(
-                Tdb._db, Tdb._user, readonly=True, context=context)
+        super(FunctionalTestBase, cls).setUpClass()
 
     @classmethod
     def tearDownClass(cls):
@@ -356,12 +393,7 @@ class FunctionalTestBase(TestBase):
         Returns:
             None.
         """
-
-        cursor = Transaction().cursor
-        if cursor and not Transaction().cursor._conn.closed:
-            Cache.resets(Tdb._db)
-            Transaction().stop()
-
+        super(FunctionalTestBase, cls).tearDownClass()
         cls.net.stop_server()
 
     def session(self):
@@ -426,6 +458,7 @@ class IntegrationTestBase(TestBase):
             settings=cls.settings(),
             wrapper='StopableWSGIServer'
         )
+        super(IntegrationTestBase, cls).setUpClass()
 
     @classmethod
     def tearDownClass(cls):
@@ -438,6 +471,7 @@ class IntegrationTestBase(TestBase):
         Returns:
             None.
         """
+        super(IntegrationTestBase, cls).tearDownClass()
         cls.net.stop_client()
         cls.net.stop_server()
 
