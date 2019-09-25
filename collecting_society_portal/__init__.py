@@ -184,9 +184,10 @@ def main(global_config, **settings):
                 import ptvsd  # unconditional import breaks test coverage
                 ptvsd.enable_attach(address=("0.0.0.0", debugging_port),
                                     redirect_output=True)
-                # uncomment these three lines, if you need to debug
-                # initialization code like colander schema nodes:
-                # if debugging_port == 51000:
+                # uncomment these three lines, and set the debugging_port
+                # accordingly, if you need to debug initialization code
+                # like colander schema nodes, for example:
+                # if debugging_port == 51001:
                 #     ptvsd.wait_for_attach()
                 #     ptvsd.break_into_debugger()
             except Exception as ex:
