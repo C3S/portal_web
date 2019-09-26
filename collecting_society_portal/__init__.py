@@ -226,6 +226,7 @@ def main(global_config, **settings):
     # configure api for portal and plugins
     if settings['service'] == 'api':
         config.include('cornice')
+        config.include('cornice_swagger')
         # api root factory
         config.set_root_factory(factory=ApiRootFactory)
         # api views
