@@ -21,8 +21,8 @@ testconfig = {
     'client': {
         # connection
         'connection': {
-            'selenium': 'http://selenium:4444/wd/hub',
-            'server': 'portal:6544'
+            'selenium': 'http://browser:4444/wd/hub',
+            'server': 'webgui:6544'
         },
         # desired_capabilities
         'desired_capabilities': {
@@ -40,7 +40,7 @@ testconfig = {
             # switch all screnshots on or off
             'on': True,
             # path of screenshots
-            'path': '/ado/tmp/screenshots',
+            'path': '/shared/tmp/screenshots',
             # delete all screenshots of previous integration tests
             'reset': True
         }
