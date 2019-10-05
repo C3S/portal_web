@@ -1,0 +1,147 @@
+/*******************************************************************************
+
+    For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+    Repository: https://github.com/C3S/portal_web
+
+*******************************************************************************/
+
+
+/*******************************************************************************
+
+    Extra small devices (phones, less than 768px)
+
+*******************************************************************************/
+
+/* Main */
+
+html { height:100%; }
+body { height:100%; }
+
+h1, .h1 {}
+h2, .h2 {}
+h3, .h3 {}
+h4, .h4 {}
+h5, .h5 {}
+h6, .h6 {}
+
+.cs-img-center { margin:0 auto; }
+.cs-txt-center { text-align:center; }
+.cs-red { color:#fc2a00; }
+
+.cs-modal .pin { margin-right:10px; }
+.cs-modal .pinned { color:#ff0000; opacity:0.9; }
+
+.cs-datatables-row-details tr td:first-child { padding-left:45px; }
+.table > tbody > tr > td.cs-datatables-col-controls { padding-top:3px; padding-bottom:3px; }
+.cs-datatables-controls { margin-left:10px; }
+.cs-datatables-row-show { padding-right:4px; font-style:italic; }
+.deform-sequence-container .required::after { color: #e32; content: '*'; display: inline;}
+
+.select2-container { width:100%!important; }
+
+/* Content Left */
+
+.cs-content-left { background-color:#eee; }
+
+.cs-menue-main { background-color:#fff; padding:20px; border:1px solid #ddd; border-top:none; }
+
+.cs-menue-main .navbar-nav a .cs-icon { width:40px; height:40px; display:inline-block; vertical-align:middle; }
+.cs-menue-main .navbar-nav a .cs-title { width:65%; margin-left:10px; display:inline-block; vertical-align:middle; }
+
+/* Content Middle */
+
+.cs-menue-top { background-color:transparent; border:none; font-size:90%; margin-bottom:10px; min-height:60px; }
+.cs-navform .panel-heading > .nav-tabs { border-bottom: none; margin-bottom: -10px; }
+.cs-navform-title { float:left; margin:7px 25px 0 0; }
+.cs-navform .cs-navform-nav > li > .cs-error { color:#b94a48; font-weight:bold; }
+
+/* Content Right */
+
+.cs-content-right { background-color:#eee; }
+
+.cs-logo-container { text-align:right; padding:10px; }
+.cs-logo { max-width:130px; }
+.cs-langflags {
+    margin-right: 47px;
+    position: relative;
+    z-index: 100;
+}
+
+.select2-container { width: 100%!important; } /* widgets in follow-up tabs were too narrow */
+
+.fileupload-buttonbar { display:none; } /* only displayed on file added */
+
+/*******************************************************************************
+
+   Small devices (tablets, 768px and up)
+
+*******************************************************************************/
+
+@media (min-width: 768px) {
+
+    /* Main */
+
+    /* Content Left */
+
+    /* Content Middle */
+
+    /* Content Right */
+
+}
+
+/*******************************************************************************
+
+   Medium devices (desktops, 992px and up)
+
+*******************************************************************************/
+
+@media (min-width: 992px) {
+
+    /* Main */
+
+    .cs-content { min-height:100%; height:100% }
+    .cs-content .row { min-height:100%; }
+
+    /* Content Left */
+
+    .cs-content-left { min-height:100%; }
+
+    .cs-menue-main .navbar-nav a .cs-icon { width:30px; height:30px; }
+    .cs-menue-main .navbar-nav a .cs-title { width:60%; }
+
+    /* Content Middle */
+
+    .cs-menue-top { font-size:90%; }
+
+    /* Content Right */
+
+    .cs-content-right { min-height:100%; }
+
+    .cs-logo-container { float:right; padding:0; }
+    .cs-logo { margin-top:13px; }
+
+}
+
+
+/*******************************************************************************
+
+   Large devices (large desktops, 1200px and up)
+
+*******************************************************************************/
+
+@media (min-width: 1200px) {
+
+    /* Main */
+
+    /* Content Left */
+
+    .cs-menue-main .navbar-nav a .cs-icon { width:40px; height:40px; }
+    .cs-menue-main .navbar-nav a .cs-title { width:65%; }
+
+    /* Content Middle */
+
+    .cs-menue-top { font-size:100%; }
+
+    /* Content Right */
+    
+}

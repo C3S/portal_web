@@ -1,0 +1,68 @@
+<!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+      Repository: https://github.com/C3S/portal_web -->
+<!--!
+
+    Benchmark information
+
+-->
+<tal:block metal:use-macro="base">
+
+    <!-- content -->
+    <tal:block metal:fill-slot="content">
+
+        <div class="container">
+            <div class="row alert alert-success">
+
+                <h1 style="color:black;">Benchmarks</h1>
+
+                <form method="post">
+                    <button type="submit" name="delete" value="1"
+                            class="btn btn-danger"
+                            style="float:right;">delete</button>
+                </form>
+
+                <div tal:repeat="(name,benchmark) benchmarks.items()"
+                     tal:condition="benchmarks">
+
+                    <h2 style="color:red;">
+                        ${name}
+                        (Mean: ${results[name]['mean']}, Sum: ${results[name]['sum']})
+                    </h2>
+
+                    <div tal:repeat="(uid,runs) benchmark.items()"
+                         tal:condition="benchmark">
+
+                        <h3 style="color:blue;">
+                            ${uid}
+                            (Mean: ${results[name]['means'][uid]}, Sum: ${results[name]['sums'][uid]})
+                        </h3>
+
+                        <table class="table table-hover" style="color:black;">
+
+                            <tr>
+                                <th tal:repeat="(header,_) runs[0].items()"
+                                    tal:condition="runs">
+                                    ${header}
+                                </th>
+                            </tr>
+
+                            <tr tal:repeat="run runs">
+                                <td tal:repeat="(_,value) run.items()"
+                                    tal:condition="run">
+                                    ${value}
+                                </td>
+                            </tr>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+
+    </tal:block>
+
+</tal:block>

@@ -1,0 +1,198 @@
+<!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+      Repository: https://github.com/C3S/portal_web -->
+<!--!
+
+    Customized deform form rendering.
+
+-->
+<form tal:define="style style|field.widget.style;
+                  css_class css_class|string:${field.widget.css_class or field.css_class or ''};
+                  item_template item_template|field.widget.item_template;
+                  autocomplete autocomplete|field.autocomplete;
+                  title title|field.title;
+                  errormsg errormsg|field.errormsg;
+                  description description|field.description;
+                  buttons buttons|field.buttons;
+                  use_ajax use_ajax|field.use_ajax;
+                  ajax_options ajax_options|field.ajax_options;
+                  formid formid|field.formid;
+                  action action|field.action or None;
+                  method method|field.method;
+                  prevnext prevnext|False;
+                  navstyle navstyle|field.widget.navstyle;"
+      tal:attributes="autocomplete autocomplete;
+                      style style;
+                      class css_class + ' cs-navform';
+                      action action;"
+      id="${formid}"
+      method="${method}"
+      enctype="multipart/form-data"
+      accept-charset="utf-8"
+      i18n:domain="portal_web">
+
+    
+    <fieldset class="deformFormFieldset">
+
+        <h1 tal:condition="title" class="cs-form-header">${title}</h1>
+
+        <input type="hidden" name="_charset_" />
+        <input type="hidden" name="__formid__" value="${formid}"/>
+
+        <div class="alert alert-danger" tal:condition="field.error">
+            <div class="errorMsgLbl" tal:condition="not field.errormsg" i18n:translate="">
+                There was a problem with your submission. Please check the fields below.
+            </div>
+            <p class="errorMsg">${field.errormsg}</p>
+        </div>
+
+        <p class="section first" tal:condition="description">
+            ${description}
+        </p>
+
+        <div class="panel panel-default">
+            <!-- Nav -->
+            <div class="panel-heading">
+                <ul class="nav nav-${navstyle} cs-nav-${navstyle}" role="tablist">
+                    <li role="presentation"
+                        tal:repeat="schema field.children"
+                        tal:attributes="class 'active' if repeat.schema.start else ''"
+                        id="cs-navform-item-menu-${schema.name}">
+                        <a href="#cs-navform-item-content-${schema.name}"
+                           aria-controls="${schema.oid}" 
+                           role="tab"
+                           data-toggle="tab"
+                           data-anchor="cs-navform-item-content-${schema.name}"
+                           tal:attributes="class 'cs-navform-item-menu cs-error'
+                                           if schema.error
+                                           else 'cs-navform-item-menu'">
+                           ${schema.title}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Content -->
+            <div class="panel-body tab-content cs-navform-item-content">
+                <div role="tabpanel"
+                     tal:repeat="child field"
+                     id="cs-navform-item-content-${child.name}"
+                     tal:attributes="class 'tab-pane active' if repeat.child.start
+                                     else 'tab-pane fade'">
+                    <div class="cs-navform-form">
+                        <div tal:replace="structure child.render_template(item_template)"></div>
+                    </div>
+                    <!-- Form Controls -->
+                    <div class="cs-navform-controls">
+                        <div class="cs-navform-controls-wrap">
+                            <div class="btn-group" role="group" aria-label="...">
+                                <button class="btn btn-default btnPrevious"
+                                        type="button" i18n:translate=""
+                                        tal:condition="not repeat.child.start">Previous</button>
+                                <button class="btn btn-default btnNext"
+                                        type="button" i18n:translate=""
+                                        tal:condition="not repeat.child.end">Next</button>
+                                <tal:loop tal:repeat="button buttons">
+                                    <button tal:define="btn_disposition repeat.button.start
+                                                        and 'btn-primary' or 'btn-default';
+                                                        btn_icon button.icon|None"
+                                            tal:attributes="disabled button.disabled
+                                                            if button.disabled else None"
+                                            id="${formid+button.name}"
+                                            name="${button.name}"
+                                            type="${button.type}"
+                                            class="btn ${btn_disposition} ${button.css_class}"
+                                            value="${button.value}"
+                                            tal:condition="repeat.child.end and
+                                                           button.name == 'submit'">
+                                        <i tal:condition="btn_icon" class="${btn_icon}"> </i>
+                                        ${button.title}
+                                    </button>
+                                </tal:loop>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+
+    <script type="text/javascript">
+        formcontrols = 0;
+        function redraw_formcontrols() {
+            var controls = $(".cs-navform-controls");
+            if(!controls.length)
+                return;
+            if(formcontrols === 0) {
+                formcontrols = {
+                    btnNext: $(controls).first().find(".btnNext")[0].outerHTML,
+                    btnPrevious: $(controls).last().find(".btnPrevious")[0].outerHTML,
+                    btnSubmit: $(controls).last().find("button[type='submit']")[0].outerHTML,
+                };
+            }
+            visible = [];
+            $(".cs-navform-item-menu:visible").each(function(){
+                var anchor = $(this).data('anchor');
+                visible.push($("#" + anchor));
+            });
+            var first = $(visible[0]).find(".cs-navform-controls .btn-group");
+            var last = $(visible[visible.length-1]).find(".cs-navform-controls .btn-group");
+            $(first).empty();
+            $(last).empty();
+            if(!visible.length)
+                return;
+            if(visible.length == 1) {
+                $(first).append(formcontrols.btnSubmit);
+                return;
+            }
+            $(first).append(formcontrols.btnNext);
+            $(last).append(formcontrols.btnPrevious);
+            $(last).append(formcontrols.btnSubmit);
+            $('.btnNext').click(function(){
+                $('.nav-${navstyle} > .active').next('li:visible').find('a').trigger('click');
+            });
+            $('.btnPrevious').click(function(){
+                $('.nav-${navstyle} > .active').prev('li:visible').find('a').trigger('click');
+            });
+        }
+        $(document).ready(function(){
+            redraw_formcontrols();
+        });
+    </script>
+
+    <script type="text/javascript" tal:condition="use_ajax">
+    deform.addCallback(
+     '${formid}',
+     function(oid) {
+       var target = '#' + oid;
+       var options = {
+         target: target,
+         replaceTarget: true,
+         success: function() {
+           deform.processCallbacks();
+           deform.focusFirstInput(target);
+         },
+         beforeSerialize: function() { 
+           // See http://bit.ly/1agBs9Z (hack to fix tinymce-related ajax bug)
+           if ('tinymce' in window) {
+             $(tinymce.get()).each(
+               function(i, el) {
+                 var content = el.getContent();
+                 var editor_input = document.getElementById(el.id);
+                 editor_input.value = content;
+             });
+           }
+         }
+       };
+       var extra_options = ${ajax_options} || {};
+       $('#' + oid).ajaxForm($.extend(options, extra_options));
+     }
+    );
+    </script>
+
+    <script type="text/javascript">
+    $(document).ready(function(){
+        $('#${formid} .cs-navform-item-menu.cs-error').first().click();
+    });
+    </script>
+
+</form>

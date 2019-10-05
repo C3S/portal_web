@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
-# Repository: https://github.com/C3S/collecting_society.portal
+# Repository: https://github.com/C3S/portal_web
 """
-Setup of egg including collecting_society_portal
+Setup of egg including portal_web
 """
 
 import os
 from setuptools import setup, find_packages
 
-MODULE = 'collecting_society_portal'
+MODULE = 'portal_web'
 PREFIX = 'c3s'
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -17,17 +17,22 @@ with open(os.path.join(here, 'README.rst')) as f:
 with open(os.path.join(here, 'CHANGELOG.rst')) as f:
     CHANGELOG = f.read()
 
+service = str(os.environ.get('PYRAMID_SERVICE'))
+
 install_requires = [
-    'colander',
     'c3s_collecting_society',
+    'colander',
     'cornice',
+    'cornice_swagger',
     'cryptacular',
     'deform',
+    'Pillow',
     'pyramid',
     'pyramid_beaker',
     'pyramid_chameleon',
     'pyramid_debugtoolbar',
     'pyramid_mailer',
+    'python-magic',
     'trytond<3.6',
     'waitress',
 ]
@@ -43,8 +48,7 @@ setup(
     name='%s_%s' % (PREFIX, MODULE),
     version='0.2',
     description=(
-        'Web portal including: Tryton wrapper, Web user management, ',
-        'Web frontend, Plugin system.'
+        'Web Portal'
     ),
     long_description=README + '\n\n' + CHANGELOG,
     classifiers=[
@@ -68,7 +72,7 @@ setup(
     license='GPL-3',
     author='Alexander Blum',
     author_email='alexander.blum@c3s.cc',
-    url='https://github.com/C3S/collecting_society.portal',
+    url='https://github.com/C3S/portal_web',
     keywords='web pyramid pylons collecting society',
     packages=find_packages(),
     include_package_data=True,
