@@ -47,12 +47,14 @@ class Net(object):
         _instance (Net): First instance of this class (singleton) or None.
 
     Attributes:
-        srv (webtest.http.StopableWSGIServer||webtest.TestApp): Server object.
+        gui (webtest.http.StopableWSGIServer||webtest.TestApp): Gui server.
+        api (webtest.http.StopableWSGIServer||webtest.TestApp): Api server.
         cli (selenium.webdriver.PhantomJS): Client object.
-        appconfig (dict): Parsed [app:main] section of .ini file.
+        appconfig[service] (dict): Appconfig of service.
         plugins (dict): Plugin configuration.
     """
     _instance = None
+    appconfig = {}
 
     def __new__(cls, *args, **kwargs):
         """
@@ -69,7 +71,7 @@ class Net(object):
             cls._instance = super(Net, cls).__new__(cls, *args, **kwargs)
         return cls._instance
 
-    def start_server(self, settings={}, wrapper='StopableWSGIServer'):
+    def start_server(self, service, settings={}, wrapper='StopableWSGIServer'):
         """
         Starts the server.
 
@@ -87,6 +89,7 @@ class Net(object):
         2. the settings provided to this function as argument.
 
         Args:
+            service (String): api|gui
             settings (dict): Custom server settings
             wrapper (Optional[str]): StopableWSGIServer||TestApp
 
@@ -94,52 +97,64 @@ class Net(object):
             webtest.http.StopableWSGIServer: If StopableWSGIServer.
             webtest.TestApp: If TestApp.
         """
-        # Stop any previous Transaction
+        # Sanity checks
+        if service not in ['gui', 'api']:
+            raise Exception('Service could not be found. Exiting ...')
         if Tdb.is_open():
             Transaction().stop()
 
-        # Appconfig
-        self.appconfig = appconfig(
+        # Main settings for the app
+        _appconfig = appconfig(
             'config:' + os.path.join(
                 os.path.dirname(__file__), '..', '..',
-                testconfig['server']['environment'] + '.ini'
+                testconfig['server'][service]['environment'] + '.ini'
             )
         )
-        self.appconfig.update(testconfig['server']['settings'])
-        self.appconfig.update(settings)
 
-        # Plugins
-        self.plugins = get_plugins(self.appconfig)
-
-        # update portal settings with plugin settings and replace env vars
+        # Main settings for the plugins
+        self.plugins = get_plugins(_appconfig)
         for priority in sorted(self.plugins, reverse=True):
-            self.appconfig.update(self.plugins[priority]['settings'])
+            _appconfig.update(self.plugins[priority]['settings'])
 
-        # Evironment
-        self.appconfig = replace_environment_vars(self.appconfig)
+        # Test settings for all services
+        _appconfig.update(testconfig['server']['settings'])
+
+        # Test settings for this service
+        _appconfig.update(testconfig['server'][service]['settings'])
+
+        # Test settings for this run
+        _appconfig.update(settings)
+
+        # Set service
+        _appconfig['service'] = service
+
+        # Environment
+        _appconfig = replace_environment_vars(_appconfig)
 
         # App
-        app = main({}, **self.appconfig)
+        self.appconfig[service] = _appconfig
+        app = main({}, **self.appconfig[service])
 
         # StopableWSGIServer
         if wrapper == 'StopableWSGIServer':
-            self.srv = StopableWSGIServer.create(
+            server = StopableWSGIServer.create(
                 app,
-                host=testconfig['server']['host'],
-                port=testconfig['server']['port']
+                host=testconfig['server'][service]['host'],
+                port=testconfig['server'][service]['port']
             )
-            if not self.srv.wait():
+            if not server.wait():
                 raise Exception('Server could not be fired up. Exiting ...')
 
         # TestApp
         elif wrapper == 'TestApp':
-            self.srv = TestApp(app)
+            server = TestApp(app)
 
         # Not implemented
         else:
             raise Exception('Wrapper could not be found. Exiting ...')
 
-        return self.srv
+        setattr(self, service, server)
+        return server
 
     def stop_server(self):
         """
@@ -153,8 +168,10 @@ class Net(object):
             Transaction().stop()
 
         # Stop server
-        if isinstance(self.srv, StopableWSGIServer):
-            self.srv.shutdown()
+        if isinstance(self.api, StopableWSGIServer):
+            self.api.shutdown()
+        if isinstance(self.gui, StopableWSGIServer):
+            self.gui.shutdown()
 
     def start_client(self):
         """
@@ -166,17 +183,10 @@ class Net(object):
         Returns:
             selenium.webdriver.PhantomJs: PhantomJs client.
         """
-        # self.cli = webdriver.PhantomJS(
-        #     desired_capabilities=testconfig['client']['desired_capabilities']
-        # )
         self.cli = webdriver.Remote(
             command_executor=testconfig['client']['connection']['selenium'],
             desired_capabilities=testconfig['client']['desired_capabilities']
         )
-        # self.cli.set_window_size(
-        #     testconfig['client']['window_size']['width'],
-        #     testconfig['client']['window_size']['height']
-        # )
         return self.cli
 
     def stop_client(self):
@@ -327,10 +337,20 @@ class UnitTestBase(TestBase):
         Returns:
             None.
         """
-        Tdb._db = "test"
-        Tdb._user = 0
-        Tdb._configfile = "/shared/config/trytond/testing_postgres.conf"
-        Tdb._company = 1
+        service = 'gui'
+        cls.settings = appconfig(
+            'config:' + os.path.join(
+                os.path.dirname(__file__), '..', '..',
+                testconfig['server'][service]['environment'] + '.ini'
+            )
+        )
+        cls.settings.update(testconfig['server']['settings'])
+        cls.settings.update(testconfig['server'][service]['settings'])
+        cls.settings = replace_environment_vars(cls.settings)
+        Tdb._db = cls.settings['tryton.database']
+        Tdb._company = cls.settings['tryton.company']
+        Tdb._user = cls.settings['tryton.user']
+        Tdb._configfile = cls.settings['tryton.configfile']
 
         cls.config = testing.setUp()
 
@@ -352,9 +372,11 @@ class FunctionalTestBase(TestBase):
     Base class for functional tests (webtest).
 
     Classattributes:
-        srv (webtest.TestApp||None): Server.
+        gui (webtest.TestApp||None): Gui server.
+        api (webtest.TestApp||None): Api server.
     """
-    srv = None
+    gui = None
+    api = None
 
     @classmethod
     def settings(cls):
@@ -382,7 +404,13 @@ class FunctionalTestBase(TestBase):
         Returns:
             None.
         """
-        cls.srv = cls.net.start_server(
+        cls.gui = cls.net.start_server(
+            'gui',
+            settings=cls.settings(),
+            wrapper='TestApp'
+        )
+        cls.api = cls.net.start_server(
+            'api',
             settings=cls.settings(),
             wrapper='TestApp'
         )
@@ -408,16 +436,17 @@ class FunctionalTestBase(TestBase):
         Returns:
             None.
         """
-        self.srv.reset()
+        self.gui.reset()
+        self.api.reset()
 
-    def url(self, url='', **kwargs):
+    def url(self, service='gui', url='', **kwargs):
         """
         Requests an url from the TestApp.
 
         Returns:
             webtest.TestApp: TestApp resource.
         """
-        return self.srv.get('/' + url, **kwargs)
+        return getattr(self, service).get(url, **kwargs)
 
 
 class IntegrationTestBase(TestBase):
@@ -425,10 +454,12 @@ class IntegrationTestBase(TestBase):
     Base class for integration tests (webdriver).
 
     Classattributes:
-        srv (webtest.http.StopableWSGIServer||None): Server.
+        gui (webtest.http.StopableWSGIServer||None): Gui server.
+        api (webtest.http.StopableWSGIServer||None): Api server.
         cli (selenium.webdriver.PhantomJS||None): Client.
     """
-    srv = None
+    gui = None
+    api = None
     cli = None
 
     @classmethod
@@ -459,7 +490,13 @@ class IntegrationTestBase(TestBase):
             None.
         """
         cls.cli = cls.net.start_client()
-        cls.srv = cls.net.start_server(
+        cls.gui = cls.net.start_server(
+            'gui',
+            settings=cls.settings(),
+            wrapper='StopableWSGIServer'
+        )
+        cls.api = cls.net.start_server(
+            'api',
             settings=cls.settings(),
             wrapper='StopableWSGIServer'
         )
@@ -493,7 +530,7 @@ class IntegrationTestBase(TestBase):
             self.cfg['client']['window_size']['height']
         )
 
-    def url(self, url=''):
+    def url(self, service='gui', url=''):
         """
         Requests an url from the StopableWSGIServer.
 
@@ -501,7 +538,10 @@ class IntegrationTestBase(TestBase):
             None.
         """
         self.cli.get(
-            'http://' + self.cfg['client']['connection']['server'] + '/' + url
+            'http://'
+            + self.cfg['client']['connection']['server']
+            + ":" + str(self.cfg['server'][service]['port'])
+            + url
         )
 
     def screenshot(self, filename=''):

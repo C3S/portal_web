@@ -28,7 +28,7 @@ class TestLogin(FunctionalTestBase, TestDataPortal):
         Is field email required?
         """
 
-        res1 = self.url('', status=200)
+        res1 = self.url('gui', '/', status=200)
         form = res1.forms['LoginWebuser']
         res2 = form.submit('LoginWebusersubmit')
         self.assertIn(
@@ -40,7 +40,7 @@ class TestLogin(FunctionalTestBase, TestDataPortal):
         """
         Is field password required?
         """
-        res1 = self.url('', status=200)
+        res1 = self.url('gui', '/', status=200)
         form = res1.forms['LoginWebuser']
         res2 = form.submit('LoginWebusersubmit')
         self.assertIn(
@@ -52,7 +52,7 @@ class TestLogin(FunctionalTestBase, TestDataPortal):
         """
         Is email checked for validity?
         """
-        res1 = self.url('', status=200)
+        res1 = self.url('gui', '/', status=200)
         form = res1.forms['LoginWebuser']
         form['email'] = 'notanemail'
         res2 = form.submit('LoginWebusersubmit')
@@ -66,7 +66,7 @@ class TestLogin(FunctionalTestBase, TestDataPortal):
         """
         Does login with unregistered email fail?
         """
-        res1 = self.url('', status=200)
+        res1 = self.url('gui', '/', status=200)
         form = res1.forms['LoginWebuser']
         form['email'] = 'wrong@username.test'
         form['password'] = 'wrongpassword'
@@ -77,7 +77,7 @@ class TestLogin(FunctionalTestBase, TestDataPortal):
         """
         Does login with wrong password fail?
         """
-        res1 = self.url('', status=200)
+        res1 = self.url('gui', '/', status=200)
         form = res1.forms['LoginWebuser']
         form['email'] = 'right@username.test'
         form['password'] = 'wrongpassword'
@@ -88,7 +88,7 @@ class TestLogin(FunctionalTestBase, TestDataPortal):
         """
         Does login with right credentials succeed?
         """
-        res1 = self.url('', status=200)
+        res1 = self.url('gui', '/', status=200)
         form = res1.forms['LoginWebuser']
         form['email'] = 'right@username.test'
         form['password'] = 'rightpassword'

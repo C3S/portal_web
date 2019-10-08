@@ -7,28 +7,45 @@ Configuration settings for tests.
 
 testconfig = {
     'server': {
-        # host for StopableWSGIServer
-        'host': '0.0.0.0',
-        # port for StopableWSGIServer
-        'port': '6544',
-        # environment file without '.ini'
-        'environment': "testing",
-        # settings overriding the environment settings
-        'settings': {},
         # print debug messages to stdout (use nosetests -s to display)
-        'debug': True
+        'debug': True,
+        # settings for all services overriding the environment settings
+        'settings': {},
+        # gui configuration
+        'gui': {
+            # host for StopableWSGIServer
+            'host': '0.0.0.0',
+            # port for StopableWSGIServer
+            'port': 6544,
+            # environment file without '.ini'
+            'environment': "testing",
+            # individual settings for gui
+            'settings': {},
+        },
+        # api configuration
+        'api': {
+            # host for StopableWSGIServer
+            'host': '0.0.0.0',
+            # port for StopableWSGIServer
+            'port': 6545,
+            # environment file without '.ini'
+            'environment': "testing",
+            # individual settings for api
+            'settings': {},
+        },
     },
     'client': {
         # connection
         'connection': {
-            'selenium': 'http://browser:4444/wd/hub',
-            'server': 'webgui:6544'
+            'selenium': 'http://test_browser:4444/wd/hub',
+            'server': 'test_web'
         },
         # desired_capabilities
         'desired_capabilities': {
             'browserName': 'firefox',
             'acceptInsecureCerts': True,
-            'marionette': True
+            'marionette': True,
+            'loggingPrefs': {'browser': 'ALL'}
         },
         # window size of client
         'window_size': {
