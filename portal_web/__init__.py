@@ -192,9 +192,9 @@ def main(global_config, **settings):
                 #     ptvsd.break_into_debugger()
             except Exception as ex:
                 if hasattr(ex, 'message'):
-                    print(ex.message)
+                    log.debug(ex.message)
                 else:
-                    print('ptvsd debugging not possible: ' + ex.message)
+                    log.debug('ptvsd debugging not possible: ' + ex.message)
 
     # configure webfrontend for portal and plugins
     if settings['service'] == 'gui':
