@@ -62,12 +62,14 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
             # return self.prototypes[self.item_template]
 
     def serialize(self, *args, **kwargs):
+        """Serialize"""
         with benchmark(self.request, name='datatables.serialize',
                        uid=self.template, scale=1000):
             return super(
                 DatatableSequenceWidget, self).serialize(*args, **kwargs)
 
     def deserialize(self, *args, **kwargs):
+        """Deserialize"""
         with benchmark(self.request, name='datatables.deserialize',
                        uid=self.template, scale=1000):
             return super(
