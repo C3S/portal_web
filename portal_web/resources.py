@@ -88,11 +88,12 @@ class ResourceBase(object):
     _write = []
     _rdbglog = "/ado/tmp/registry.log"
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         Parent = self.__parent__
         if Parent and isinstance(Parent, type):
             self.__parent__ = Parent(request)
         self.request = request
+        self.context = context
         self.readonly = True
 
     def __getitem__(self, key):
