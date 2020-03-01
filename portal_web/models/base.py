@@ -297,3 +297,64 @@ class Tdb(object):
                     statement_list[2] = "%" + statement_list[2] + "%"
                 domain[index] = tuple(statement_list)
         return domain
+
+
+class MixinSearchById(object):
+    """
+    Modelwrapper mixin for models that can be searched by id
+    """
+    @classmethod
+    def search_by_id(cls, id):
+        """
+        Searches a model by id
+
+        Args:
+          id (int): model.id
+
+        .. note::
+          This is a search for the internal database id.
+
+        Returns:
+          obj: model
+          None: if no match is found
+        """
+        result = cls.get().search([('id', '=', int(id))])
+        if not result:
+            return None
+        return result[0]
+
+
+class MixinCreate(object):
+    """
+    Generic creation mixin to use in model wrappers.
+    """
+
+    @classmethod
+    def create(cls, vlist):
+        """
+        Generic creation method to use in model wrappers.
+
+        Args:
+          vlist (list): list of dicts with attributes to create records::
+
+            [
+                {
+                    'code': ...,
+                    'uuid': ...,
+                    'name': ...
+                },
+                {
+                    ...
+                }
+            ]
+
+        Raises:
+          KeyError: if required field is missing
+
+        Returns:
+          list: created devices
+          None: if no object was created
+        """
+        log.debug('create database object:\n{}'.format(vlist))
+        result = cls.get().create(vlist)
+        return result or None

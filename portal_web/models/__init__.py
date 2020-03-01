@@ -12,3 +12,7 @@ from .web_user_role import WebUserRole
 from .company import Company
 from .bank_account_number import BankAccountNumber
 from .checksum import Checksum
+
+# mixins
+from .base import MixinSearchById
+from .base import MixinCreate

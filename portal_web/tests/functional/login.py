@@ -8,10 +8,11 @@ from ..testdata import TestDataPortal
 class TestLogin(FunctionalTestBase, TestDataPortal):
 
     @classmethod
-    def createTestData(cls):
+    def setUpClass(cls):
         """
         Creates test data.
         """
+        super(TestLogin, cls).setUpClass()
         cls.createWebUser(
             email='right@username.test',
             password='rightpassword'

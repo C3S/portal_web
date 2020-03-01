@@ -225,18 +225,6 @@ class TestBase(unittest.TestCase):
         self.shortDescription = self.prettyShortDescription
 
     @classmethod
-    def createTestData(cls):
-        """
-        Custom test data for the scope of a test class.
-
-        Override this method to create test data.
-
-        Returns:
-            None.
-        """
-        pass
-
-    @classmethod
     def setUpClass(cls):
         """
         Injects test data method and commits cursor.
@@ -244,7 +232,6 @@ class TestBase(unittest.TestCase):
         Returns:
             None.
         """
-        cls.createTestData()
         if Tdb.is_open():
             Transaction().cursor.commit()
 
@@ -259,6 +246,7 @@ class TestBase(unittest.TestCase):
         """
         # Delete tryton test objects
         if cls.data:
+            cls.data.reverse()
             for instance in cls.data:
                 instance.delete([instance.id])
             Transaction().cursor.commit()
@@ -352,6 +340,8 @@ class UnitTestBase(TestBase):
         Tdb._user = cls.settings['tryton.user']
         Tdb._configfile = cls.settings['tryton.configfile']
 
+        super(UnitTestBase, cls).setUpClass()
+
         cls.config = testing.setUp()
 
     @classmethod
@@ -364,6 +354,7 @@ class UnitTestBase(TestBase):
         Returns:
             None.
         """
+        super(UnitTestBase, cls).tearDownClass()
         testing.tearDown()
 
 
