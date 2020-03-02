@@ -8,7 +8,7 @@ from . import Tdb, MixinSearchByCode
 log = logging.getLogger(__name__)
 
 
-class WebUserRole(Tdb):
+class WebUserRole(Tdb, MixinSearchByCode):
     """
     Model wrapper for Tryton model object 'web.user.role'.
     """
@@ -16,7 +16,7 @@ class WebUserRole(Tdb):
     __name__ = 'web.user.role'
 
     @classmethod
-    def search_all(cls, MixinSearchByCode):
+    def search_all(cls):
         """
         Gets all web user roles.
 
