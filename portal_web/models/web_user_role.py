@@ -3,7 +3,7 @@
 
 import logging
 
-from . import Tdb
+from . import Tdb, MixinSearchByCode
 
 log = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class WebUserRole(Tdb):
     __name__ = 'web.user.role'
 
     @classmethod
-    def search_all(cls):
+    def search_all(cls, MixinSearchByCode):
         """
         Gets all web user roles.
 
@@ -25,20 +25,3 @@ class WebUserRole(Tdb):
             None: if no match is found.
         """
         return cls.get().search([])
-
-    @classmethod
-    def search_by_code(cls, code):
-        """
-        Searches a web user role by code.
-
-        Args:
-            code (string): Code of the web user role.
-
-        Returns:
-            obj (web.user): Web user role.
-            None: If no match is found.
-        """
-        if code is None:
-            return None
-        result = cls.get().search([('code', '=', code)])
-        return result[0] if result else None

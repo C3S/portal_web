@@ -73,6 +73,9 @@ class Tdb(object):
             >>> Tdb._user = 'user'
             >>> Tdb.init()
         """
+        if cls.is_open():
+            return
+
         config.update_etc(str(cls._configfile))
         cls._retry = config.getint('database', 'retry')
         with Transaction().start(str(cls._db), int(cls._user), readonly=True):
@@ -298,6 +301,37 @@ class Tdb(object):
                 domain[index] = tuple(statement_list)
         return domain
 
+    @classmethod
+    def create(cls, vlist):
+        """
+        Generic creation method to use in model wrappers.
+
+        Args:
+          vlist (list): list of dicts with attributes to create records.
+                        For example::
+
+            [
+                {
+                    'code': ...,
+                    'uuid': ...,
+                    'name': ...
+                },
+                {
+                    ...
+                }
+            ]
+
+        Raises:
+          KeyError: if required field is missing
+
+        Returns:
+          list: created devices
+          None: if no object was created
+        """
+        log.debug('create database object:\n{}'.format(vlist))
+        result = cls.get().create(vlist)
+        return result or None
+
 
 class MixinSearchById(object):
     """
@@ -323,38 +357,61 @@ class MixinSearchById(object):
             return None
         return result[0]
 
-
-class MixinCreate(object):
+class MixinSearchByCode(object):
     """
-    Generic creation mixin to use in model wrappers.
+    Modelwrapper mixin for models that can be searched by its code
     """
-
     @classmethod
-    def create(cls, vlist):
+    def search_by_code(cls, code):
         """
-        Generic creation method to use in model wrappers.
+        Searches an object by its code.
 
         Args:
-          vlist (list): list of dicts with attributes to create records::
-
-            [
-                {
-                    'code': ...,
-                    'uuid': ...,
-                    'name': ...
-                },
-                {
-                    ...
-                }
-            ]
-
-        Raises:
-          KeyError: if required field is missing
+            code (str): Code of the object.
 
         Returns:
-          list: created devices
-          None: if no object was created
+            obj: Checksum.
+            None: If no match is found.
         """
-        log.debug('create database object:\n{}'.format(vlist))
-        result = cls.get().create(vlist)
-        return result or None
+        if code is None:
+            return None
+        result = cls.get().search([('code', '=', code)])
+        return result[0] if result else None
+
+class MixinSearchByName(object):
+    """
+    Modelwrapper mixin for models that can be searched by its name field
+    """
+    @classmethod
+    def search_by_name(cls, name):
+        """
+        Searches an object by name
+
+        Args:
+          name (string): object.name
+
+        Returns:
+          obj: db object
+          None: if no match is found
+        """
+        result = cls.get().search([('name', '=', name)])
+        return result[0] or None
+
+class MixinSearchByUuid(object):
+    """
+    Modelwrapper mixin for models that can be searched by its UUID field
+    """
+    @classmethod
+    def search_by_uuid(cls, uuid):
+        """
+        Searches an object by uuid
+
+        Args:
+          uuid (string): object.uuid
+
+        Returns:
+          obj: db object
+          None: if no match is found
+        """
+        result = cls.get().search([('uuid', '=', uuid)])
+        return result[0] or None       

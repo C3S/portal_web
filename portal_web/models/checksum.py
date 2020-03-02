@@ -5,34 +5,17 @@ import datetime
 
 import logging
 
-from . import Tdb
+from . import Tdb, MixinSearchByCode
 
 log = logging.getLogger(__name__)
 
 
-class Checksum(Tdb):
+class Checksum(Tdb, MixinSearchByCode):
     """
     Model wrapper for Tryton model object 'checksum'.
     """
 
     __name__ = 'checksum'
-
-    @classmethod
-    def search_by_code(cls, code):
-        """
-        Searches a checksum by code.
-
-        Args:
-            code (str): Code of checksum.
-
-        Returns:
-            obj: Checksum.
-            None: If no match is found.
-        """
-        if code is None:
-            return None
-        result = cls.get().search([('code', '=', code)])
-        return result[0] if result else None
 
     @classmethod
     def search_collision(cls, code, algorithm=None, begin=None, end=None):

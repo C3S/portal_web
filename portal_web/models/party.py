@@ -3,12 +3,12 @@
 
 import logging
 
-from . import Tdb
+from . import Tdb, MixinSearchByName
 
 log = logging.getLogger(__name__)
 
 
-class Party(Tdb):
+class Party(Tdb, MixinSearchByName):
     """
     Model wrapper for Tryton model object 'party.party'.
     """
@@ -42,21 +42,6 @@ class Party(Tdb):
             return None
         result = cls.get().search([('id', '=', uid)])
         return result[0] if result else None
-
-    @classmethod
-    def search_by_name(cls, name):
-        """
-        Searches a party by name
-
-        Args:
-          name (string): party.name
-
-        Returns:
-          obj: party
-          None: if no match is found
-        """
-        result = cls.get().search([('name', '=', name)])
-        return result[0] or None
 
     @classmethod
     def search_by_email(cls, email):

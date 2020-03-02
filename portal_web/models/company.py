@@ -3,29 +3,14 @@
 
 import logging
 
-from . import Tdb
+from . import Tdb, MixinSearchById
 
 log = logging.getLogger(__name__)
 
 
-class Company(Tdb):
+class Company(Tdb, MixinSearchById):
     """
     Model wrapper for Tryton model object 'company.company'.
     """
 
     __name__ = 'company.company'
-
-    @classmethod
-    def search_by_id(cls, company_id):
-        """
-        Searches a company by company id.
-
-        Args:
-            company_id (int): Company id.
-
-        Returns:
-            obj: Company.
-            None: if no match is found.
-        """
-        result = cls.get().search([('id', '=', company_id)])
-        return result[0] or None

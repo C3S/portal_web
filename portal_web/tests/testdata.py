@@ -24,7 +24,7 @@ class TestDataPortal():
 
     @classmethod
     @Tdb.transaction(readonly=False)
-    def createParty(cls, name, firstname, lastname):
+    def createParty(cls, name, firstname='', lastname=''):
         party, = Party.create([{
             'name': name,
             'firstname': firstname,
