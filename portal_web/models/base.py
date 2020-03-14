@@ -414,4 +414,75 @@ class MixinSearchByUuid(object):
           None: if no match is found
         """
         result = cls.get().search([('uuid', '=', uuid)])
-        return result[0] or None       
+        return result[0] or None
+
+
+class MixinWebuser(object):
+    """
+    Modelwrapper mixin for models that need to filter by webusers acl
+    restrictions, for example if the webuser is allowed to view or edit items.
+
+    """
+    @classmethod
+    def current_viewable(cls, request):
+        """
+        Searches objects, which the current web_user is allowed to view.
+
+        Args:
+          request (pyramid.request.Request): Current request.
+
+        Returns:
+          list: viewable objects of web_user
+          None: if no match is found
+        """
+        return cls.search_viewable_by_web_user(request.web_user.id)
+
+    @classmethod
+    def current_editable(cls, request):
+        """
+        Searches objects, which the current web_user is allowed to edit.
+
+        Args:
+          request (pyramid.request.Request): Current request.
+
+        Returns:
+          list: editable objects of web_user
+          None: if no match is found
+        """
+        return cls.search_editable_by_web_user(request.web_user.id)
+
+    @classmethod
+    def search_viewable_by_web_user(cls, web_user_id, active=True):
+        """
+        Searches objects, which the web_user is allowed to view.
+        The view permission is expected to have the form 'view_<modelname>'.
+
+        Args:
+          web_user_id (int): web.user.id
+
+        Returns:
+          list: viewable objects of web_user, empty if none were found
+        """
+        return cls.get().search([
+            ('acl.web_user', '=', web_user_id),
+            ('acl.roles.permissions.code', '=', 'view_' +
+             cls.__dict__['__name__'])
+        ])
+
+    @classmethod
+    def search_editable_by_web_user(cls, web_user_id, active=True):
+        """
+        Searches objects, which the web_user is allowed to edit.
+        The view permission is expected to have the form 'edit_<modelname>'.
+
+        Args:
+          web_user_id (int): web.user.id
+
+        Returns:
+          list: viewable objects of web_user, empty if none were found
+        """
+        return cls.get().search([
+            ('acl.web_user', '=', web_user_id),
+            ('acl.roles.permissions.code', '=', 'edit_' +
+             cls.__dict__['__name__'])
+        ])

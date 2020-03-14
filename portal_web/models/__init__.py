@@ -10,6 +10,7 @@ from .base import MixinSearchById
 from .base import MixinSearchByCode
 from .base import MixinSearchByName
 from .base import MixinSearchByUuid
+from .base import MixinWebuser
 
 # models
 from .party import Party
