@@ -7,6 +7,8 @@ from .base import Tdb
 
 # mixins
 from .base import MixinSearchById
+from .base import MixinSearchByOid
+from .base import MixinSearchAll
 from .base import MixinSearchByCode
 from .base import MixinSearchByName
 from .base import MixinSearchByUuid

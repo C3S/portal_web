@@ -416,6 +416,40 @@ class MixinSearchByUuid(object):
         result = cls.get().search([('uuid', '=', uuid)])
         return result[0] or None
 
+class MixinSearchByOid(object):
+    """
+    Modelwrapper mixin for models that can be searched by its oid field.
+    The oid is exposed via the public api as an identifier for an object.
+    """
+    @classmethod
+    def search_by_oid(cls, oid):
+        """
+        Searches an object by oid
+
+        Args:
+          oid (string): object.oid
+
+        Returns:
+          obj: db object
+          None: if no match is found
+        """
+        result = cls.get().search([])
+        return result[0] or None
+
+class MixinSearchAll(object):
+    """
+    Modelwrapper mixin for models that can return all records of a table
+    """
+    @classmethod
+    def search_all(cls):
+        """
+        Fetches all records
+
+        Returns:
+          list of records
+          None: if table is empty
+        """
+        return cls.get().search([])
 
 class MixinWebuser(object):
     """
