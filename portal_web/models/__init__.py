@@ -16,6 +16,7 @@ from .base import MixinWebuser
 
 # models
 from .party import Party
+from .address import Address
 from .web_user import WebUser
 from .web_user_role import WebUserRole
 from .company import Company
