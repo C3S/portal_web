@@ -71,6 +71,8 @@ h6, .h6 {}
 
 .fileupload-buttonbar { display:none; } /* only displayed on file added */
 
+#mapid { height: 180px; }
+
 /*******************************************************************************
 
    Small devices (tablets, 768px and up)
