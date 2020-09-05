@@ -44,6 +44,23 @@ class Address(Tdb, MixinSearchByName):
         return result[0] if result else None
 
     @classmethod
+    def search_by_party(cls, id_party):
+        """
+        Searches an address by it's owning party
+
+        Args:
+            id_party (string): Id of the adresses party
+
+        Returns:
+            obj (party.address): Address
+            None: If no match is found
+        """
+        if id_party is None:
+            return None
+        result = cls.get().search([('party', '=', id_party)])
+        return result[0] if result else None
+
+    @classmethod
     def create(cls, vlist):
         """
         Creates parties.
