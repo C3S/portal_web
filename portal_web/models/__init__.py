@@ -20,5 +20,7 @@ from .address import Address
 from .web_user import WebUser
 from .web_user_role import WebUserRole
 from .company import Company
+from .country import Country
+from .country import Subdivision
 from .bank_account_number import BankAccountNumber
 from .checksum import Checksum
