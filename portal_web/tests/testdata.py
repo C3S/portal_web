@@ -11,12 +11,16 @@ class TestDataPortal():
 
     @classmethod
     @Tdb.transaction(readonly=False)
-    def createWebUser(cls, email, password, role='licenser',
+    def createWebUser(cls, email, password, role=False,
                       opt_in_state='opted-in'):
+        if role:
+            roles = [WebUserRole.search_by_code(role).id]
+        else:
+            roles = [r.id for r in WebUserRole.search_all()]
         webuser, = WebUser.create([{
             'email': email,
             'password': password,
-            'roles': [('add', [WebUserRole.search_by_code(role).id])],
+            'roles': [('add', roles)],
             'opt_in_state': opt_in_state
         }])
         cls.data.append(webuser)
