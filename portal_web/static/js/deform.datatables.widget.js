@@ -99,7 +99,8 @@ var DatatableSequence = function(vars) {
     // deform
     this.oid = vars.oid;
     if(vars.dynamicOid)
-        this.oid = $("[id^=" + vars.oid + "]").not(".close").last().attr('id');
+        this.oid = $("[id^=" + vars.oid + "]")
+            .not(".close").not(".initialized").last().attr('id');
     this.name = vars.name;
     this.title = vars.title;
     this.minLen = vars.minLen ? parseInt(vars.minLen) : 0;
@@ -233,6 +234,7 @@ DatatableSequence.prototype = {
             // prevent reinitialization
             if(typeof deform.datatableSequences[ds.oid] !== "undefined")
                 return;
+            $("#" + ds.oid).addClass("initialized");
 
             // initialize columns
             ds.target.columns = ds.targetColumns();
@@ -384,7 +386,22 @@ DatatableSequence.prototype = {
                         [ 1, "asc" ]  // first displayed row
                     ]
                 });
-
+            
+            // substitute data of parent sequences with child sequence
+            // var parent_ds_container = $(ds.sel.container);
+            // var parent_ds_oid = parent_ds_container
+            //     .parents(".datatable_sequence")
+            //     .first()
+            //     .attr("id");
+            // if(parent_ds_oid) {
+            //     var parent_ds = deform.datatableSequences[parent_ds_oid];
+            //     var parent_row = parent_ds.target.table.row(
+            //         parent_ds_container.closest('tr'));
+            //     var parent_data = parent_row.data();
+            //     parent_data[ds.name] = ds;
+            //     parent_row.data(parent_data);
+            // }
+            
             // bind events
             if(ds.events instanceof Function)
                 ds.events = ds.events();
@@ -749,7 +766,6 @@ DatatableSequence.prototype = {
         index.val(row.index());
         title.text(ds.language.custom.edit);
         sequence.empty();
-        // sequence.append(data.sequence);
         if(!(data.sequence instanceof jQuery))
             data.sequence = $(row.node())
                 .children('.sequence')
@@ -1102,7 +1118,7 @@ DatatableSequence.prototype = {
                                 if(data[column.data].datatableSequence !== true) {
                                     var oid = modal
                                         .find(".item-" + column.data)
-                                        .parents(".datatable_sequence").first()
+                                        .parents(".datatable_sequence_" + column.name)
                                         .attr("id");
                                     data[column.data] = deform.datatableSequences[oid];
                                     row.data(data);
@@ -1405,8 +1421,7 @@ DatatableSequence.prototype = {
 
                 case 'DatatableSequenceWidget':
                     element = form
-                        .children(".datatable_sequence")
-                        .first()
+                        .children(".datatable_sequence_" + column.name)
                         .attr('id');
                     data[column.data] = deform.datatableSequences[element];
                     break;
@@ -1431,8 +1446,9 @@ DatatableSequence.prototype = {
         // check custom columns for custom initialization values (default: '')
         $.each(ds.columns, function(index, column) {
             data[column.data] = "";
-            if(typeof column.datatableSequence.createValue != "undefined")
+            if(typeof column.datatableSequence.createValue != "undefined") {
                 data[column.data] = column.datatableSequence.createValue;
+            }
         });
         data.sequence = ds.newSequence(data).node;
         return data;

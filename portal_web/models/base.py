@@ -435,6 +435,20 @@ class MixinSearchByOid(object):
         """
         result = cls.get().search([('oid', '=', oid)])
         return result[0] or None
+    
+    @classmethod
+    def search_by_oids(cls, oids):
+        """
+        Searches objects by oids
+
+        Args:
+          oids (list): [object.oid, ...]
+
+        Returns:
+          list: [db object, ...]
+        """
+        result = cls.get().search([('oid', 'in', oids)])
+        return result
 
 class MixinSearchAll(object):
     """

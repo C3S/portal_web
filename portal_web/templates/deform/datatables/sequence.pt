@@ -19,7 +19,8 @@
                        errormsg field.errormsg">
 
     <!-- sequence -->
-    <div id="${oid}" class="datatable_sequence datatable_sequence_${oid}"
+    <div id="${oid}" class="datatable_sequence datatable_sequence_${oid}
+                            datatable_sequence_${name}"
          data-language="${language}" data-target="${target}"
          data-source="${source}" data-source-total="${source_total}" >
         
