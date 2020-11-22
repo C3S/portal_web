@@ -11,7 +11,7 @@ if(typeof deform.datatableSequences == "undefined")
     Deform Datatables Widget
 
     This class aids the integration of jquery datatables and deform sequences.
-    
+
     It generates two datatables: One target table with the current sequence
     (one row is one sequence item) and one source table (ajax datasource) with
     rows to add to the sequence. The serialized sequece item for colander is
@@ -26,12 +26,12 @@ if(typeof deform.datatableSequences == "undefined")
             schema_type = colander.String
             widget = deform.widget.HiddenWidget()
             validator = colander.OneOf(['add', 'create', 'edit'])
-        
+
     The mode is a flag, which indicates, if the entry was created by the
     client (create) or not (add, edit). New entries created by the gui have the
     mode 'create'. Other than that, the mode is never changed by the gui.
     Entries with mode 'create' or 'edit' are editable by the user.
-    
+
     For persisting the entries, one could use the mode flag as a switch, if the
     db entry needs to be created (create), edited (edit) or fetched (add).
     Already persisted entries should be initialized with mode = 'add'
@@ -73,7 +73,7 @@ if(typeof deform.datatableSequences == "undefined")
         }
 
     Functional columns:
-    
+
         target table
         - orderable: order number (if table is orderable)
         - more: zoom-in/out icon to show details, if available
@@ -164,7 +164,7 @@ var DatatableSequence = function(vars) {
     this.unique = vars.unique;     // definition of uniqueness of data
 
     // modals
-    this.parentModal = false;    
+    this.parentModal = false;
 
     // events
     this.bind = [
@@ -262,7 +262,7 @@ DatatableSequence.prototype = {
                     ds: dsTmpl
                 })
             );
-            
+
             // generate modal html
             if($.inArray('add', ds.actions) > -1)
                 $(ds.sel.modalContainer).append(
@@ -342,7 +342,7 @@ DatatableSequence.prototype = {
                 },
                 order: order
             });
-            
+
             // initialize source table
             if($.inArray('add', ds.actions) > -1)
                 ds.source.table = $(ds.sel.sourceTable).DataTable({
@@ -386,7 +386,7 @@ DatatableSequence.prototype = {
                         [ 1, "asc" ]  // first displayed row
                     ]
                 });
-            
+
             // substitute data of parent sequences with child sequence
             // var parent_ds_container = $(ds.sel.container);
             // var parent_ds_oid = parent_ds_container
@@ -401,7 +401,7 @@ DatatableSequence.prototype = {
             //     parent_data[ds.name] = ds;
             //     parent_row.data(parent_data);
             // }
-            
+
             // bind events
             if(ds.events instanceof Function)
                 ds.events = ds.events();
@@ -612,10 +612,10 @@ DatatableSequence.prototype = {
 
     /**
      * Adds a row from source to target table.
-     * 
+     *
      * Args:
      *   rowId (int): Row ID of the row to add.
-     * 
+     *
      * Returns:
      *   false: Prevents link execution.
      */
@@ -655,11 +655,11 @@ DatatableSequence.prototype = {
 
     /**
      * Removes a row from target table.
-     * 
+     *
      * Args:
      *   obj (node): Node of the remove link.
      *   obj (int): Index of row html node to remove.
-     * 
+     *
      * Returns:
      *   false: Prevents link execution.
      */
@@ -698,7 +698,7 @@ DatatableSequence.prototype = {
      *
      * Args:
      *   link (jQuery node): Node of the create link.
-     * 
+     *
      * Returns:
      *   false: Prevents link execution.
      */
@@ -740,10 +740,10 @@ DatatableSequence.prototype = {
 
     /**
      * Edits a row in target table.
-     * 
+     *
      * Args:
      *   link (jQuery node): Node of the edit link.
-     * 
+     *
      * Returns:
      *   false: Prevents link execution.
      */
@@ -779,10 +779,10 @@ DatatableSequence.prototype = {
 
     /**
      * Saves an edited row in target table.
-     * 
+     *
      * Args:
      *   link (jQuery node): Node of the save link.
-     * 
+     *
      * Returns:
      *   false: Prevents link execution.
      */
@@ -816,10 +816,10 @@ DatatableSequence.prototype = {
 
     /**
      * Pins a modal.
-     * 
+     *
      * Args:
      *   link (jQuery node): Node of the pin button.
-     * 
+     *
      * Returns:
      *   false: Prevents link execution.
      */
@@ -877,10 +877,10 @@ DatatableSequence.prototype = {
                     });
                 });
             },
-        
+
             /**
              * Redraws target and source table after changing a navigation tab.
-             * 
+             *
              * Binds to the bootstrap navigation tabs. Fixes the table width.
              */
             redrawTab: function() {
@@ -893,7 +893,7 @@ DatatableSequence.prototype = {
 
             /**
              * Redraws source table after opening add modal.
-             * 
+             *
              * Binds to the bootstrap navigation tabs. Fixes the table width.
              */
             redrawAdd: function() {
@@ -906,7 +906,7 @@ DatatableSequence.prototype = {
 
             /**
              * Detaches and appends the sequence to the column node.
-             * 
+             *
              * Binds to the datatables pre draw and draw event.
              */
             renderSequence: function() {
@@ -944,7 +944,7 @@ DatatableSequence.prototype = {
              * Shows/Hides target table if data is present/absent.
              *
              * Shows/Hides controls if maxLen is (not) reached.
-             * 
+             *
              * Binds to the datatables init and pre draw event.
              */
             showHide: function() {
@@ -972,7 +972,7 @@ DatatableSequence.prototype = {
 
             /**
              * Opens and closes the details for target and source tables.
-             * 
+             *
              * Binds to the more column on click event.
              */
             more: function() {
@@ -1010,7 +1010,7 @@ DatatableSequence.prototype = {
 
             /**
              * Initializes the column search of source table.
-             * 
+             *
              * Binds to individual column search input fields.
              */
             search: function() {
@@ -1166,11 +1166,11 @@ DatatableSequence.prototype = {
     },
 
 
-    /************************************************************************** 
-        AUXILIARY 
+    /**************************************************************************
+        AUXILIARY
     **************************************************************************/
 
-    /** 
+    /**
      * Lock mechanism to prevent multiple actions
      */
     locked: function() {
@@ -1184,7 +1184,7 @@ DatatableSequence.prototype = {
         return false;
     },
 
-    /** 
+    /**
      * Generates html code for the data of a new sequence item.
      *
      * If data is provided, the sequence gets updated.
@@ -1221,7 +1221,7 @@ DatatableSequence.prototype = {
             $fornodes.attr('for', newid);
             });
 
-        // add postfix to names 
+        // add postfix to names
         $namednodes.each(function(idx, node) {
             var $node = $(node);
             var oldname = $node.attr('name');
@@ -1293,7 +1293,7 @@ DatatableSequence.prototype = {
      *   - displayed: Visible main columns
      *   - collapsed: Collapsed columns, visible by clicking the more column
      *   - invisible: Invisible columns used for hidden data
-     *   
+     *
      * Returns:
      *   dictionary: {
      *     'displayed': array of displayed columns,
@@ -1339,7 +1339,7 @@ DatatableSequence.prototype = {
                 case 'HiddenWidget':
                     sequence
                         .children("input[name='" + column.name + "']")
-                        .val(data[column.data]);                    
+                        .val(data[column.data]);
                     return;
 
                 case 'TextInputWidget':
@@ -1382,7 +1382,7 @@ DatatableSequence.prototype = {
 
     /**
      * Updates row data and sequence item html code with form data.
-     * 
+     *
      * Args:
      *   data (array): Datatables row data.
      *   form (jQuery node): Node containing the form fields
@@ -1456,12 +1456,12 @@ DatatableSequence.prototype = {
 
     /**
      * Checks, if the edit form is valid.
-     * 
+     *
      * Adds error classes to form groups with errors.
-     * 
+     *
      * Args:
      *   form (jQuery node): Node containing the form fields.
-     * 
+     *
      * Returns:
      *   true: If the form is valid.
      *   false: Otherwise.
@@ -1518,15 +1518,15 @@ DatatableSequence.prototype = {
                 group.removeClass('has-error');
             }
         });
-        return valid;        
+        return valid;
     },
 
     /**
      * Checks, if a row has any hidden data.
-     * 
+     *
      * Args:
      *   row (Datatables row): Row to check for hidden data.
-     * 
+     *
      * Returns:
      *   true: If the row has hidden data.
      *   false: Otherwise.
@@ -1534,7 +1534,7 @@ DatatableSequence.prototype = {
     dataHidden: function(row) {
         var isVisible = row.table().columns().responsiveHidden();
         var hasData = false;
-        row.columns().every(function(index) {            
+        row.columns().every(function(index) {
             if(!isVisible[index] && row.cell(row.index(), index).data())
                 hasData = true;
         });
@@ -1543,11 +1543,11 @@ DatatableSequence.prototype = {
 
     /**
      * Gets the index of the column with a certain name.
-     * 
+     *
      * Args:
      *   table (meta obj): Table, in which to search.
      *   name (string): Name to search for.
-     * 
+     *
      * Returns:
      *   int: The index of the found column.
      *   false: If no columns was found.
