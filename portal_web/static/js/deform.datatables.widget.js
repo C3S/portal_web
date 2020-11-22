@@ -255,7 +255,8 @@ DatatableSequence.prototype = {
             };
 
             // generate table html
-            $(ds.sel.container).append(
+            var container = $(ds.sel.container);
+            container.append(
                 tmpl(ds.tpl.sequence, {
                     lableClass: ds.minLen ? "required" : "",
                     errormsg: ds.errormsg,
@@ -387,21 +388,6 @@ DatatableSequence.prototype = {
                     ]
                 });
 
-            // substitute data of parent sequences with child sequence
-            // var parent_ds_container = $(ds.sel.container);
-            // var parent_ds_oid = parent_ds_container
-            //     .parents(".datatable_sequence")
-            //     .first()
-            //     .attr("id");
-            // if(parent_ds_oid) {
-            //     var parent_ds = deform.datatableSequences[parent_ds_oid];
-            //     var parent_row = parent_ds.target.table.row(
-            //         parent_ds_container.closest('tr'));
-            //     var parent_data = parent_row.data();
-            //     parent_data[ds.name] = ds;
-            //     parent_row.data(parent_data);
-            // }
-
             // bind events
             if(ds.events instanceof Function)
                 ds.events = ds.events();
@@ -412,6 +398,15 @@ DatatableSequence.prototype = {
 
             // add datatable sequence to registry (for global access)
             deform.datatableSequences[ds.oid] = ds;
+
+            // substitute data of parent sequences with child sequence
+            var p_container = container.parents(".datatable_sequence").first();
+            if(p_container.length > 0) {
+                var p_ds = deform.datatableSequences[p_container.attr("id")];
+                var p_row = p_ds.target.table.row(container.closest("tr"));
+                var p_cell = p_row.cell(p_row.index(), ds.name + ":name");
+                p_cell.data(ds).draw();
+            }
 
         });
     },
@@ -766,11 +761,12 @@ DatatableSequence.prototype = {
         index.val(row.index());
         title.text(ds.language.custom.edit);
         sequence.empty();
-        if(!(data.sequence instanceof jQuery))
+        if(!(data.sequence instanceof jQuery)) {
             data.sequence = $(row.node())
                 .children('.sequence')
                 .children('.deform-sequence-item');
             row.data(data);
+        }
         sequence.append(data.sequence);
         // open modal
         modal.modal('show', sourceModal);
