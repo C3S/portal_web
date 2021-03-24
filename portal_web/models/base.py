@@ -357,6 +357,7 @@ class MixinSearchById(object):
             return None
         return result[0]
 
+
 class MixinSearchByCode(object):
     """
     Modelwrapper mixin for models that can be searched by its code
@@ -378,6 +379,7 @@ class MixinSearchByCode(object):
         result = cls.get().search([('code', '=', code)])
         return result[0] if result else None
 
+
 class MixinSearchByName(object):
     """
     Modelwrapper mixin for models that can be searched by its name field
@@ -396,6 +398,7 @@ class MixinSearchByName(object):
         """
         result = cls.get().search([('name', '=', name)])
         return result[0] or None
+
 
 class MixinSearchByUuid(object):
     """
@@ -416,6 +419,7 @@ class MixinSearchByUuid(object):
         result = cls.get().search([('uuid', '=', uuid)])
         return result[0] or None
 
+
 class MixinSearchByOid(object):
     """
     Modelwrapper mixin for models that can be searched by its oid field.
@@ -435,7 +439,7 @@ class MixinSearchByOid(object):
         """
         result = cls.get().search([('oid', '=', oid)])
         return result[0] or None
-    
+
     @classmethod
     def search_by_oids(cls, oids):
         """
@@ -449,6 +453,7 @@ class MixinSearchByOid(object):
         """
         result = cls.get().search([('oid', 'in', oids)])
         return result
+
 
 class MixinSearchAll(object):
     """
@@ -464,6 +469,7 @@ class MixinSearchAll(object):
           None: if table is empty
         """
         return cls.get().search([])
+
 
 class MixinWebuser(object):
     """

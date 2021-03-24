@@ -22,8 +22,9 @@ class Country(Tdb, MixinSearchById, MixinSearchByCode, MixinSearchByName,
 
     __name__ = 'country.country'
 
+
 class Subdivision(Tdb, MixinSearchById, MixinSearchByCode, MixinSearchByName,
-              MixinSearchAll):
+                  MixinSearchAll):
     """
     Model wrapper for Tryton model object 'country.subdivision'.
     """

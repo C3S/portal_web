@@ -232,6 +232,6 @@ def main(global_config, **settings):
         # api views
         for priority in sorted(plugins, reverse=True):
             config.include(plugins[priority]['name'] + '.includes.api_views')
-        config.include('.includes.api_views')   
+        config.include('.includes.api_views')
 
     return config.make_wsgi_app()

@@ -88,7 +88,7 @@ class BankAccountNumber(Tdb):
                 )
                 bank.save()
 
-            # type: iban
+            # type iban
             if values['type'] == 'iban':
                 if 'number' not in values:
                     raise KeyError('number is missing')
@@ -120,7 +120,7 @@ class BankAccountNumber(Tdb):
                 bank_account = bank_accounts[0]
                 cvlist.append(bank_account.numbers[-1])
 
-            # type: not implemented
+            # type not implemented
             else:
                 raise NotImplementedError(
                     'bank account number type not implemented.'
