@@ -57,7 +57,7 @@ testconfig = {
             # switch all screnshots on or off
             'on': True,
             # path of screenshots
-            'path': '/shared/tmp/screenshots',
+            'path': '/shared/tests/screenshots',
             # delete all screenshots of previous integration tests
             'reset': True
         }
