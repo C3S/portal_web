@@ -173,9 +173,9 @@ def main(global_config, **settings):
     # enable ptvsd debugging (open port 51000 for portal and 51001 for api!)
     if int(settings['debugger.ptvsd']):
         debugging_port = 0
-        if settings['service'] == 'gui':
+        if settings['service'] == 'webgui':
             debugging_port = 51000
-        if settings['service'] == 'api':
+        if settings['service'] == 'webapi':
             debugging_port = 51001
         if debugging_port > 0:
             log.debug(settings['service'] + " debugger listening to port " +
@@ -197,7 +197,7 @@ def main(global_config, **settings):
                     log.debug('ptvsd debugging not possible: ' + ex.message)
 
     # configure webfrontend for portal and plugins
-    if settings['service'] == 'gui':
+    if settings['service'] == 'webgui':
         # web root factory
         config.set_root_factory(factory=WebRootFactory)
         # web resources
@@ -224,7 +224,7 @@ def main(global_config, **settings):
                 route_prefix=settings['api.in_web_path'])
 
     # configure api for portal and plugins
-    if settings['service'] == 'api':
+    if settings['service'] == 'webapi':
         config.include('cornice')
         config.include('cornice_swagger')
         # api root factory

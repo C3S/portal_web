@@ -45,10 +45,10 @@ def replace_environment_vars(settings):
 
     Examples:
         >>> import os
-        >>> os.environ['PYRAMID_SERVICE'] = 'portal'
-        >>> settings = { 'service': '${PYRAMID_SERVICE}' }
+        >>> os.environ['SERVICE'] = 'webgui'
+        >>> settings = { 'service': '${SERVICE}' }
         >>> print(replace_environment_vars(settings))
-        { 'service' = 'portal' }
+        { 'service' = 'webgui' }
     """
     return dict(
         (key, os.path.expandvars(value)) for key, value in settings.iteritems()
@@ -301,11 +301,11 @@ def debug_context(event):
     if p.startswith('/static/') or p.startswith('/_debug_toolbar/'):
         return
     # api
-    if settings['service'] == 'api':
+    if settings['service'] == 'webapi':
         if settings['debug.api.context'] == 'false':
             return
     # web
-    if settings['service'] == 'gui':
+    if settings['service'] == 'webgui':
         if settings['debug.web.context'] == 'false':
             return
 
@@ -329,11 +329,11 @@ def debug_request(event):
     if p.startswith('/static/') or p.startswith('/_debug_toolbar/'):
         return
     # api
-    if settings['service'] == 'api':
+    if settings['service'] == 'webapi':
         if settings['debug.api.request'] == 'false':
             return
     # web
-    if settings['service'] == 'gui':
+    if settings['service'] == 'webgui':
         if settings['debug.web.request'] == 'false':
             return
     # log
@@ -360,11 +360,11 @@ def debug_response(event):
     if p.startswith('/static/') or p.startswith('/_debug_toolbar/'):
         return
     # api
-    if settings['service'] == 'api':
+    if settings['service'] == 'webapi':
         if settings['debug.api.response'] == 'false':
             return
     # web
-    if settings['service'] == 'gui':
+    if settings['service'] == 'webgui':
         if settings['debug.web.response'] == 'false':
             return
     # log
