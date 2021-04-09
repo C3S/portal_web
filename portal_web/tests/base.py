@@ -126,7 +126,7 @@ class Net(object):
         _appconfig.update(settings)
 
         # Set service
-        _appconfig['service'] = service
+        _appconfig['service'] = "web" + service
 
         # Environment
         _appconfig = replace_environment_vars(_appconfig)
