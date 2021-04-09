@@ -18,6 +18,7 @@ with open(os.path.join(here, 'CHANGELOG.rst')) as f:
     CHANGELOG = f.read()
 
 service = str(os.environ.get('PYRAMID_SERVICE'))
+environment = str(os.environ.get('ENVIRONMENT'))
 
 install_requires = [
     'c3s_collecting_society',
@@ -30,12 +31,13 @@ install_requires = [
     'pyramid',
     'pyramid_beaker',
     'pyramid_chameleon',
-    'pyramid_debugtoolbar',
     'pyramid_mailer',
     'python-magic',
     'trytond<3.6',
     'waitress',
 ]
+if environment == "development":
+    install_requires.append('pyramid_debugtoolbar')
 
 test_requires = [
     'coverage',
