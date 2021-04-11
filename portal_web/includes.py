@@ -73,7 +73,7 @@ def web_views(config):
     config.add_static_view(
         'static/deform', 'deform:static', cache_max_age=3600
     )
-    config.scan(ignore='.views.api')
+    config.scan(ignore=['.views.api', '.tests'])
 
 
 def api_views(config):
