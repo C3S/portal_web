@@ -90,7 +90,7 @@ def api_views(config):
         None.
     '''
     settings = config.get_settings()
-    if settings['env'] == 'development':
+    if settings['env'] == 'testing':
         config.add_static_view(
             'static/portal', 'static', cache_max_age=3600
         )
