@@ -30,7 +30,7 @@
       accept-charset="utf-8"
       i18n:domain="portal_web">
 
-    
+
     <fieldset class="deformFormFieldset">
 
         <h1 tal:condition="title" class="cs-form-header">${title}</h1>
@@ -58,7 +58,7 @@
                         tal:attributes="class 'active' if repeat.schema.start else ''"
                         id="cs-navform-item-menu-${schema.name}">
                         <a href="#cs-navform-item-content-${schema.name}"
-                           aria-controls="${schema.oid}" 
+                           aria-controls="${schema.oid}"
                            role="tab"
                            data-toggle="tab"
                            data-anchor="cs-navform-item-content-${schema.name}"
@@ -171,7 +171,7 @@
            deform.processCallbacks();
            deform.focusFirstInput(target);
          },
-         beforeSerialize: function() { 
+         beforeSerialize: function() {
            // See http://bit.ly/1agBs9Z (hack to fix tinymce-related ajax bug)
            if ('tinymce' in window) {
              $(tinymce.get()).each(

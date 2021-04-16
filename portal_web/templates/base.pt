@@ -21,7 +21,7 @@
     - js-body
 
     Content defined:
-    
+
     - title         (registry: meta/title)
     - keywords      (registry: meta/keywords)
     - description   (registry: meta/description)
@@ -51,7 +51,7 @@
               content="${context.registry['meta']['keywords']|''}">
 
         <!-- registry: description -->
-        <meta name="description" 
+        <meta name="description"
               content="${context.registry['meta']['description']|''}" />
 
         <!-- registry: favicon -->

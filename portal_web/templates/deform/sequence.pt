@@ -23,7 +23,7 @@
       opacity: 0.5;
       z-index: 2000;
     }
-  </style>   
+  </style>
 
   <!-- sequence -->
   <input type="hidden" name="__start__"
@@ -38,7 +38,7 @@
            id="${oid}-orderable">
         <div tal:define="subfields [ x[1] for x in subfields ]"
              tal:repeat="subfield subfields"
-             tal:replace="structure subfield.render_template(item_tmpl, 
+             tal:replace="structure subfield.render_template(item_tmpl,
                                                           parent=field)" />
         <span class="deform-insert-before"
               tal:attributes="

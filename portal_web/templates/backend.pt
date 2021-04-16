@@ -36,7 +36,7 @@
 
     <!-- content -->
     <tal:block metal:fill-slot="content">
-        
+
         <!-- datatable sequence tmpl -->
         <div id="cs-sequence-tmpl">
 
@@ -54,7 +54,7 @@
                             { add: true,
                               create: true,
                               ds: o.ds }); %}
-              
+
                 {% include( o.ds.tpl.target.table,
                             { ds: o.ds }); %}
 
@@ -99,7 +99,7 @@
 
             <!-- template source table -->
             <script type="text/x-tmpl" id="datatable_sequence_tpl_source">
-              <div class="{%=o.ds.sel.base%}_source_area 
+              <div class="{%=o.ds.sel.base%}_source_area
                           datatable_sequence_source_area">
                   <table id="{%=o.ds.sel.base%}_source"
                          class="table table-hover responsive cs-datatables">
@@ -109,7 +109,7 @@
                           {% if (o.ds.source.columns[i].datatableSequence
                                  && o.ds.source.columns[i]
                                     .datatableSequence.footerSearch) { %}
-                            <th class="multifilter"> 
+                            <th class="multifilter">
                               <input type="text"
                                      placeholder="{%=o.ds.language.custom.search%} {%=o.ds.source.columns[i].title%}" />
                             </th>
@@ -125,8 +125,8 @@
 
             <!-- template modal -->
             <script type="text/x-tmpl" id="datatable_sequence_tpl_modal">
-              <div class="modal fade cs-modal cs-modal-{%=o.role%}" 
-                   id="{%=o.ds.sel.base%}_modal_{%=o.role%}" 
+              <div class="modal fade cs-modal cs-modal-{%=o.role%}"
+                   id="{%=o.ds.sel.base%}_modal_{%=o.role%}"
                    aria-labelledby="{%=o.ds.sel.base%}_modal_{%=o.role%}_header"
                    tabindex="-1" role="dialog">
                 <div class="modal-dialog modal-lg" role="document">
@@ -282,7 +282,7 @@
               </table>
             </script>
         </div>
-        
+
         <!-- slot: content -->
         <tal:block metal:define-slot="content" />
 

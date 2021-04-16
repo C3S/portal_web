@@ -10,7 +10,7 @@
     ${field.start_mapping()}
     <div tal:repeat="child field.children"
          tal:replace="structure child.render_template(field.widget.item_template)" >
-    </div>     
+    </div>
     ${field.end_mapping()}
 
     <tal:errors condition="field.error and not hidden"
