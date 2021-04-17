@@ -326,7 +326,9 @@ def debug_request(event):
     settings = event.request.registry.settings
 
     # exclude requests
-    if p.startswith('/static/') or p.startswith('/_debug_toolbar/'):
+    if p.startswith('/_debug_toolbar/'):
+        return
+    if settings['debug.static'] == 'false' and p.startswith('/static/'):
         return
     # api
     if settings['service'] == 'webapi':
@@ -357,7 +359,9 @@ def debug_response(event):
     settings = event.request.registry.settings
 
     # exclude requests
-    if p.startswith('/static/') or p.startswith('/_debug_toolbar/'):
+    if p.startswith('/_debug_toolbar/'):
+        return
+    if settings['debug.static'] == 'false' and p.startswith('/static/'):
         return
     # api
     if settings['service'] == 'webapi':
@@ -369,6 +373,7 @@ def debug_response(event):
             return
     # log
     try:
+        # import pdb; pdb.set_trace()
         log.debug("RESPONSE:\n %s" % event.response.__str__(skip_body=True))
     except: # noqa
         pass

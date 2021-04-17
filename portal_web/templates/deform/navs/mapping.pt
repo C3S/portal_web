@@ -10,7 +10,7 @@
                      errormsg errormsg|field.errormsg;
                      item_template item_template|field.widget.item_template"
          i18n:domain="deform">
-  
+
     <div tal:condition="field.parent.__class__.__name__ != 'Form'">
         <legend tal:condition="title">${title}</legend>
     </div>

@@ -86,7 +86,7 @@
                                  alt="${language['name']}"/>
                         </a>
                     </div>
-                    
+
                     <!-- slot: content right -->
                     <tal:block metal:define-slot="content-right" />
 

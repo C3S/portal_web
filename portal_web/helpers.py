@@ -11,12 +11,14 @@ from decimal import Decimal
 # utilities
 import logging
 from base64 import b64encode  # noqa: F401
+from os import environ  # noqa: F401
 
 from .models import (
     Tdb,
     Company
 )
 
+environ = dict(environ)
 log = logging.getLogger(__name__)
 
 
