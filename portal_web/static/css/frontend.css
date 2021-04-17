@@ -100,13 +100,13 @@ h6, .h6 {}
     .cs-content-middle { min-height:100%; margin-top:0; }
 
     /* Content Right */
-    
+
     .cs-content-right { z-index: 2000; }
     .cs-content-right { min-height:100%; height:100%; }
     .cs-content-right .cs-widget { margin-top:40px; }
 
     .cs-langflags { position:fixed; top:14px; }
-    
+
 }
 
 
@@ -127,5 +127,5 @@ h6, .h6 {}
     .cs-logo { max-width:200px; }
 
     /* Content Right */
-    
+
 }
