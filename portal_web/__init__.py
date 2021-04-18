@@ -149,6 +149,7 @@ def main(global_config, **settings):
     for priority in sorted(plugins):
         translation_dir = os.path.join(
             plugins[priority]['path'], plugins[priority]['name'], 'locale')
+        print(translation_dir)
         if os.path.isdir(translation_dir):
             config.add_translation_dirs(translation_dir)
 
