@@ -54,7 +54,7 @@
                 <ul class="nav navbar-nav">
                     <li tal:repeat="menu context.registry['menues'][name]"
                         class="cs-menue-item cs-menue-item-${menu.name.lower()}
-                               ${'active' if request.path.startswith(menu.url) else ''}">
+                               ${'active' if menu.get('url') and request.path.startswith(menu.url) else ''}">
 
                         <!-- slot: links -->
                         <a metal:define-slot="links"
@@ -104,7 +104,7 @@
 
     <li tal:repeat="menu context.registry['menues'][name]" role="presentation"
         class="cs-menue-item cs-menue-item-${menu.name.lower()}
-               ${'active' if request.path.startswith(menu.url) else ''}">
+               ${'active' if menu.get('url') and request.path.startswith(menu.url) else ''}">
 
         <!-- slot: links -->
         <a metal:define-slot="links"
