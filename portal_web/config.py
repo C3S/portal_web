@@ -176,6 +176,12 @@ def add_locale(event):
     Returns:
         None.
     """
+    # exclude requests
+    p = event.request.path
+    if p.startswith('/static/') or p.startswith('/_debug_toolbar/'):
+        return
+
+    # mapping
     LANGUAGE_MAPPING = {
         'de': 'de',
         'en': 'en',
