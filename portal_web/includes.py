@@ -89,9 +89,7 @@ def api_views(config):
     Returns:
         None.
     '''
-    settings = config.get_settings()
-    if settings['env'] == 'testing':
-        config.add_static_view(
-            'static/portal', 'static', cache_max_age=3600
-        )
+    config.add_static_view(
+        'static/portal', 'static', cache_max_age=3600, environment='testing'
+    )
     config.scan('.views.api')
