@@ -162,7 +162,11 @@
 
     </head>
 
-    <body>
+    <body class="${
+                     ' '.join(['tree-%s' % t for t in context.request.traversed])
+                 }${
+                     context.request.traversed and ' page-%s' % context.request.traversed[-1] or ''
+                 }">
 
         <!-- container for bootstrap modals -->
         <div id="cs-modal-container"></div>
