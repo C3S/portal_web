@@ -42,6 +42,8 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta tal:condition="h.environ['ENVIRONMENT'] != 'production'"
+              name="robots" content="none" />
 
         <!-- registry: title -->
         <title>${context.registry['meta']['title']|''}</title>
