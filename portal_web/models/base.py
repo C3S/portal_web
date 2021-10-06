@@ -83,7 +83,8 @@ class Tdb(object):
 
     @staticmethod
     def is_open():
-        if Transaction().cursor and not Transaction().cursor._conn.closed:
+        cursor = Transaction().connection.cursor()
+        if cursor and not cursor._conn.closed:
             return True
         return False
 
@@ -194,7 +195,7 @@ class Tdb(object):
                             _db, _user, readonly=_readonly, context=_context,
                             close=False)
 
-                    cursor = Transaction().cursor
+                    cursor = Transaction().connection.cursor()
                     try:
                         _tdbg(func, "CALL", "Try %s, Cursor %s" %
                               (_retry + 1 - count, id(cursor)))
