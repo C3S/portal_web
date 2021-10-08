@@ -9,15 +9,13 @@ from psycopg2._psycopg import InterfaceError
 from pyramid import threadlocal
 
 from trytond.transaction import Transaction
-from trytond.cache import Cache
 from trytond.config import config
-from trytond import backend
 from trytond.pool import Pool
 
 log = logging.getLogger(__name__)
 
 
-class Tdb(object):
+class Tdb():
     """
     Base Class for model wrappers and communication handling using trytond.
 
@@ -78,13 +76,17 @@ class Tdb(object):
 
         config.update_etc(str(cls._configfile))
         cls._retry = config.getint('database', 'retry')
+        pool = Pool(str(cls._db))
         with Transaction().start(str(cls._db), int(cls._user), readonly=True):
-            Pool().init()
+            pool.init()
 
     @staticmethod
     def is_open():
-        cursor = Transaction().connection.cursor()
-        if cursor and not cursor._conn.closed:
+        transaction = Transaction()
+        if not transaction.connection:
+            return False
+        cursor = transaction.connection.cursor()
+        if cursor:
             return True
         return False
 
@@ -126,7 +128,6 @@ class Tdb(object):
         .. _flask_tryton:
             https://pypi.python.org/pypi/flask_tryton
         """
-        DatabaseOperationalError = backend.get('DatabaseOperationalError')
         _tdbglog = "/ado/tmp/transaction.log"
 
         def _tdbg(func, mode, string=None, levelchange=0):
@@ -176,6 +177,7 @@ class Tdb(object):
                 _user = user or 0
                 _retry = Tdb._retry or 0
                 _readonly = readonly
+                from trytond.backend import DatabaseOperationalError
                 if 'request' in kwargs:
                     _readonly = not (
                         kwargs['request'].method
@@ -186,7 +188,8 @@ class Tdb(object):
                     if not Tdb.is_open():
                         _tdbg(func, "CONNECT")
                         with Transaction().start(_db, 0):
-                            Cache.clean(_db)
+                            # from trytond.cache import Cache
+                            # Cache.clean(_db)
                             pool = Pool(Tdb._db)
                             User = pool.get('res.user')
                             _context = User.get_preferences(context_only=True)
@@ -195,30 +198,31 @@ class Tdb(object):
                             _db, _user, readonly=_readonly, context=_context,
                             close=False)
 
-                    cursor = Transaction().connection.cursor()
+                    transaction = Transaction().new_transaction(
+                        readonly=_readonly)
                     try:
-                        _tdbg(func, "CALL", "Try %s, Cursor %s" %
-                              (_retry + 1 - count, id(cursor)))
+                        _tdbg(func, "CALL", "Try %s, Transaction %s" %
+                              (_retry + 1 - count, id(transaction)))
                         result = func(*args, **kwargs)
                         if not _readonly:
-                            _tdbg(func, "COMMIT", "Try %s, Cursor %s" %
-                                  (_retry + 1 - count, id(cursor)))
-                            cursor.commit()
+                            _tdbg(func, "COMMIT", "Try %s, Transaction %s" %
+                                  (_retry + 1 - count, id(transaction)))
+                            transaction.commit()
                     except DatabaseOperationalError:
-                        if cursor:
-                            cursor.rollback()
+                        if transaction:
+                            transaction.rollback()
                         if not count or _readonly:
                             raise
                         continue
                     except InterfaceError:
-                        if cursor:
-                            cursor.rollback()
+                        if transaction:
+                            transaction.rollback()
                         if not count:
                             raise
                         continue
                     except Exception:
-                        if cursor:
-                            cursor.rollback()
+                        if transaction:
+                            transaction.rollback()
                         raise
 
                     _tdbg(func, "RETURN", None, -1)
@@ -291,7 +295,7 @@ class Tdb(object):
         for index, statement in enumerate(domain):
             if isinstance(statement, (list,)):
                 cls.escape_operands(statement)
-            if isinstance(statement, basestring):  # noqa: F821
+            if isinstance(statement, str):
                 continue
             if statement[1] in ['like', 'ilike', 'not like', 'not ilike']:
                 statement_list = list(statement)

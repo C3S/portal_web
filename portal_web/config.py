@@ -8,10 +8,9 @@ Helper functions for the creation of the pyramid app.
 import os
 import logging
 from pkgutil import iter_modules
-import ConfigParser
+import configparser
 
 from trytond.transaction import Transaction
-from trytond.cache import Cache
 from trytond.pool import Pool
 
 from pyramid.httpexceptions import (
@@ -51,7 +50,7 @@ def replace_environment_vars(settings):
         { 'service' = 'webgui' }
     """
     return dict(
-        (key, os.path.expandvars(value)) for key, value in settings.iteritems()
+        (key, os.path.expandvars(value)) for key, value in settings.items()
     )
 
 
@@ -101,7 +100,7 @@ def get_plugins(settings=None):
         {'name': name, 'path': imp.path} for imp, name, _ in iter_modules()
         if name.endswith(settings['plugins.pattern']) and name != "portal_web"
     ]
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     for plugin in modules:
         settings_path = plugin['path'] + '/' + settings['env'] + '.ini'
         config.read(settings_path)
@@ -217,13 +216,14 @@ def add_locale(event):
 def open_db_connection(event):
     """ Open and close database connection """
     user = Transaction().user  # pyramid subrequests have no cursor
-    cursor = Transaction().cursor and not Transaction().cursor._conn.closed
-    if not user and not cursor:
+    connection = Transaction().connection
+    if not user and not connection:
         with Transaction().start(Tdb._db, 0):
             pool = Pool(str(Tdb._db))
             user = pool.get('res.user')
             context = user.get_preferences(context_only=True)
-            Cache.clean(Tdb._db)
+            # from trytond.cache import Cache
+            # Cache.clear(Tdb._db)
         Transaction().start(
             Tdb._db, Tdb._user, readonly=True, context=context)
 
@@ -231,9 +231,10 @@ def open_db_connection(event):
 def close_db_connection(event):
     """ Close database connection """
     def close_db(request):
-        cursor = Transaction().cursor
-        if cursor and not Transaction().cursor._conn.closed:
-            Cache.resets(Tdb._db)
+        connection = Transaction().connection
+        if connection:
+            # from trytond.cache import Cache
+            # Cache.resets(Tdb._db)
             Transaction().stop()
         if event.request.registry.settings['debug.tdb.transactions'] == 'true':
             Tdb.wraps = 0

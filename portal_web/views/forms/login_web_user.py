@@ -49,6 +49,9 @@ def authentication_is_successful(values):
         return _(u'Login failed')
     if not (WebUser.get_opt_in_state_by_email(values['email']) == 'opted-in'):
         return _(u'User mail address not verified yet')
+    print(values)
+    print(WebUser.authenticate(values['email'], values['password']))
+    print(WebUser.authenticate(values['email'], "whatever"))
     if WebUser.authenticate(values['email'], values['password']):
         return True
     log.info("web_user login failed: %s" % values['email'])

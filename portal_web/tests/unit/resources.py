@@ -162,7 +162,7 @@ class TestResources(UnitTestBase):
 
     def test_getitem_KeyError(self):
         """
-        test ResourceBase.__getitem__
+        test ResourceBase.__getitem__ KeyError
         """
         self.request = DummyRequest()
 
@@ -171,11 +171,11 @@ class TestResources(UnitTestBase):
         with self.assertRaises(KeyError) as context:
             rbc.__getitem__('foo')
 
-        self.assertTrue('foo' in context.exception)
+        self.assertTrue('foo' in str(context.exception))
 
     def test_getitem_child(self):
         """
-        test ResourceBase.__getitem__
+        test ResourceBase.__getitem__ child
         """
         ResourceBaseMock.add_child(ResourceBaseChildMock)
         self.request = DummyRequest()
@@ -215,7 +215,7 @@ class TestResources(UnitTestBase):
                 "ResourceBaseChildMock\n"
             ) in res)
         self.assertTrue("context.__parent__: news\n" in res)
-        self.assertTrue("context.__children__: {   }\n" in res)
+        self.assertTrue("context.__children__: {}\n" in res)
         self.assertTrue("context.registry" in res)
 
 
