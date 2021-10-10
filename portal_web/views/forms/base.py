@@ -134,7 +134,7 @@ class FormController(object):
         return user to other place by str or resource,
         removes form from session
         """
-        if isinstance(resource, basestring):
+        if isinstance(resource, str):
             path = self.request.resource_path(self.context, resource, *args)
         elif isinstance(resource, ResourceBase):
             path = self.request.resource_path(resource, *args)
@@ -155,7 +155,6 @@ class FormController(object):
             return True
         except deform.ValidationFailure as e:
             self.validationfailure = e
-            log.debug(_data)
             self.response = {self.name: self.validationfailure.render()}
         return False
 

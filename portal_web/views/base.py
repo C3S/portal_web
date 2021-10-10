@@ -33,7 +33,7 @@ class ViewBase(object):
         self.cleanup_forms()
 
     def process_forms(self, data={}):
-        for name, controller in self._formcontroller.iteritems():
+        for name, controller in self._formcontroller.items():
             for key in data:
                 setattr(self.context, key, data[key])
             _response = controller.process(self.context, self.request)
@@ -79,7 +79,7 @@ class ViewBase(object):
             del _forms[form_name]
 
     def redirect(self, resource='', *args, **kwargs):
-        if isinstance(resource, basestring):
+        if isinstance(resource, str):
             path = self.request.resource_path(self.context, resource, *args)
         elif isinstance(resource, ResourceBase):
             path = self.request.resource_path(resource, *args)

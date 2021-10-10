@@ -38,13 +38,13 @@ testconfig = {
         # connection
         'connection': {
             'selenium': 'http://test_browser:4444/wd/hub',
-            'server': 'test_web'
+            'server': 'test_web',
+            'keep_alive': True,
         },
         # desired_capabilities
         'desired_capabilities': {
-            'browserName': 'firefox',
             'acceptInsecureCerts': True,
-            'marionette': True,
+            'browserName': 'firefox',
             'loggingPrefs': {'browser': 'ALL'}
         },
         # window size of client

@@ -59,18 +59,16 @@ def format_currency(value, places=None, curr=None, sep=None, dp=None, pos=None,
 
     _places = places or currency.digits
     _curr = curr or currency.symbol
-    _sep = sep or currency.mon_thousands_sep
-    _dp = dp or currency.mon_decimal_point
-    _pos = pos or currency.positive_sign
-    _neg = neg or currency.negative_sign
-    _trailneg = ''
-    if trailneg or currency.n_cs_precedes:
-        _trailneg = trailneg or currency.negative_sign
+    _sep = sep or "."
+    _dp = dp or ","
+    _pos = pos or "+"
+    _neg = neg or "-"
+    _trailneg = trailneg or ''
 
     q = Decimal(10) ** -_places
     sign, digits, exp = value.quantize(q).as_tuple()
     result = []
-    digits = map(str, digits)
+    digits = list(map(str, digits))
     build, next = result.append, digits.pop
     if sign:
         build(_trailneg)

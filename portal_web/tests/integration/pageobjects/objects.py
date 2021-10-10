@@ -14,7 +14,7 @@ from .elements import (  # noqa: F401
     CheckboxWidgetElement,
     CheckboxChoiceWidgetElement,
     DateInputWidgetElement,
-    ButtonElement
+    ButtonElement,
 )
 
 __all__ = ['DeformFormObject']

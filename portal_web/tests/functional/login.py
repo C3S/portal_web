@@ -34,7 +34,7 @@ class TestLogin(FunctionalTestBase, TestDataPortal):
         res2 = form.submit('LoginWebusersubmit')
         self.assertIn(
             '<p class="help-block" id="error-login-email">Required</p>',
-            res2.body
+            str(res2.body)
         )
 
     def test_required_field_password(self):
@@ -46,7 +46,7 @@ class TestLogin(FunctionalTestBase, TestDataPortal):
         res2 = form.submit('LoginWebusersubmit')
         self.assertIn(
             '<p class="help-block" id="error-login-password">Required</p>',
-            res2.body
+            str(res2.body)
         )
 
     def test_email_validator(self):
@@ -60,7 +60,7 @@ class TestLogin(FunctionalTestBase, TestDataPortal):
         self.assertIn(
             '<p class="help-block" id="error-login-email">'
             + 'Invalid email address</p>',
-            res2.body
+            str(res2.body)
         )
 
     def test_login_with_wrong_email(self):
@@ -72,7 +72,7 @@ class TestLogin(FunctionalTestBase, TestDataPortal):
         form['email'] = 'wrong@username.test'
         form['password'] = 'wrongpassword'
         res2 = form.submit('LoginWebusersubmit')
-        self.assertIn('<p class="errorMsg">Login failed</p>', res2.body)
+        self.assertIn('<p class="errorMsg">Login failed</p>', str(res2.body))
 
     def test_login_with_wrong_password(self):
         """
@@ -83,7 +83,8 @@ class TestLogin(FunctionalTestBase, TestDataPortal):
         form['email'] = 'right@username.test'
         form['password'] = 'wrongpassword'
         res2 = form.submit('LoginWebusersubmit')
-        self.assertIn('<p class="errorMsg">Login failed</p>', res2.body)
+        res3 = res2.maybe_follow()
+        self.assertIn('<p class="errorMsg">Login failed</p>', str(res3.body))
 
     def test_login_with_right_credentials(self):
         """
@@ -94,6 +95,9 @@ class TestLogin(FunctionalTestBase, TestDataPortal):
         form['email'] = 'right@username.test'
         form['password'] = 'rightpassword'
         res2 = form.submit('LoginWebusersubmit')
-        self.assertNotIn('<p class="errorMsg">Login failed</p>', res2.body)
+        self.assertNotIn(
+            '<p class="errorMsg">Login failed</p>',
+            str(res2.body)
+        )
         res3 = res2.maybe_follow()
-        self.assertIn('<div class="cs-content cs-backend', res3.body)
+        self.assertIn('<div class="cs-content cs-backend', str(res3.body))
