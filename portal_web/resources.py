@@ -16,7 +16,7 @@ from collections import (
 )
 
 from pyramid import threadlocal
-from pyramid.security import (
+from pyramid.authorization import (
     Allow,
     Authenticated,
 )
@@ -209,7 +209,7 @@ class ResourceBase(object):
                 'C': 'C'
             }
         """
-        for key, val in new_dict.iteritems():
+        for key, val in new_dict.items():
             # delete key if val == {}
             if isinstance(val, Mapping) and not val:
                 orig_dict.pop(key, None)

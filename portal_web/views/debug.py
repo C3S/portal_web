@@ -82,7 +82,7 @@ class DebugViews(ViewBase):
         try:
             the_result['database_name'] = Tdb.pool().database_name
             log.debug('database_name: %s' % the_result['database_name'])
-        except OperationalError as oe:  # pragma: no cover
+        except OperationalError:  # pragma: no cover
             pass
 
         # check for object classes in tryton pool
@@ -92,7 +92,7 @@ class DebugViews(ViewBase):
             )
 
             log.debug('object_classes: %s' % the_result['object_name_list'])
-        except OperationalError as oe:  # pragma: no cover
+        except OperationalError:  # pragma: no cover
             pass
         except KeyError as ke:  # pragma: no cover
             log.debug('hit the KeyError: %s' % ke)

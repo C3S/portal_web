@@ -140,7 +140,8 @@ class Net(object):
             server = StopableWSGIServer.create(
                 app,
                 host=testconfig['server'][service]['host'],
-                port=testconfig['server'][service]['port']
+                port=testconfig['server'][service]['port'],
+                clear_untrusted_proxy_headers=True
             )
             if not server.wait():
                 raise Exception('Server could not be fired up. Exiting ...')
@@ -185,7 +186,8 @@ class Net(object):
         """
         self.cli = webdriver.Remote(
             command_executor=testconfig['client']['connection']['selenium'],
-            desired_capabilities=testconfig['client']['desired_capabilities']
+            desired_capabilities=testconfig['client']['desired_capabilities'],
+            keep_alive=testconfig['client']['connection']['keep_alive']
         )
         return self.cli
 
@@ -233,7 +235,7 @@ class TestBase(unittest.TestCase):
             None.
         """
         if Tdb.is_open():
-            Transaction().cursor.commit()
+            Transaction().commit()
 
     @classmethod
     @Tdb.transaction(readonly=False)
@@ -249,7 +251,7 @@ class TestBase(unittest.TestCase):
             cls.data.reverse()
             for instance in cls.data:
                 instance.delete([instance.id])
-            Transaction().cursor.commit()
+            Transaction().commit()
 
     def prettyShortDescription(self):
         """
@@ -480,7 +482,6 @@ class IntegrationTestBase(TestBase):
         Returns:
             None.
         """
-        cls.cli = cls.net.start_client()
         cls.gui = cls.net.start_server(
             'gui',
             settings=cls.settings(),
@@ -491,6 +492,7 @@ class IntegrationTestBase(TestBase):
             settings=cls.settings(),
             wrapper='StopableWSGIServer'
         )
+        cls.cli = cls.net.start_client()
         super(IntegrationTestBase, cls).setUpClass()
 
     @classmethod
