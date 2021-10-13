@@ -16,10 +16,10 @@ def defered_datatable_sequence_validator(node, kw):
     min_len = getattr(node, 'min_len', False)
     if missing == colander.required:
         if min_len and min_len > 0:
-            min_err = _(u'Please add at least one entry.')
+            min_err = _('Please add at least one entry.')
             if min_len > 1:
                 min_err = _(
-                    u'Please add at least a total of {} entries.'
+                    'Please add at least a total of {} entries.'
                 ).format(kw['min_len'])
             return colander.Length(
                 min=min_len,

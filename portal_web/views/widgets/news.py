@@ -7,7 +7,7 @@ from ...services import _
 
 
 def news_widget(request):
-    heading = _(u'News')
+    heading = _('News')
     body = render(
         '../../templates/widgets/news.pt',
         {'news': request.context.registry['content']['news']},

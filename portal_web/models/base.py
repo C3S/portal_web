@@ -293,7 +293,7 @@ class Tdb():
     @classmethod
     def escape_domain(cls, domain, wrap=True):
         for index, statement in enumerate(domain):
-            if isinstance(statement, (list,)):
+            if isinstance(statement, list):
                 cls.escape_operands(statement)
             if isinstance(statement, str):
                 continue

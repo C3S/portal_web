@@ -56,8 +56,8 @@ class RegisterWebuser(FormController):
         # user feedback
         self.request.session.flash(
             _(
-                u"Registration was successful. You should recieve an email "
-                u"with further instructions, how to verify your email address."
+                "Registration was successful. You should recieve an email "
+                "with further instructions, how to verify your email address."
             ),
             'main-alert-success'
         )
@@ -65,11 +65,11 @@ class RegisterWebuser(FormController):
         # send email
         send_mail(
             self.request,
-            subject=_(u"Verification Mail"),
+            subject=_("Verification Mail"),
             sender="test@portal.test",
             recipients=[self.appstruct['email']],
-            body=_(u"Thanks for your registration. Please visit this link to "
-                   u"verify your email address") + ": %s" % (
+            body=_("Thanks for your registration. Please visit this link to "
+                   "verify your email address") + ": %s" % (
                      self.request.resource_url(
                          self.request.root, 'verify_email',
                          WebUser.get_opt_in_uuid_by_id(web_user.id)
@@ -87,7 +87,7 @@ class RegisterWebuser(FormController):
 def email_is_unique(value):
     if not WebUser.search_by_email(value):
         return True
-    return _(u'Email already registered')
+    return _('Email already registered')
 
 
 # --- Options -----------------------------------------------------------------
@@ -114,10 +114,10 @@ class CheckedPasswordField(colander.SchemaNode):
 
 class RegisterSchema(colander.MappingSchema):
     email = EmailField(
-        title=_(u"Email")
+        title=_("Email")
     )
     password = CheckedPasswordField(
-        title=_(u"Password")
+        title=_("Password")
     )
 
 
@@ -127,6 +127,6 @@ def register_form():
     return deform.Form(
         schema=RegisterSchema(),
         buttons=[
-            deform.Button('submit', _(u"Submit"))
+            deform.Button('submit', _("Submit"))
         ]
     )
