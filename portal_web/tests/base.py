@@ -12,6 +12,8 @@ Test classes should extend one of the base classes:
 """
 
 import os
+import re
+import unicodedata
 from datetime import datetime
 import warnings
 
@@ -33,6 +35,8 @@ from .. import main
 
 from .config import testconfig
 from .integration.pageobjects import *  # noqa
+
+re_ascii = re.compile(r"[^A-Za-z0-9_.,-]")
 
 
 class Net(object):
@@ -543,10 +547,15 @@ class IntegrationTestBase(TestBase):
             + ":" + str(self.cfg['server'][service]['port'])
             + url
         )
+        url = url.lstrip("/")
+        url = url.replace("/", ",")
+        if not url:
+            url = "ROOT"
+        self.screenshot("URL-%s" % url)
 
-    def screenshot(self, filename=''):
+    def screenshot(self, name=''):
         """
-        Takes a screenshot of the current PhantomJs client viewport.
+        Takes a screenshot of the current browser client viewport.
 
         Screenshots may be switched on/off in `config.py`
         (client/screenshots/on).
@@ -555,24 +564,44 @@ class IntegrationTestBase(TestBase):
         `config.py` (client/screenshots/path). The directory will be created,
         if it not exists.
 
-        If no filename given it will be a concatenation of:
+        The filename will be a concatenation of:
 
         - time of execution
         - test classname
         - test method
+        - name if provided
 
         Args:
-            filename (Optional[str]): Screenshot filename without extension.
+            filename (Optional[str]): Additional name postfix for the file.
         """
         if self.cfg['client']['screenshots']['on']:
+            # create path
             path = self.cfg['client']['screenshots']['path']
             if not os.path.isdir(path):
                 os.makedirs(path)
-            if filename == '':
-                testtime = datetime.utcnow().strftime('%Y.%m.%d-%H:%M:%S.%f')
-                testclass = self.__class__.__name__
-                testname = self._testMethodName
-                filename = testtime + "-" + testclass + "-" + testname
+            # concat filename
+            testtime = datetime.utcnow().strftime('%y%m%d.%H%M%S.%f')[:-4]
+            testclass = self.__class__.__name__.removeprefix("Test")
+            testmethod = [
+                word.title() for word in
+                self._testMethodName.removeprefix("test_").split('_')]
+            if testmethod and testmethod[0].isnumeric():
+                testmethod[0] += "-"
+            testmethod = ''.join(testmethod)
+            filename = [testtime, testclass, testmethod]
+            if name:
+                filename.append(name)
+            filename = "-".join(filename)
+            # sanitize filename (taken from werkzeug.utils.secure_filename)
+            filename = unicodedata.normalize("NFKD", filename)
+            filename = filename.encode("ascii", "ignore").decode("ascii")
+            for sep in os.path.sep, os.path.altsep:
+                if sep:
+                    filename = filename.replace(sep, " ")
+            filename = str(
+                re_ascii.sub("", "_".join(filename.split()))
+            ).strip("._-")
+            # make screenshot
             self.cli.get_screenshot_as_file(
                 os.path.join(path, filename + '.png')
             )

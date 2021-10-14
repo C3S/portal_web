@@ -5,10 +5,11 @@
 class BasePageElement(object):
     '''Base class for page elements'''
 
-    def __init__(self, client, locator):
+    def __init__(self, test, locator):
         '''sets locator'''
         self.locator = locator
-        self.cli = client
+        self.test = test
+        self.cli = test.cli
 
     def __get__(self, obj, cls=None):
         '''returns self'''

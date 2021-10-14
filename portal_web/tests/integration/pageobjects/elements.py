@@ -148,9 +148,19 @@ class ButtonElement(BasePageElement):
     """
     Deform Button
     """
+    def __init__(self, test, locator, name=None, formid=None):
+        '''sets button name'''
+        super().__init__(test, locator)
+        self.name = name
+        self.formid = formid
+
     def __call__(self, waitfor="", timeout=30):
+        name = ''.join(word.title() for word in self.name.split('_'))
+        postfix = "-".join(filter(None, [self.formid, name]))
+        self.test.screenshot("REQUEST-%s" % postfix)
         self.cli.find_element(By.ID, self.locator).click()
         if waitfor:
             reload = expected_conditions.text_to_be_present_in_element(
                 (By.TAG_NAME, 'body'), waitfor)
             WebDriverWait(self.cli, timeout).until(reload)
+        self.test.screenshot("RESPONSE-%s" % postfix)
