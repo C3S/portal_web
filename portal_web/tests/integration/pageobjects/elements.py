@@ -17,7 +17,7 @@ class TextInputWidgetElement(BasePageElement):
     Deform TextInputWidget
     """
     def __call__(self):
-        return self.cli.find_element_by_id(self.locator)
+        return self.cli.find_element(By.ID, self.locator)
 
     def get(self):
         return self().get_attribute("value")
@@ -61,7 +61,7 @@ class CheckedPasswordWidgetElement(TextInputWidgetElement):
         password = self()
         password.clear()
         password.send_keys(val)
-        confirm = self.cli.find_element_by_id(self.locator + '-confirm')
+        confirm = self.cli.find_element(By.ID, self.locator + '-confirm')
         confirm.clear()
         confirm.send_keys(val)
 
@@ -72,7 +72,7 @@ class RadioChoiceWidgetElement(BasePageElement):
     """
     def __call__(self):
         """returns radiobuttons"""
-        rb = self.cli.find_elements_by_name(self.locator)
+        rb = self.cli.find_elements(By.NAME, self.locator)
         if not rb:
             raise NoSuchElementException()
         return rb
@@ -84,8 +84,8 @@ class RadioChoiceWidgetElement(BasePageElement):
 
     def getRo(self):
         """returns iterator of option"""
-        option = self.cli.find_elements_by_xpath(
-            "//div[@id='item-"+self.locator+"']/div/p"
+        option = self.cli.find_elements(
+            By.XPATH, "//div[@id='item-"+self.locator+"']/div/p"
         )
         if len(option) == 1:
             return re.sub(
@@ -105,7 +105,7 @@ class CheckboxWidgetElement(BasePageElement):
     Deform CheckboxWidget
     """
     def __call__(self):
-        return self.cli.find_element_by_id(self.locator)
+        return self.cli.find_element(By.ID, self.locator)
 
     def get(self):
         return self().is_selected()
@@ -120,7 +120,7 @@ class CheckboxChoiceWidgetElement(BasePageElement):
     Deform CheckboxChoiceWidget
     """
     def __call__(self):
-        return self.cli.find_element_by_id(self.locator)
+        return self.cli.find_element(By.ID, self.locator)
 
     def get(self):
         return self().is_selected()
@@ -149,7 +149,7 @@ class ButtonElement(BasePageElement):
     Deform Button
     """
     def __call__(self, waitfor="", timeout=30):
-        self.cli.find_element_by_id(self.locator).click()
+        self.cli.find_element(By.ID, self.locator).click()
         if waitfor:
             reload = expected_conditions.text_to_be_present_in_element(
                 (By.TAG_NAME, 'body'), waitfor)

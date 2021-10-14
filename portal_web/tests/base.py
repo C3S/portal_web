@@ -189,10 +189,12 @@ class Net(object):
         Returns:
             selenium.webdriver.PhantomJs: PhantomJs client.
         """
+        options = webdriver.FirefoxOptions()
+        for key, value in testconfig['client']['capabilities'].items():
+            options.set_capability(key, value)
         self.cli = webdriver.Remote(
             command_executor=testconfig['client']['connection']['selenium'],
-            desired_capabilities=testconfig['client']['desired_capabilities'],
-            keep_alive=testconfig['client']['connection']['keep_alive']
+            options=options
         )
         return self.cli
 
