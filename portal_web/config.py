@@ -197,10 +197,11 @@ def add_locale(event):
         event.request._LOCALE_ = cookie
 
     # check browser for language, if no cookie present
-    browser = event.request.accept_language
+    browser = LANGUAGE_MAPPING.get(event.request.accept_language)
     if not cookie and browser:
-        match = browser.best_match(LANGUAGE_MAPPING, default)
-        current = LANGUAGE_MAPPING.get(match)
+        # match = browser.best_match(LANGUAGE_MAPPING, default)
+        # current = LANGUAGE_MAPPING.get(match)
+        current = browser
         event.request._LOCALE_ = current
         event.request.response.set_cookie('_LOCALE_', value=current)
 
