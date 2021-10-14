@@ -114,7 +114,7 @@ def main(global_config, **settings):
     config.add_subscriber(
         subscriber='.config.close_db_connection',
         iface='pyramid.events.NewRequest')
-    if settings['env'] == 'development':
+    if settings['env'] in ['development', 'staging']:
         config.add_subscriber(
             subscriber='.config.debug_request',
             iface='pyramid.events.NewRequest')
