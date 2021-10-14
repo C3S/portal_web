@@ -197,21 +197,18 @@ def add_locale(event):
         event.request._LOCALE_ = cookie
 
     # check browser for language, if no cookie present
-    browser = LANGUAGE_MAPPING.get(event.request.accept_language)
-    if not cookie and browser:
-        # match = browser.best_match(LANGUAGE_MAPPING, default)
-        # current = LANGUAGE_MAPPING.get(match)
-        current = browser
-        event.request._LOCALE_ = current
-        event.request.response.set_cookie('_LOCALE_', value=current)
+    browser = event.request.accept_language
+    if not cookie and browser in LANGUAGE_MAPPING:
+        current = LANGUAGE_MAPPING.get(browser)
 
     # language request
     request = event.request.params.get('_LOCALE_')
     if request and request in LANGUAGE_MAPPING:
         current = LANGUAGE_MAPPING.get(request)
-        event.request._LOCALE_ = current
         event.request.response = HTTPFound(location=event.request.path_url)
-        event.request.response.set_cookie('_LOCALE_', value=current)
+
+    event.request._LOCALE_ = current
+    event.request.response.set_cookie('_LOCALE_', value=current)
 
 
 def open_db_connection(event):

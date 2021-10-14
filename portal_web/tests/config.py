@@ -42,7 +42,6 @@ testconfig = {
         },
         # capabilities
         'capabilities': {
-            'moz:debuggerAddress': False,
             'loggingPrefs': {'browser': 'ALL'}
         },
         # window size of client
