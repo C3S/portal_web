@@ -13,6 +13,7 @@ Test classes should extend one of the base classes:
 
 import os
 from datetime import datetime
+import warnings
 
 import unittest
 from webtest import TestApp
@@ -134,6 +135,10 @@ class Net(object):
         # App
         self.appconfig[service] = _appconfig
         app = main({}, **self.appconfig[service])
+
+        # Filter Warnings
+        warnings.filterwarnings(  # lost socket connections
+            action="ignore", message="unclosed", category=ResourceWarning)
 
         # StopableWSGIServer
         if wrapper == 'StopableWSGIServer':

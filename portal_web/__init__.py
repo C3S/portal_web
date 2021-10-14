@@ -8,6 +8,7 @@ Main module for the pyramid app.
 import os
 import logging
 from logging.config import fileConfig
+import warnings
 
 from pyramid.config import Configurator
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -64,6 +65,13 @@ def main(global_config, **settings):
     Returns:
         obj: a Pyramid WSGI application.
     """
+    # supress warnings in testing environment
+    warnings.filterwarnings(  # TODO: upgrade pyramid auth methods
+        action="ignore", message="Authentication and authorization",
+        category=DeprecationWarning)
+    warnings.filterwarnings(  # TODO: upgrade pyramid auth methods
+        action="ignore", message="deprecated unauthenticated_userid",
+        category=DeprecationWarning)
 
     # get plugin configuration
     plugins = get_plugins(settings)
