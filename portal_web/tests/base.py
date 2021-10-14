@@ -54,7 +54,7 @@ class Net(object):
     Attributes:
         gui (webtest.http.StopableWSGIServer||webtest.TestApp): Gui server.
         api (webtest.http.StopableWSGIServer||webtest.TestApp): Api server.
-        cli (selenium.webdriver.PhantomJS): Client object.
+        cli (selenium.webdriver.Remote): Client object.
         appconfig[service] (dict): Appconfig of service.
         plugins (dict): Plugin configuration.
     """
@@ -109,15 +109,16 @@ class Net(object):
             Transaction().stop()
 
         # Main settings for the app
+        environment = testconfig['server'][service]['environment']
         _appconfig = appconfig(
             'config:' + os.path.join(
                 os.path.dirname(__file__), '..', '..',
-                testconfig['server'][service]['environment'] + '.ini'
+                environment + '.ini'
             )
         )
 
         # Main settings for the plugins
-        self.plugins = get_plugins(_appconfig)
+        self.plugins = get_plugins(_appconfig, environment)
         for priority in sorted(self.plugins, reverse=True):
             _appconfig.update(self.plugins[priority]['settings'])
 
@@ -142,7 +143,14 @@ class Net(object):
 
         # Filter Warnings
         warnings.filterwarnings(  # lost socket connections
-            action="ignore", message="unclosed", category=ResourceWarning)
+            action="ignore", message="unclosed",
+            category=ResourceWarning)
+        warnings.filterwarnings(  # TODO: upstream bug in pyramid_chameleon
+            action="ignore", message="Use of .. or absolute path",
+            category=DeprecationWarning)
+        warnings.filterwarnings(  # TODO: upgrade pyramid auth methods
+            action="ignore", message="Authentication and authorization",
+            category=DeprecationWarning)
 
         # StopableWSGIServer
         if wrapper == 'StopableWSGIServer':
@@ -191,7 +199,7 @@ class Net(object):
         Client settings may be configured in `config.py` (client).
 
         Returns:
-            selenium.webdriver.PhantomJs: PhantomJs client.
+            selenium.webdriver.Remote: Remote client.
         """
         options = webdriver.FirefoxOptions()
         for key, value in testconfig['client']['capabilities'].items():
@@ -460,7 +468,7 @@ class IntegrationTestBase(TestBase):
     Classattributes:
         gui (webtest.http.StopableWSGIServer||None): Gui server.
         api (webtest.http.StopableWSGIServer||None): Api server.
-        cli (selenium.webdriver.PhantomJS||None): Client.
+        cli (selenium.webdriver.Remote||None): Client.
     """
     gui = None
     api = None
@@ -488,7 +496,7 @@ class IntegrationTestBase(TestBase):
         Sets up test class.
 
         Starts StopableWSGIServer server injecting the class app settings.
-        Starts PhantomJs Client.
+        Starts Browser Client.
 
         Returns:
             None.
@@ -512,7 +520,7 @@ class IntegrationTestBase(TestBase):
         Tears down test class.
 
         Stops StopableWSGIServer server.
-        Stops PhantomJs client.
+        Stops Browser client.
 
         Returns:
             None.

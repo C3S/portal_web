@@ -54,7 +54,7 @@ def replace_environment_vars(settings):
     )
 
 
-def get_plugins(settings=None):
+def get_plugins(settings=None, environment=None):
     """
     Fetches plugin settings based on module name pattern matching.
 
@@ -87,12 +87,14 @@ def get_plugins(settings=None):
             }
         }
     """
+    if not environment:
+        environment = os.environ.get('ENVIRONMENT', 'production')
     if not settings:
         from paste.deploy.loadwsgi import appconfig
         settings = appconfig(
             'config:' + os.path.join(
                 os.path.dirname(__file__), '..',
-                os.environ['ENVIRONMENT'] + '.ini'
+                environment + '.ini'
             )
         )
     plugins = {}
@@ -102,7 +104,7 @@ def get_plugins(settings=None):
     ]
     config = configparser.ConfigParser()
     for plugin in modules:
-        settings_path = plugin['path'] + '/' + settings['env'] + '.ini'
+        settings_path = plugin['path'] + '/' + environment + '.ini'
         config.read(settings_path)
         plugin_settings = dict(config.items('plugin:main'))
         if 'plugin.priority' not in plugin_settings:

@@ -8,7 +8,6 @@ Main module for the pyramid app.
 import os
 import logging
 from logging.config import fileConfig
-import warnings
 
 from pyramid.config import Configurator
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -65,17 +64,8 @@ def main(global_config, **settings):
     Returns:
         obj: a Pyramid WSGI application.
     """
-    # supress warnings in testing environment
-    if os.environ.get('ENVIRONMENT') == 'testing':
-        # TODO: upgrade pyramid auth methods
-        warnings.filterwarnings(
-            action="ignore", message="Authentication and authorization",
-            category=DeprecationWarning)
-        # TODO: remove, when pyramid_chameleon upstream merged the fix
-        # https://github.com/Pylons/pyramid-cookiecutter-starter/issues/75
-        warnings.filterwarnings(
-            action="ignore", message="Use of .. or absolute path",
-            category=DeprecationWarning)
+    # get environment
+    environment = os.environ.get('ENVIRONMENT')
 
     # get plugin configuration
     plugins = get_plugins(settings)
@@ -161,14 +151,13 @@ def main(global_config, **settings):
     for priority in sorted(plugins):
         translation_dir = os.path.join(
             plugins[priority]['path'], plugins[priority]['name'], 'locale')
-        print(translation_dir)
         if os.path.isdir(translation_dir):
             config.add_translation_dirs(translation_dir)
 
     # configure logging for portal and plugins
     for priority in sorted(plugins):
         fileConfig(
-            plugins[priority]['path'] + '/' + settings['env'] + '.ini',
+            plugins[priority]['path'] + '/' + environment + '.ini',
             disable_existing_loggers=False)
 
     # commit config with basic settings
