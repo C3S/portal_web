@@ -86,7 +86,7 @@ class ResourceBase(object):
     __registry__ = {}
     __acl__ = []
     _write = []
-    _rdbglog = "/ado/tmp/registry.log"
+    _rdbglog = "/shared/tmp/registry.log"
 
     def __init__(self, request, context=None):
         Parent = self.__parent__
