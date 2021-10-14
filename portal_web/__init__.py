@@ -70,9 +70,6 @@ def main(global_config, **settings):
         warnings.filterwarnings(  # TODO: upgrade pyramid auth methods
             action="ignore", message="Authentication and authorization",
             category=DeprecationWarning)
-        warnings.filterwarnings(  # TODO: upgrade pyramid auth methods
-            action="ignore", message="unauthenticated_userid",
-            category=DeprecationWarning)
 
     # get plugin configuration
     plugins = get_plugins(settings)
