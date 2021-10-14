@@ -21,11 +21,10 @@ from ...services import benchmark
 log = logging.getLogger(__name__)
 
 
-class FormController(object):
+class FormController(object, metaclass=ABCMeta):
     """
     Abstract class for form handling
     """
-    __metaclass__ = ABCMeta
     __stage__ = None
 
     def __init__(self, name=None, stage=None, persistent=False, appstruct=None,

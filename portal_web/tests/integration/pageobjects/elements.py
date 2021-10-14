@@ -148,7 +148,7 @@ class ButtonElement(BasePageElement):
     """
     Deform Button
     """
-    def __call__(self, waitfor="", timeout=10):
+    def __call__(self, waitfor="", timeout=30):
         self.cli.find_element_by_id(self.locator).click()
         if waitfor:
             reload = expected_conditions.text_to_be_present_in_element(
