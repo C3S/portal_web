@@ -66,12 +66,13 @@ def main(global_config, **settings):
         obj: a Pyramid WSGI application.
     """
     # supress warnings in testing environment
-    warnings.filterwarnings(  # TODO: upgrade pyramid auth methods
-        action="ignore", message="Authentication and authorization",
-        category=DeprecationWarning)
-    warnings.filterwarnings(  # TODO: upgrade pyramid auth methods
-        action="ignore", message="deprecated unauthenticated_userid",
-        category=DeprecationWarning)
+    if os.environ.get('ENVIRONMENT') == 'testing':
+        warnings.filterwarnings(  # TODO: upgrade pyramid auth methods
+            action="ignore", message="Authentication and authorization",
+            category=DeprecationWarning)
+        warnings.filterwarnings(  # TODO: upgrade pyramid auth methods
+            action="ignore", message="unauthenticated_userid",
+            category=DeprecationWarning)
 
     # get plugin configuration
     plugins = get_plugins(settings)
