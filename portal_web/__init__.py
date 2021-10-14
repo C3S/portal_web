@@ -67,8 +67,14 @@ def main(global_config, **settings):
     """
     # supress warnings in testing environment
     if os.environ.get('ENVIRONMENT') == 'testing':
-        warnings.filterwarnings(  # TODO: upgrade pyramid auth methods
+        # TODO: upgrade pyramid auth methods
+        warnings.filterwarnings(
             action="ignore", message="Authentication and authorization",
+            category=DeprecationWarning)
+        # TODO: remove, when pyramid_chameleon upstream merged the fix
+        # https://github.com/Pylons/pyramid-cookiecutter-starter/issues/75
+        warnings.filterwarnings(
+            action="ignore", message="Use of .. or absolute path",
             category=DeprecationWarning)
 
     # get plugin configuration
