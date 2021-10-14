@@ -5,8 +5,6 @@ import re
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.ui import WebDriverWait
 
 
 from .base import BasePageElement
@@ -153,14 +151,11 @@ class ButtonElement(BasePageElement):
         super().__init__(test, locator)
         self.name = name
         self.formid = formid
-
-    def __call__(self, waitfor="", timeout=30):
         name = ''.join(word.title() for word in self.name.split('_'))
-        postfix = "-".join(filter(None, [self.formid, name]))
-        self.test.screenshot("REQUEST-%s" % postfix)
-        self.cli.find_element(By.ID, self.locator).click()
-        if waitfor:
-            reload = expected_conditions.text_to_be_present_in_element(
-                (By.TAG_NAME, 'body'), waitfor)
-            WebDriverWait(self.cli, timeout).until(reload)
-        self.test.screenshot("RESPONSE-%s" % postfix)
+        self.postfix = "-".join(filter(None, [self.formid, name]))
+
+    def __call__(self, timeout=30):
+        self.test.screenshot("REQUEST-%s" % self.postfix)
+        with self.wait_for_page_load(timeout):
+            self.cli.find_element(By.ID, self.locator).click()
+        self.test.screenshot("RESPONSE-%s" % self.postfix)

@@ -1,6 +1,12 @@
 # For copyright and license terms, see COPYRIGHT.rst (top level of repository)
 # Repository: https://github.com/C3S/portal_web
 
+from contextlib import contextmanager
+
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.ui import WebDriverWait
+
 
 class BasePageElement(object):
     '''Base class for page elements'''
@@ -38,3 +44,11 @@ class BasePageElement(object):
     def set(self, val):
         '''implement: set content of WebElement (deform field)'''
         pass
+
+    @contextmanager
+    def wait_for_page_load(self, timeout=30):
+        old_page = self.cli.find_element(By.TAG_NAME, 'html')
+        yield
+        WebDriverWait(self.cli, timeout).until(
+            expected_conditions.staleness_of(old_page)
+        )
