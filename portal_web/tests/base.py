@@ -12,7 +12,10 @@ Test classes should extend one of the base classes:
 """
 
 import os
+import re
+import unicodedata
 from datetime import datetime
+import warnings
 
 import unittest
 from webtest import TestApp
@@ -33,6 +36,8 @@ from .. import main
 from .config import testconfig
 from .integration.pageobjects import *  # noqa
 
+re_ascii = re.compile(r"[^A-Za-z0-9_.,-]")
+
 
 class Net(object):
     """
@@ -49,7 +54,7 @@ class Net(object):
     Attributes:
         gui (webtest.http.StopableWSGIServer||webtest.TestApp): Gui server.
         api (webtest.http.StopableWSGIServer||webtest.TestApp): Api server.
-        cli (selenium.webdriver.PhantomJS): Client object.
+        cli (selenium.webdriver.Remote): Client object.
         appconfig[service] (dict): Appconfig of service.
         plugins (dict): Plugin configuration.
     """
@@ -104,15 +109,16 @@ class Net(object):
             Transaction().stop()
 
         # Main settings for the app
+        environment = testconfig['server'][service]['environment']
         _appconfig = appconfig(
             'config:' + os.path.join(
                 os.path.dirname(__file__), '..', '..',
-                testconfig['server'][service]['environment'] + '.ini'
+                environment + '.ini'
             )
         )
 
         # Main settings for the plugins
-        self.plugins = get_plugins(_appconfig)
+        self.plugins = get_plugins(_appconfig, environment)
         for priority in sorted(self.plugins, reverse=True):
             _appconfig.update(self.plugins[priority]['settings'])
 
@@ -134,6 +140,17 @@ class Net(object):
         # App
         self.appconfig[service] = _appconfig
         app = main({}, **self.appconfig[service])
+
+        # Filter Warnings
+        warnings.filterwarnings(  # lost socket connections
+            action="ignore", message="unclosed",
+            category=ResourceWarning)
+        warnings.filterwarnings(  # TODO: upstream bug in pyramid_chameleon
+            action="ignore", message="Use of .. or absolute path",
+            category=DeprecationWarning)
+        warnings.filterwarnings(  # TODO: upgrade pyramid auth methods
+            action="ignore", message="Authentication and authorization",
+            category=DeprecationWarning)
 
         # StopableWSGIServer
         if wrapper == 'StopableWSGIServer':
@@ -182,12 +199,14 @@ class Net(object):
         Client settings may be configured in `config.py` (client).
 
         Returns:
-            selenium.webdriver.PhantomJs: PhantomJs client.
+            selenium.webdriver.Remote: Remote client.
         """
+        options = webdriver.FirefoxOptions()
+        for key, value in testconfig['client']['capabilities'].items():
+            options.set_capability(key, value)
         self.cli = webdriver.Remote(
             command_executor=testconfig['client']['connection']['selenium'],
-            desired_capabilities=testconfig['client']['desired_capabilities'],
-            keep_alive=testconfig['client']['connection']['keep_alive']
+            options=options
         )
         return self.cli
 
@@ -449,7 +468,7 @@ class IntegrationTestBase(TestBase):
     Classattributes:
         gui (webtest.http.StopableWSGIServer||None): Gui server.
         api (webtest.http.StopableWSGIServer||None): Api server.
-        cli (selenium.webdriver.PhantomJS||None): Client.
+        cli (selenium.webdriver.Remote||None): Client.
     """
     gui = None
     api = None
@@ -477,7 +496,7 @@ class IntegrationTestBase(TestBase):
         Sets up test class.
 
         Starts StopableWSGIServer server injecting the class app settings.
-        Starts PhantomJs Client.
+        Starts Browser Client.
 
         Returns:
             None.
@@ -501,7 +520,7 @@ class IntegrationTestBase(TestBase):
         Tears down test class.
 
         Stops StopableWSGIServer server.
-        Stops PhantomJs client.
+        Stops Browser client.
 
         Returns:
             None.
@@ -536,10 +555,15 @@ class IntegrationTestBase(TestBase):
             + ":" + str(self.cfg['server'][service]['port'])
             + url
         )
+        url = url.lstrip("/")
+        url = url.replace("/", ",")
+        if not url:
+            url = "ROOT"
+        self.screenshot("URL-%s" % url)
 
-    def screenshot(self, filename=''):
+    def screenshot(self, name=''):
         """
-        Takes a screenshot of the current PhantomJs client viewport.
+        Takes a screenshot of the current browser client viewport.
 
         Screenshots may be switched on/off in `config.py`
         (client/screenshots/on).
@@ -548,24 +572,44 @@ class IntegrationTestBase(TestBase):
         `config.py` (client/screenshots/path). The directory will be created,
         if it not exists.
 
-        If no filename given it will be a concatenation of:
+        The filename will be a concatenation of:
 
         - time of execution
         - test classname
         - test method
+        - name if provided
 
         Args:
-            filename (Optional[str]): Screenshot filename without extension.
+            filename (Optional[str]): Additional name postfix for the file.
         """
         if self.cfg['client']['screenshots']['on']:
+            # create path
             path = self.cfg['client']['screenshots']['path']
             if not os.path.isdir(path):
                 os.makedirs(path)
-            if filename == '':
-                testtime = datetime.utcnow().strftime('%Y.%m.%d-%H:%M:%S.%f')
-                testclass = self.__class__.__name__
-                testname = self._testMethodName
-                filename = testtime + "-" + testclass + "-" + testname
+            # concat filename
+            testtime = datetime.utcnow().strftime('%y%m%d.%H%M%S.%f')[:-4]
+            testclass = self.__class__.__name__.removeprefix("Test")
+            testmethod = [
+                word.title() for word in
+                self._testMethodName.removeprefix("test_").split('_')]
+            if testmethod and testmethod[0].isnumeric():
+                testmethod[0] += "-"
+            testmethod = ''.join(testmethod)
+            filename = [testtime, testclass, testmethod]
+            if name:
+                filename.append(name)
+            filename = "-".join(filename)
+            # sanitize filename (taken from werkzeug.utils.secure_filename)
+            filename = unicodedata.normalize("NFKD", filename)
+            filename = filename.encode("ascii", "ignore").decode("ascii")
+            for sep in os.path.sep, os.path.altsep:
+                if sep:
+                    filename = filename.replace(sep, " ")
+            filename = str(
+                re_ascii.sub("", "_".join(filename.split()))
+            ).strip("._-")
+            # make screenshot
             self.cli.get_screenshot_as_file(
                 os.path.join(path, filename + '.png')
             )

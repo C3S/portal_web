@@ -64,6 +64,8 @@ def main(global_config, **settings):
     Returns:
         obj: a Pyramid WSGI application.
     """
+    # get environment
+    environment = os.environ.get('ENVIRONMENT')
 
     # get plugin configuration
     plugins = get_plugins(settings)
@@ -149,14 +151,13 @@ def main(global_config, **settings):
     for priority in sorted(plugins):
         translation_dir = os.path.join(
             plugins[priority]['path'], plugins[priority]['name'], 'locale')
-        print(translation_dir)
         if os.path.isdir(translation_dir):
             config.add_translation_dirs(translation_dir)
 
     # configure logging for portal and plugins
     for priority in sorted(plugins):
         fileConfig(
-            plugins[priority]['path'] + '/' + settings['env'] + '.ini',
+            plugins[priority]['path'] + '/' + environment + '.ini',
             disable_existing_loggers=False)
 
     # commit config with basic settings
