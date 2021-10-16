@@ -37,7 +37,7 @@ def main(global_config, **settings):
 
     Handles configuration of
 
-    - ptvsd debugging
+    - debugpy debugging
     - app config
     - tryton database
     - session
@@ -171,31 +171,24 @@ def main(global_config, **settings):
     else:
         config.include('pyramid_mailer.testing')
 
-    # enable ptvsd debugging (open port 51000 for portal and 51001 for api!)
-    if int(settings['debugger.ptvsd']):
-        debugging_port = 0
+    # enable debugpy debugging (open port 51000 for portal and 51001 for api!)
+    if int(settings['debugger.debugpy']):
+        debugging_port = false
         if settings['service'] == 'webgui':
             debugging_port = 51000
         if settings['service'] == 'webapi':
             debugging_port = 51001
-        if debugging_port > 0:
+        if debugging_port:
             log.debug(settings['service'] + " debugger listening to port " +
                       str(debugging_port))
             try:
-                import ptvsd  # unconditional import breaks test coverage
-                ptvsd.enable_attach(address=("0.0.0.0", debugging_port),
-                                    redirect_output=True)
-                # uncomment these three lines, and set the debugging_port
-                # accordingly, if you need to debug initialization code
-                # like colander schema nodes, for example:
-                # if debugging_port == 51001:
-                #     ptvsd.wait_for_attach()
-                #     ptvsd.break_into_debugger()
+                import debugpy  # unconditional import breaks test coverage
+                debugpy.listen(("0.0.0.0", debugging_port))
             except Exception as ex:
                 if hasattr(ex, 'message'):
                     log.debug(ex.message)
                 else:
-                    log.debug('ptvsd debugging not possible: ' + ex.message)
+                    log.debug('debugpy debugging not possible: ' + ex.message)
 
     # configure webfrontend for portal and plugins
     if settings['service'] == 'webgui':
