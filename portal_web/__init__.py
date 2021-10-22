@@ -173,7 +173,7 @@ def main(global_config, **settings):
 
     # enable debugpy debugging (open port 51000 for portal and 51001 for api!)
     if int(settings['debugger.debugpy']):
-        debugging_port = false
+        debugging_port = False
         if settings['service'] == 'webgui':
             debugging_port = 51000
         if settings['service'] == 'webapi':
