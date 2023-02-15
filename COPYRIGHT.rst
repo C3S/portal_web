@@ -3,7 +3,7 @@ Core Application
 
 ::
 
-    collecting_society.portal - Web Portal
+    portal_web - Web Portal
 
     Copyright (C) 2014-2016 Cultural Commons Collecting Society SCE mit
                             beschränkter Haftung (C3S SCE)

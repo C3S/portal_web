@@ -1,0 +1,32 @@
+<!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+      Repository: https://github.com/C3S/portal_web -->
+<!--!
+
+    Template to show pages in the backend.
+
+    Slots filled (backend):
+
+    - content-middle
+
+    Content defined:
+
+    - page
+
+-->
+<tal:block metal:use-macro="backend363" i18n:domain="portal_web">
+
+    <!-- content left -->
+    <tal:block metal:fill-slot="content-left"></tal:block>
+
+    <!-- content middle -->
+    <tal:block metal:fill-slot="content-middle">
+
+        <!-- page -->
+        ${structure: page}
+
+    </tal:block>
+
+    <!-- content right -->
+    <tal:block metal:fill-slot="content-right"></tal:block>
+
+</tal:block>

@@ -1,0 +1,82 @@
+<!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+      Repository: https://github.com/C3S/portal_web -->
+<!--!
+
+    Debugging information about trytond and the database.
+
+-->
+<tal:block metal:use-macro="base">
+
+    <!-- content -->
+    <tal:block metal:fill-slot="content">
+
+        <div class="starter-template">
+          <div class="container">
+            <div class="row">
+          <div tal:condition="True">
+            <div class="alert alert-warning">
+              <strong style="color:red;" tal:repeat="message request.session.peek_flash('tryton_database_checking')">
+            ${message}
+              </strong>
+            </div>
+          </div>
+        </div>
+            <div class="row">
+          <h2>Tryton Info</h2>
+
+          <div class="alert alert-info">
+            <table class="table table-hover">
+              <tr>
+            <th>is postgresql up?</th>
+            <th>${is_postgres_up}</th>
+              </tr>
+              <tr>
+            <th>do we have database access?</th>
+            <th>${db_exists_at_all}</th>
+              </tr>
+              <tr>
+            <th>databases found</th>
+            <th>${databases}</th>
+              </tr>
+              <tr>
+            <th>database to be used</th>
+            <th>${database_name}</th>
+              </tr>
+            </table>
+          </div>
+            </div>
+        <div class="row">
+          <h2>Control Panel</h2>
+
+          <div class="alert alert-success">
+            <table class="table table-hover">
+              <tr tal:condition='is_postgres_up and not db_exists_at_all'>
+            <th>create database, update it with tryton module info?</th>
+            <th>
+            </th>
+              </tr>
+              <tr>
+            <th>do we have database access?</th>
+            <th>${db_exists_at_all}</th>
+              </tr>
+              <tr>
+            <th>databases found</th>
+            <th>${databases}</th>
+              </tr>
+              <tr>
+            <th>database to be used</th>
+            <th>${database_name}</th>
+              </tr>
+              <tr>
+            <th>objects in pool</th>
+            <th>${object_name_list}</th>
+              </tr>
+            </table>
+          </div>
+            </div>
+          </div>
+        </div>
+
+    </tal:block>
+
+</tal:block>

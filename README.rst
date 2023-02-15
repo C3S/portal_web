@@ -1,5 +1,6 @@
-collecting_society.portal
-=========================
+==============
+Portal Web GUI
+==============
 
 Web portal including:
 
@@ -9,7 +10,7 @@ Web portal including:
 - API
 - Plugin system
 
-For a working development setup, see https://github.com/C3S/c3s.ado
+For a working development setup, see https://github.com/C3S/collecting_society_docker
 
 
 Tryton wrapper
@@ -105,28 +106,28 @@ Installation
 Updates
 ```````
 
-e.g. for project **collecting_society.portal** and language **de**
+e.g. for project **portal_web** and language **de**
 
 - only once, to start translation of a project, create the **.pot** file for the project
-    - ``$cd c3s.ado/ado/src/collecting_society.portal``
-    - ``$mkdir collecting_society_portal/locale``
-    - ``$pot-create -o collecting_society_portal/locale/collecting_society_portal.pot collecting_society_portal``
+    - ``$cd collecting_society_docker/volumes/shared/src/portal_web``
+    - ``$mkdir portal_web/locale``
+    - ``$pot-create -o portal_web/locale/portal_web.pot portal_web``
 - only once, if you need a new language, create the **.po** file for the language
-    - ``$cd c3s.ado/ado/src/collecting_society.portal/collecting_society_portal/locale``
+    - ``$cd collecting_society_docker/volumes/shared/src/portal_web/portal_web/locale``
     - ``$mkdir -p de/LC_MESSAGES``
-    - ``$msginit -l de -o de/LC_MESSAGES/collecting_society_portal.po``
+    - ``$msginit -l de -o de/LC_MESSAGES/portal_web.po``
 - each time, the code or templates changed, recreate the **.pot** file:
-    - ``$cd c3s.ado/ado/src/collecting_society.portal``
-    - ``$pot-create -o collecting_society_portal/locale/collecting_society_portal.pot collecting_society_portal``
+    - ``$cd collecting_society_docker/volumes/shared/src/portal_web``
+    - ``$pot-create -o portal_web/locale/portal_web.pot portal_web``
 - every time the **.pot** file changed, recreate the **.po** files for all languages
-    - ``$cd c3s.ado/ado/src/collecting_society.portal``
-    - ``$msgmerge --update collecting_society_portal/locale/*/LC_MESSAGES/collecting_society_portal.po collecting_society_portal/locale/collecting_society_portal.pot``
+    - ``$cd collecting_society_docker/volumes/shared/src/portal_web``
+    - ``$msgmerge --update portal_web/locale/*/LC_MESSAGES/portal_web.po portal_web/locale/portal_web.pot``
 - to edit translations, change the **.po** file via poedit
-    - ``$cd c3s.ado/ado/src/collecting_society.portal``
-    - ``$poedit collecting_society_portal/locale/de/LC_MESSAGES/collecting_society_portal.po``
+    - ``$cd collecting_society_docker/volumes/shared/src/portal_web``
+    - ``$poedit portal_web/locale/de/LC_MESSAGES/portal_web.po``
 - every time the **.po** file changed, create a **.mo** file
-    - ``$cd c3s.ado/ado/src/collecting_society.portal``
-    - ``$msgfmt -o collecting_society_portal/locale/de/LC_MESSAGES/collecting_society_portal.mo collecting_society_portal/locale/de/LC_MESSAGES/collecting_society_portal.po``
+    - ``$cd collecting_society_docker/volumes/shared/src/portal_web``
+    - ``$msgfmt -o portal_web/locale/de/LC_MESSAGES/portal_web.mo portal_web/locale/de/LC_MESSAGES/portal_web.po``
 
 Further information
 ```````````````````

@@ -1,0 +1,59 @@
+<tal:block i18n:domain="portal_web_repertoire"
+           tal:define="oid oid|field.oid;
+                       name field.name;
+                       title title|field.title;
+                       actions dumps(field.schema.actions)
+                              |dumps(field.widget.actions)
+                              |'';
+                       min_len min_len|field.schema.min_len
+                                      |field.widget.min_len
+                                      |0;
+                       max_len max_len|field.schema.max_len
+                                      |field.widget.max_len
+                                      |100000;
+                       now_len len(subfields);
+                       orderable orderable|field.schema.orderable
+                                          |field.widget.orderable
+                                          |0;
+                       prototype field.widget.prototype(field);
+                       errormsg field.errormsg">
+
+    <!-- sequence -->
+    <div id="${oid}" class="datatable_sequence datatable_sequence_${oid}
+                            datatable_sequence_${name}"
+         data-language="${language}" data-target="${target}"
+         data-source="${source}" data-source-total="${source_total}" >
+
+        <!-- slot: settings -->
+        <script metal:define-slot="settings" />
+
+        <!-- default settings -->
+        <script class="datatable_sequence_default_settings">
+            var dynamicOid = true;
+            var scripts = document.getElementsByTagName('script');
+            var script = scripts[scripts.length - 1];
+            if(script.parentNode && script.parentNode.id)
+                dynamicOid = false;
+            datatableSequenceSettings = $.extend(true, {
+                dynamicOid: dynamicOid,
+                oid: "${oid}",
+                name: "${name}",
+                title: "${title}",
+                actions: '${actions}',
+                minLen: "${min_len}",
+                maxLen: "${max_len}",
+                orderable: "${orderable}",
+                proto: "${prototype}",
+                errormsg: "${errormsg}",
+                api: "${api}",
+            }, datatableSequenceSettings);
+        </script>
+
+        <!-- slot: init -->
+        <script metal:define-slot="init">
+            new deform.DatatableSequence(datatableSequenceSettings).init();
+        </script>
+
+    </div>
+
+</tal:block>
