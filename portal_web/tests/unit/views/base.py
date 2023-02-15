@@ -55,7 +55,7 @@ class TestViewBase(UnitTestBase):
         Assemble a ViewBase
         """
         my_viewbase = ViewBase(self.context, self.request)
-        assert(my_viewbase is not None)
+        assert my_viewbase is not None
 
     def test_process_form_exception(self):
         """
@@ -117,7 +117,7 @@ class TestViewBase(UnitTestBase):
         my_viewbase = ViewBase(self.context, self.request)
 
         my_viewbase.register_form(FormControllerMock)
-        assert(my_viewbase is not None)
+        assert my_viewbase is not None
         self.assertEqual({}, my_viewbase._formcontroller)
         self.assertFalse(my_viewbase._formcontroller)
 
@@ -128,7 +128,7 @@ class TestViewBase(UnitTestBase):
         my_viewbase = ViewBase(self.context, self.request)
 
         my_viewbase.register_form(FormControllerMock, name="bla")
-        assert(my_viewbase is not None)
+        assert my_viewbase is not None
         self.assertIn("bla", my_viewbase._formcontroller)
 
     def test_cleanup_form_persistence(self):

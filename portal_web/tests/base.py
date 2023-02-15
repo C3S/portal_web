@@ -269,7 +269,7 @@ class TestBase(unittest.TestCase):
         if cls.data:
             cls.data.reverse()
             for instance in cls.data:
-                instance.delete([instance.id])
+                instance.delete([instance])
             Transaction().commit()
 
     def prettyShortDescription(self):
