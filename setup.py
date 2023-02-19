@@ -33,7 +33,7 @@ install_requires = [
     'pyramid_chameleon',
     'pyramid_mailer',
     'python-magic',
-    'trytond<6.1',
+    'trytond<6.7',
     'waitress',
 ]
 if environment == "development":

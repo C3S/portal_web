@@ -71,10 +71,9 @@ class Tdb():
             >>> Tdb._user = 'user'
             >>> Tdb.init()
         """
+        config.update_etc(str(cls._configfile))
         if cls.is_open():
             return
-
-        config.update_etc(str(cls._configfile))
         cls._retry = config.getint('database', 'retry')
         pool = Pool(str(cls._db))
         with Transaction().start(str(cls._db), int(cls._user), readonly=True):
