@@ -172,13 +172,13 @@ def main(global_config, **settings):
     else:
         config.include('pyramid_mailer.testing')
 
-    # enable debugpy debugging (open port 51000 for portal and 51001 for api!)
+    # enable debugpy debugging (open port 52000 for portal and 52001 for api!)
     if int(settings['debugger.debugpy']):
         debugging_port = False
         if settings['service'] == 'webgui':
-            debugging_port = 51000
+            debugging_port = 52000
         if settings['service'] == 'webapi':
-            debugging_port = 51001
+            debugging_port = 52001
         if debugging_port:
             log.debug(settings['service'] + " debugger listening to port " +
                       str(debugging_port))
