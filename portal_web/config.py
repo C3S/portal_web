@@ -48,10 +48,18 @@ def replace_environment_vars(settings):
         >>> settings = { 'service': '${SERVICE}' }
         >>> print(replace_environment_vars(settings))
         { 'service' = 'webgui' }
+
+    Raises:
+        AssertionError: on unsubstituted setting.
     """
-    return dict(
-        (key, os.path.expandvars(value)) for key, value in settings.items()
-    )
+    _settings = {}
+    for key, value in settings.items():
+        value = os.path.expandvars(value)
+        assert not (
+            value.startswith('${') and value.endswith('}')
+        ), f"envvar not found: {{ '{key}': '{value}' }}"
+        _settings[key] = value
+    return _settings
 
 
 def get_plugins(settings=None, environment=None):

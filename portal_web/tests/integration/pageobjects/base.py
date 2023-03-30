@@ -11,11 +11,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 class BasePageElement(object):
     '''Base class for page elements'''
 
-    def __init__(self, test, locator):
+    def __init__(self, browser, locator):
         '''sets locator'''
         self.locator = locator
-        self.test = test
-        self.cli = test.cli
+        self.browser = browser
 
     def __get__(self, obj, cls=None):
         '''returns self'''
@@ -47,8 +46,8 @@ class BasePageElement(object):
 
     @contextmanager
     def wait_for_page_load(self, timeout=30):
-        old_page = self.cli.find_element(By.TAG_NAME, 'html')
+        old_page = self.browser.find_element(By.TAG_NAME, 'html')
         yield
-        WebDriverWait(self.cli, timeout).until(
+        WebDriverWait(self.browser, timeout).until(
             expected_conditions.staleness_of(old_page)
         )

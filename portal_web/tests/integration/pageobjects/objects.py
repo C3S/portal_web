@@ -22,11 +22,10 @@ __all__ = ['DeformFormObject']
 
 class DeformFormObject(object):
 
-    def __init__(self, test, form, formid):
+    def __init__(self, browser, form, formid):
         if not isinstance(form, deform.Form):
             raise TypeError('form is not an instance of deform.Form')
-        self._test = test
-        self._cli = test.cli
+        self._browser = browser
         self._form = form
         self._formid = formid
         self._parse_form(self._form)
@@ -41,7 +40,7 @@ class DeformFormObject(object):
         for button in self._form.buttons:
             locator = self._formid + button.name
             setattr(self, button.name,
-                    ButtonElement(self._test, locator,
+                    ButtonElement(self._browser, locator,
                                   name=button.name, formid=self._formid))
 
     def _parse_field(self, field):
@@ -59,7 +58,7 @@ class DeformFormObject(object):
                 field.widget.__class__.__name__ + 'Element'
             )
             attr = field.oid.replace("-", "_")
-            setattr(self, attr, cls(self._test, field.oid))
+            setattr(self, attr, cls(self._browser, field.oid))
         else:
             raise NotImplementedError(
                 'parser not implemented: ' + field.widget.__class__.__name__)

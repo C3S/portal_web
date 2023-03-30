@@ -15,7 +15,7 @@ from ..resources import ResourceBase
 log = logging.getLogger(__name__)
 
 
-class ViewBase(object):
+class ViewBase:
     """
     The ViewBase class is convenience for form handling
 

@@ -15,7 +15,7 @@ class TextInputWidgetElement(BasePageElement):
     Deform TextInputWidget
     """
     def __call__(self):
-        return self.cli.find_element(By.ID, self.locator)
+        return self.browser.find_element(By.ID, self.locator)
 
     def get(self):
         return self().get_attribute("value")
@@ -59,7 +59,7 @@ class CheckedPasswordWidgetElement(TextInputWidgetElement):
         password = self()
         password.clear()
         password.send_keys(val)
-        confirm = self.cli.find_element(By.ID, self.locator + '-confirm')
+        confirm = self.browser.find_element(By.ID, self.locator + '-confirm')
         confirm.clear()
         confirm.send_keys(val)
 
@@ -70,7 +70,7 @@ class RadioChoiceWidgetElement(BasePageElement):
     """
     def __call__(self):
         """returns radiobuttons"""
-        rb = self.cli.find_elements(By.NAME, self.locator)
+        rb = self.browser.find_elements(By.NAME, self.locator)
         if not rb:
             raise NoSuchElementException()
         return rb
@@ -82,7 +82,7 @@ class RadioChoiceWidgetElement(BasePageElement):
 
     def getRo(self):
         """returns iterator of option"""
-        option = self.cli.find_elements(
+        option = self.browser.find_elements(
             By.XPATH, "//div[@id='item-"+self.locator+"']/div/p"
         )
         if len(option) == 1:
@@ -103,7 +103,7 @@ class CheckboxWidgetElement(BasePageElement):
     Deform CheckboxWidget
     """
     def __call__(self):
-        return self.cli.find_element(By.ID, self.locator)
+        return self.browser.find_element(By.ID, self.locator)
 
     def get(self):
         return self().is_selected()
@@ -118,7 +118,7 @@ class CheckboxChoiceWidgetElement(BasePageElement):
     Deform CheckboxChoiceWidget
     """
     def __call__(self):
-        return self.cli.find_element(By.ID, self.locator)
+        return self.browser.find_element(By.ID, self.locator)
 
     def get(self):
         return self().is_selected()
@@ -146,16 +146,16 @@ class ButtonElement(BasePageElement):
     """
     Deform Button
     """
-    def __init__(self, test, locator, name=None, formid=None):
+    def __init__(self, browser, locator, name=None, formid=None):
         '''sets button name'''
-        super().__init__(test, locator)
+        super().__init__(browser, locator)
         self.name = name
         self.formid = formid
         name = ''.join(word.title() for word in self.name.split('_'))
         self.postfix = "-".join(filter(None, [self.formid, name]))
 
     def __call__(self, timeout=30):
-        self.test.screenshot("REQUEST-%s" % self.postfix)
+        self.browser.screenshot("REQUEST-%s" % self.postfix)
         with self.wait_for_page_load(timeout):
-            self.cli.find_element(By.ID, self.locator).click()
-        self.test.screenshot("RESPONSE-%s" % self.postfix)
+            self.browser.find_element(By.ID, self.locator).click()
+        self.browser.screenshot("RESPONSE-%s" % self.postfix)
