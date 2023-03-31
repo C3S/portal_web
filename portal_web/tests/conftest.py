@@ -76,17 +76,20 @@ class TrytonHelper:
         Transaction().commit()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def tryton(settings):
     """
     Provides the tryton test helper class.
+
+    Yields:
+        TrytonHelper: Helper with usual tryton testing objects accessible
     """
     return TrytonHelper(settings)
 
 
 # --- pyramid -----------------------------------------------------------------
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def settings():
     """
     Provides parsed pyramid settings (plugins combined, envvars substituted).
@@ -127,65 +130,80 @@ class PyramidHelper:
 def pyramid(settings):
     """
     Provides the pyramid helper class.
+
+    Yields:
+        PyramidHelper: Helper with usual pyramid testing objects accessible
     """
     return PyramidHelper(settings)
 
 
-# --- app ---------------------------------------------------------------------
+# --- webtest -----------------------------------------------------------------
 
-@pytest.fixture(scope='module')
-def gui(request, settings):
+@pytest.fixture(scope='class')
+def api(settings):
     """
-    Sets up a webgui service.
+    Sets up an webapi service with TestApp.
 
-    Yields:
-        webtest.http.StopableWSGIServer: if path matches */integration/*,
-            for integration tests with webdriver/selenium
-        webtest.TestApp: otherwise, for functional tests with webtest
+    Returns:
+        webtest.TestApp: for functional tests with webtest
+    """
+    settings['service'] = "webapi"
+    return TestApp(main({}, **settings))
+
+
+@pytest.fixture(scope='class')
+def gui(settings):
+    """
+    Sets up a webgui service with TestApp.
+
+    Returns:
+        webtest.TestApp: for functional tests with webtest
     """
     settings['service'] = "webgui"
-    app = main({}, **settings)
-    # StopableWSGIServer for integration tests with webdriver/selenium
-    if request.path.match('*/integration/*'):
-        request.getfixturevalue('api')
-        server = StopableWSGIServer.create(
-            app, host='0.0.0.0', port=6544,
-            clear_untrusted_proxy_headers=True, threads=10
-        )
-        if not server.wait():
-            raise Exception('Server could not be fired up. Exiting ...')
-        yield server
-        server.shutdown()
-    # TestApp for functional tests with webtest
-    else:
-        yield TestApp(main({}, **settings))
+    return TestApp(main({}, **settings))
 
 
-@pytest.fixture(scope='module')
-def api(request, settings):
+# --- webdriver ---------------------------------------------------------------
+
+@pytest.fixture(scope='session')
+def browser_api(settings):
     """
-    Sets up an webapi service.
+    Sets up an webapi service with StopableWSGIServer.
 
     Yields:
-        webtest.http.StopableWSGIServer: if path matches */integration/*,
-            for integration tests with webdriver/selenium
-        webtest.TestApp: otherwise, for functional tests with webtest
+        webtest.http.StopableWSGIServer: for integration tests with selenium
     """
     settings['service'] = "webapi"
     app = main({}, **settings)
-    # StopableWSGIServer for integration tests with webdriver/selenium
-    if request.path.match('*/integration/*'):
-        server = StopableWSGIServer.create(
-            app, host='0.0.0.0', port=6545,
-            clear_untrusted_proxy_headers=True, threads=10
-        )
-        if not server.wait():
-            raise Exception('Server could not be fired up. Exiting ...')
-        yield server
-        server.shutdown()
-    # TestApp for functional tests with webtest
-    else:
-        yield TestApp(app)
+    server = StopableWSGIServer.create(
+        app, host='0.0.0.0', port=6545,
+        clear_untrusted_proxy_headers=True, threads=10
+    )
+    if not server.wait():
+        raise Exception('Server could not be fired up. Exiting ...')
+    yield server
+    server.shutdown()
+
+
+@pytest.fixture(scope='session')
+@pytest.mark.usefixtures('browser_api')
+def browser_gui(settings):
+    """
+    Sets up a webgui service with StopableWSGIServer.
+
+    Yields:
+        webtest.http.StopableWSGIServer: for integration tests with selenium
+    """
+    settings['service'] = "webgui"
+    app = main({}, **settings)
+    server = StopableWSGIServer.create(
+        app, host='0.0.0.0', port=6544,
+        clear_untrusted_proxy_headers=True, threads=10
+    )
+    if not server.wait():
+        raise Exception('Server could not be fired up. Exiting ...')
+    yield server
+    server.shutdown()
 
 
 class BrowserHelper:
@@ -200,16 +218,17 @@ class BrowserHelper:
     Attributes:
         browser (webdriver.Remote): remote webdriver
         options (webdriver.Options): options used for the webdriver
-        gui (str): url for the webgui
-        api (str): url for the webapi
+        host (str): hostname/ip to remote access the app
+        gui (webtest.http.StopableWSGIServer): webgui app
+        api (webtest.http.StopableWSGIServer): webapi app
         screenshots (bool): create screenshots during a test run
         screenshot_path (str): directory for screenshots
-        screenshot_delete (bool): delete screenshots before each test run
 
     Methods:
         get: overrides browser.get to autocomplete the url and automate
     """
-    def __init__(self, screenshots=True, screenshot_delete=True):
+    def __init__(self, gui, api, screenshots=True,
+                 screenshot_path='/shared/tests/screenshots'):
         # webdriver
         options = FirefoxOptions()
         options.add_argument('--headless')
@@ -221,8 +240,9 @@ class BrowserHelper:
         )
         self.browser = browser
         self.options = options
-        self.gui = 'http://test_web:6544'
-        self.api = 'http://test_web:6545'
+        self.host = 'test_web'
+        self.gui = gui
+        self.api = api
 
         # window
         self.testsizes = {
@@ -235,10 +255,7 @@ class BrowserHelper:
 
         # screenshots
         self.screenshots = screenshots
-        self.screenshot_path = '/shared/tests/screenshots'
-        self.screenshot_delete = screenshot_delete
-        if screenshot_delete:
-            self.delete_screenshots()
+        self.screenshot_path = screenshot_path
 
     def __getattr__(self, name):
         """
@@ -252,16 +269,23 @@ class BrowserHelper:
         handling. urls starting with "/" or "gui/" will send requests to the
         the webgui service and "api/" to the webapi service.
         """
+        # get
+        full_url = url
         if url.startswith(("/", "gui/")):
-            url = f"{self.gui}{url}"
+            full_url = f"http://{self.host}:{self.gui.addr[1]}/{url}"
         elif url.startswith("api/"):
-            url = f"{self.api}{url}"
-        self.browser.get(url, *args, **kwargs)
+            full_url = f"http://{self.host}:{self.api.addr[1]}/{url}"
+        self.browser.get(full_url, *args, **kwargs)
+        # screenshot
+        url = f"GET-{url}".replace("/", "⧸").replace("?", "-QUERY-")
+        self.screenshot("%s" % url)
 
     def screenshot(self, name=""):
         """
         Takes a screenshot of the current browser client viewport.
         """
+        if not self.screenshots:
+            return
         # generate filename
         testtime = datetime.datetime.utcnow().strftime('%y%m%d.%H%M%S.%f')[:-4]
         testclass = ''
@@ -283,24 +307,35 @@ class BrowserHelper:
                 self.screenshot_path, f'{name}-{filename}.png'))
         self.set_window_size(*self.testsizes['lg'])
 
-    def delete_screenshots(self):
-        """
-        Deletes all screenshots of previous selenium tests.
-        """
-        if not os.path.isdir(self.screenshot_path):
-            os.makedirs(self.screenshot_path)
-        path = os.path.join(self.screenshot_path, '*.png')
-        for screenshot in glob.glob(path):
-            os.unlink(screenshot)
+
+screenshot_path = '/shared/tests/screenshots'
 
 
-@pytest.fixture(scope='module')
-def browser(gui, api):
+@pytest.fixture(autouse=True, scope='session')
+def delete_screenshots():
     """
-    Provides the test browser.
+    Deletes all screenshots of previous selenium tests.
+    """
+    if not os.path.isdir(screenshot_path):
+        os.makedirs(screenshot_path)
+    path = os.path.join(screenshot_path, '*.png')
+    for screenshot in glob.glob(path):
+        os.unlink(screenshot)
+
+
+@pytest.fixture(scope='session')
+def browser(browser_gui, browser_api):
+    """
+    Provides the selenoum test browser.
+
+    Yields:
+        BrowserHelper: selenium remote connection to selenium hub service with
+            additional helper functions
     """
     try:
-        browser = BrowserHelper()
+        browser = BrowserHelper(
+            gui=browser_gui, api=browser_api,
+            screenshots=True, screenshot_path=screenshot_path)
         yield browser
     finally:
         browser.quit()
@@ -320,6 +355,7 @@ def reset(request):
         if isinstance(api, TestApp):
             api.reset()
     if 'browser' in request.fixturenames:
+        browser = request.getfixturevalue('browser')
         browser.delete_all_cookies()
         browser.set_window_size(*browser.testsizes['lg'])
 
