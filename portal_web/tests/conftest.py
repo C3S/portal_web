@@ -364,6 +364,9 @@ def reset(request):
 
 @pytest.fixture(scope='class')
 def create_party(tryton):
+    """
+    Yields a function to create a party.
+    """
     records = []
     Party = tryton.pool.get('party.party')
 
@@ -382,6 +385,9 @@ def create_party(tryton):
 
 @pytest.fixture(scope='class')
 def create_web_user(tryton):
+    """
+    Yields a function to create a web user.
+    """
     records = []
     WebUser = tryton.pool.get('web.user')
     WebUserRole = tryton.pool.get('web.user.role')
