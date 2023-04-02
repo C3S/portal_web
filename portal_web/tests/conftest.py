@@ -36,6 +36,32 @@ __ALL__ = [
     'create_party',
     'create_web_user',
 ]
+# --- database ----------------------------------------------------------------
+
+@pytest.fixture(autouse=True, scope='session')
+def reset_database():
+    """
+    Resets the database for each test run.
+    """
+    if os.environ.get('COMPOSE_PROJECT_NAME'):
+        if int(os.environ.get('DB_KEEP', 0)) == 1:
+            return
+        subprocess.call(
+            [
+                'db-setup',
+                'collecting_society_test_template',
+                '--dataset', 'production',
+                '--no-template',
+            ]
+        )
+        subprocess.call(
+            [
+                'db-copy',
+                '--force',
+                'collecting_society_test_template',
+                'collecting_society_test',
+            ]
+        )
 
 
 # --- tryton ------------------------------------------------------------------
