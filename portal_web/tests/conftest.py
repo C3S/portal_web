@@ -30,8 +30,17 @@ def pytest_collection_modifyitems(session, config, items):
     """
     Fixes the nodid path string to show the full path.
     """
+    # hack for vs code test explorer python adapter
+    if int(os.environ.get("DEBUGGER_DEBUGPY", 0)) == 1:
+        for item in items:
+            relpath = os.path.relpath(item.path, "/shared/src")
+            nodeid = "::".join([relpath] + item.nodeid.split("::")[1:])
+            item._nodeid = f"{nodeid}"
+        return items
+    # use absolute paths for nodeids
     for item in items:
-        nodeid = "::".join([str(item.path)] + item.nodeid.split("::")[1:])
+        nodeid = "::".join(
+            [f"{item.path}"] + item.nodeid.split("::")[1:])
         item._nodeid = f"{nodeid}"
     return items
 
