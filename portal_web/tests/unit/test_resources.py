@@ -42,6 +42,9 @@ class ResourceBaseChildMock(ResourceBase):
 
 @pytest.fixture(scope="module")
 def orig_dict():
+    """
+    Returns the original dictonary to test registry merging in resources.
+    """
     return {
         'A': {
             'A1': 'A1',
@@ -53,6 +56,9 @@ def orig_dict():
 
 @pytest.fixture(scope="module")
 def new_dict():
+    """
+    Returns the new dictonary to test registry merging in resources.
+    """
     return {
         'A': {
             'A2': 'XX'

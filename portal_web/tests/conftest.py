@@ -6,6 +6,7 @@ Pytest Fixtures
 """
 
 import os
+import subprocess
 import glob
 import datetime
 import inspect
@@ -18,24 +19,23 @@ from webtest import TestApp
 from webtest.http import StopableWSGIServer
 from selenium.webdriver import Remote, FirefoxOptions
 
-from .. import main
-from ..models import Tdb
-from ..config import get_plugins, replace_environment_vars
+from portal_web import main
+from portal_web.models import Tdb
+from portal_web.config import get_plugins, replace_environment_vars
 
-__ALL__ = [
-    'tryton',
 
-    'settings',
-    'pryamid',
+# --- pytest ------------------------------------------------------------------
 
-    'gui',
-    'api',
-    'browser',
-    'reset',
+def pytest_collection_modifyitems(session, config, items):
+    """
+    Fixes the nodid path string to show the full path.
+    """
+    for item in items:
+        nodeid = "::".join([str(item.path)] + item.nodeid.split("::")[1:])
+        item._nodeid = f"{nodeid}"
+    return items
 
-    'create_party',
-    'create_web_user',
-]
+
 # --- database ----------------------------------------------------------------
 
 @pytest.fixture(autouse=True, scope='session')

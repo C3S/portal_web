@@ -47,6 +47,9 @@ class FormControllerMockHTTPException():
 
 @pytest.fixture
 def viewbase(pyramid):
+    """
+    Returns a dummy ViewBase instance to test the view base class.
+    """
     return ViewBase(pyramid.resource, pyramid.request)
 
 
