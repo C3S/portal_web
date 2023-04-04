@@ -2,10 +2,10 @@
 # Repository: https://github.com/C3S/portal_web
 
 import re
+import warnings
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
-
 
 from .base import BasePageElement
 
@@ -140,6 +140,28 @@ class DateInputWidgetElement(TextInputWidgetElement):
     Deform DateInputWidget
     """
     pass
+
+
+class FileUploadWidgetElement(BasePageElement):
+    """
+    Deform FileUploadWidget
+    """
+    def __init__(self, *args, **kwargs):
+        '''to display not implemented warning'''
+        super().__init__(*args, **kwargs)
+        warnings.warn("PageObject element 'FileUploadWidgetElement' "
+                      "not implemented yet")
+
+
+class DatatableSequenceWidgetElement(BasePageElement):
+    """
+    Deform FileUploadWidget
+    """
+    def __init__(self, *args, **kwargs):
+        '''to display not implemented warning'''
+        super().__init__(*args, **kwargs)
+        warnings.warn("PageObject element 'DatatableSequenceWidgetElement' "
+                      "not implemented yet")
 
 
 class ButtonElement(BasePageElement):

@@ -172,6 +172,41 @@ def pyramid(settings):
     return PyramidHelper(settings)
 
 
+@pytest.fixture
+def dummy_request():
+    """
+    Creates an empty dummy request.
+
+    Returns:
+        pyramid.testing.DummyRequest: dummy request
+    """
+    return testing.DummyRequest()
+
+
+@pytest.fixture
+def request_with_registry(settings):
+    """
+    Creates a request with registry set up.
+
+    Returns:
+        pyramid.testing.DummyRequest: dummy request
+    """
+    request = testing.DummyRequest()
+    testing.setUp(request=request, settings=settings)
+    return request
+
+
+@pytest.fixture
+def dummy_resource():
+    """
+    Creates an empty dummy resource.
+
+    Returns:
+        pyramid.testing.DummyResource: dummy resource
+    """
+    return testing.DummyResource()
+
+
 # --- webtest -----------------------------------------------------------------
 
 @pytest.fixture(scope='class')

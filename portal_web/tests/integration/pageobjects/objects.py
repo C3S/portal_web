@@ -4,6 +4,8 @@
 import deform
 import sys
 
+from ....views.forms.datatables import DatatableSequenceWidget
+
 from .elements import (  # noqa: F401
     TextInputWidgetElement,
     TextAreaWidgetElement,
@@ -14,6 +16,8 @@ from .elements import (  # noqa: F401
     CheckboxWidgetElement,
     CheckboxChoiceWidgetElement,
     DateInputWidgetElement,
+    FileUploadWidgetElement,
+    DatatableSequenceWidgetElement,
     ButtonElement,
 )
 
@@ -52,6 +56,9 @@ class DeformFormObject(object):
                                      deform.widget.CheckedPasswordWidget,
                                      deform.widget.RadioChoiceWidget,
                                      deform.widget.DateInputWidget,
+                                     deform.widget.FileUploadWidget,
+                                     DatatableSequenceWidget,
+                                     deform.widget.RadioChoiceWidget,
                                      deform.widget.CheckboxChoiceWidget)):
             cls = getattr(
                 sys.modules[__name__],
