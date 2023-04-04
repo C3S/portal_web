@@ -10,6 +10,7 @@ import subprocess
 import glob
 import datetime
 import inspect
+import logging
 import pytest
 
 from trytond.transaction import Transaction
@@ -43,6 +44,13 @@ def pytest_collection_modifyitems(session, config, items):
             [f"{item.path}"] + item.nodeid.split("::")[1:])
         item._nodeid = f"{nodeid}"
     return items
+
+
+@pytest.fixture
+def debug(caplog):
+    caplog.set_level(logging.DEBUG, logger="pyramid")
+    caplog.set_level(logging.DEBUG, logger="portal_web")
+    caplog.set_level(logging.DEBUG, logger="collecting_society_web")
 
 
 # --- database ----------------------------------------------------------------
@@ -169,7 +177,8 @@ def pyramid(settings):
     Yields:
         PyramidHelper: Helper with usual pyramid testing objects accessible
     """
-    return PyramidHelper(settings)
+    yield PyramidHelper(settings)
+    testing.tearDown()
 
 
 @pytest.fixture
