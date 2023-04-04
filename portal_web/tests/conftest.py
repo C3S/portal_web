@@ -436,6 +436,7 @@ def reset(request):
     if 'browser' in request.fixturenames:
         browser = request.getfixturevalue('browser')
         browser.delete_all_cookies()
+        browser.refresh()
         browser.set_window_size(*browser.testsizes['lg'])
 
 
