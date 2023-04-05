@@ -127,7 +127,7 @@ class Tdb():
         .. _flask_tryton:
             https://pypi.python.org/pypi/flask_tryton
         """
-        _tdbglog = "/ado/tmp/transaction.log"
+        _tdbglog = "/shared/tmp/logs/transaction.log"
 
         def _tdbg(func, mode, string=None, levelchange=0):
             settings = threadlocal.get_current_registry().settings
