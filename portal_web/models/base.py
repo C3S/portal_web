@@ -207,6 +207,9 @@ class Tdb():
                             _tdbg(func, "COMMIT", "Try %s, Transaction %s" %
                                   (_retry + 1 - count, id(transaction)))
                             transaction.commit()
+                            # if func.__name__ != '_context_found_writable':
+                            #     transaction.commit()
+                            #     transaction.stop()
                     except DatabaseOperationalError:
                         if transaction:
                             transaction.rollback()
