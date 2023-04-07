@@ -222,7 +222,7 @@ def add_locale(event):
 
 
 def open_db_connection(event):
-    """ Open and close database connection """
+    """ Opens a transaction after getting database connection from the pool """
     user = Transaction().user  # pyramid subrequests have no cursor
     connection = Transaction().connection
     if not user and not connection:
@@ -235,7 +235,7 @@ def open_db_connection(event):
 
 
 def close_db_connection(event):
-    """ Close database connection """
+    """ Close transaction and free db connection back to the Psycopg pool """
     def close_db(request):
         connection = Transaction().connection
         if connection:
