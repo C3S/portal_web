@@ -230,8 +230,6 @@ def open_db_connection(event):
             pool = Pool(str(Tdb._db))
             user = pool.get('res.user')
             context = user.get_preferences(context_only=True)
-            # from trytond.cache import Cache
-            # Cache.clear(Tdb._db)
         Transaction().start(
             Tdb._db, Tdb._user, readonly=True, context=context)
 
@@ -241,9 +239,10 @@ def close_db_connection(event):
     def close_db(request):
         connection = Transaction().connection
         if connection:
-            # from trytond.cache import Cache
-            # Cache.resets(Tdb._db)
-            Transaction().stop()
+            transaction = Transaction()
+            if not transaction.readonly:
+                transaction.commit()
+            transaction.stop()
         if event.request.registry.settings['debug.tdb.transactions'] == 'true':
             Tdb.wraps = 0
     event.request.add_finished_callback(close_db)
