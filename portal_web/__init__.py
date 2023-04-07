@@ -108,13 +108,13 @@ def main(global_config, **settings):
         subscriber='.config.add_locale',
         iface='pyramid.events.NewRequest')
     config.add_subscriber(
-        subscriber='.config.open_db_connection',
+        subscriber='.config.start_db_transaction',
         iface='pyramid.events.BeforeTraversal')
     config.add_subscriber(
         subscriber='.config.context_found',
         iface='pyramid.events.ContextFound')
     config.add_subscriber(
-        subscriber='.config.close_db_connection',
+        subscriber='.config.stop_db_transaction',
         iface='pyramid.events.NewRequest')
     if settings['env'] in ['development', 'staging']:
         config.add_subscriber(

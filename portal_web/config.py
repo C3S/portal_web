@@ -221,8 +221,10 @@ def add_locale(event):
     event.request.response.set_cookie('_LOCALE_', value=current)
 
 
-def open_db_connection(event):
-    """ Opens a transaction after getting database connection from the pool """
+def start_db_transaction(event):
+    """
+    Starts a transaction on a pool db connection. If needed, open database.
+    """
     user = Transaction().user  # pyramid subrequests have no cursor
     connection = Transaction().connection
     if not user and not connection:
@@ -234,8 +236,11 @@ def open_db_connection(event):
             Tdb._db, Tdb._user, readonly=True, context=context)
 
 
-def close_db_connection(event):
-    """ Close transaction and free db connection back to the Psycopg pool """
+def stop_db_transaction(event):
+    """
+    Stops a transaction so the db connection can be freed back to the
+    db connection pool
+    """
     def close_db(request):
         connection = Transaction().connection
         if connection:
