@@ -227,6 +227,8 @@ def start_db_transaction(event):
     """
     user = Transaction().user  # pyramid subrequests have no cursor
     connection = Transaction().connection
+    if connection:
+        Transaction().new_transaction(readonly=True)
     if not user and not connection:
         with Transaction().start(Tdb._db, 0):
             pool = Pool(str(Tdb._db))
