@@ -10,10 +10,10 @@ import logging
 import pprint
 from copy import deepcopy
 from collections import (
-    Mapping,
     defaultdict,
-    OrderedDict
+    OrderedDict,
 )
+from collections.abc import Mapping
 
 from pyramid import threadlocal
 from pyramid.authorization import (
@@ -31,7 +31,7 @@ class PrettyDefaultdict(defaultdict):
     __repr__ = dict.__repr__
 
 
-class ResourceBase(object):
+class ResourceBase:
     """
     Base class for `traversal`_ based resources providing a content registry.
 
@@ -86,7 +86,7 @@ class ResourceBase(object):
     __registry__ = {}
     __acl__ = []
     _write = []
-    _rdbglog = "/shared/tmp/registry.log"
+    _rdbglog = "/shared/tmp/logs/registry.log"
 
     def __init__(self, request, context=None):
         Parent = self.__parent__
@@ -140,7 +140,7 @@ class ResourceBase(object):
     @classmethod
     def _rdbg(cls, caller, original, update, extended):
         settings = threadlocal.get_current_registry().settings
-        if 'debug.res.registry' not in settings:
+        if not settings or 'debug.res.registry' not in settings:
             return
         if settings['debug.res.registry'] == 'true':
             with open(cls._rdbglog, "a") as f:

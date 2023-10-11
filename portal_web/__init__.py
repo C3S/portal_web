@@ -37,7 +37,7 @@ def main(global_config, **settings):
 
     Handles configuration of
 
-    - ptvsd debugging
+    - debugpy debugging
     - app config
     - tryton database
     - session
@@ -108,13 +108,13 @@ def main(global_config, **settings):
         subscriber='.config.add_locale',
         iface='pyramid.events.NewRequest')
     config.add_subscriber(
-        subscriber='.config.open_db_connection',
+        subscriber='.config.start_db_transaction',
         iface='pyramid.events.BeforeTraversal')
     config.add_subscriber(
         subscriber='.config.context_found',
         iface='pyramid.events.ContextFound')
     config.add_subscriber(
-        subscriber='.config.close_db_connection',
+        subscriber='.config.stop_db_transaction',
         iface='pyramid.events.NewRequest')
     if settings['env'] in ['development', 'staging']:
         config.add_subscriber(
@@ -172,31 +172,24 @@ def main(global_config, **settings):
     else:
         config.include('pyramid_mailer.testing')
 
-    # enable ptvsd debugging (open port 51000 for portal and 51001 for api!)
-    if int(settings['debugger.ptvsd']):
-        debugging_port = 0
+    # enable debugpy debugging (open port 52000 for portal and 52001 for api!)
+    if int(settings['debugger.debugpy']):
+        debugging_port = False
         if settings['service'] == 'webgui':
-            debugging_port = 51000
+            debugging_port = 52000
         if settings['service'] == 'webapi':
-            debugging_port = 51001
-        if debugging_port > 0:
+            debugging_port = 52001
+        if debugging_port:
             log.debug(settings['service'] + " debugger listening to port " +
                       str(debugging_port))
             try:
-                import ptvsd  # unconditional import breaks test coverage
-                ptvsd.enable_attach(address=("0.0.0.0", debugging_port),
-                                    redirect_output=True)
-                # uncomment these three lines, and set the debugging_port
-                # accordingly, if you need to debug initialization code
-                # like colander schema nodes, for example:
-                # if debugging_port == 51001:
-                #     ptvsd.wait_for_attach()
-                #     ptvsd.break_into_debugger()
+                import debugpy  # unconditional import breaks test coverage
+                debugpy.listen(("0.0.0.0", debugging_port))
             except Exception as ex:
                 if hasattr(ex, 'message'):
                     log.debug(ex.message)
                 else:
-                    log.debug('ptvsd debugging not possible: ' + ex.message)
+                    log.debug('debugpy debugging not possible: ' + ex.message)
 
     # configure webfrontend for portal and plugins
     if settings['service'] == 'webgui':

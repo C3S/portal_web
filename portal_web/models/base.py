@@ -127,7 +127,7 @@ class Tdb():
         .. _flask_tryton:
             https://pypi.python.org/pypi/flask_tryton
         """
-        _tdbglog = "/ado/tmp/transaction.log"
+        _tdbglog = "/shared/tmp/logs/transaction.log"
 
         def _tdbg(func, mode, string=None, levelchange=0):
             settings = threadlocal.get_current_registry().settings
@@ -187,8 +187,6 @@ class Tdb():
                     if not Tdb.is_open():
                         _tdbg(func, "CONNECT")
                         with Transaction().start(_db, 0):
-                            # from trytond.cache import Cache
-                            # Cache.clean(_db)
                             pool = Pool(Tdb._db)
                             User = pool.get('res.user')
                             _context = User.get_preferences(context_only=True)
@@ -206,7 +204,9 @@ class Tdb():
                         if not _readonly:
                             _tdbg(func, "COMMIT", "Try %s, Transaction %s" %
                                   (_retry + 1 - count, id(transaction)))
-                            transaction.commit()
+                            if func.__name__ != '_context_found_writable':
+                                transaction.commit()
+                                transaction.stop()
                     except DatabaseOperationalError:
                         if transaction:
                             transaction.rollback()

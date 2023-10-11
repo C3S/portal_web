@@ -48,10 +48,18 @@ def replace_environment_vars(settings):
         >>> settings = { 'service': '${SERVICE}' }
         >>> print(replace_environment_vars(settings))
         { 'service' = 'webgui' }
+
+    Raises:
+        AssertionError: on unsubstituted setting.
     """
-    return dict(
-        (key, os.path.expandvars(value)) for key, value in settings.items()
-    )
+    _settings = {}
+    for key, value in settings.items():
+        value = os.path.expandvars(value)
+        assert not (
+            value.startswith('${') and value.endswith('}')
+        ), f"envvar not found: {{ '{key}': '{value}' }}"
+        _settings[key] = value
+    return _settings
 
 
 def get_plugins(settings=None, environment=None):
@@ -213,29 +221,35 @@ def add_locale(event):
     event.request.response.set_cookie('_LOCALE_', value=current)
 
 
-def open_db_connection(event):
-    """ Open and close database connection """
+def start_db_transaction(event):
+    """
+    Starts a transaction on a pool db connection. If needed, open database.
+    """
     user = Transaction().user  # pyramid subrequests have no cursor
     connection = Transaction().connection
+    if connection:
+        Transaction().new_transaction(readonly=True)
     if not user and not connection:
         with Transaction().start(Tdb._db, 0):
             pool = Pool(str(Tdb._db))
             user = pool.get('res.user')
             context = user.get_preferences(context_only=True)
-            # from trytond.cache import Cache
-            # Cache.clear(Tdb._db)
         Transaction().start(
             Tdb._db, Tdb._user, readonly=True, context=context)
 
 
-def close_db_connection(event):
-    """ Close database connection """
+def stop_db_transaction(event):
+    """
+    Stops a transaction so the db connection can be freed back to the
+    db connection pool
+    """
     def close_db(request):
         connection = Transaction().connection
         if connection:
-            # from trytond.cache import Cache
-            # Cache.resets(Tdb._db)
-            Transaction().stop()
+            transaction = Transaction()
+            if not transaction.readonly:
+                transaction.commit()
+            transaction.stop()
         if event.request.registry.settings['debug.tdb.transactions'] == 'true':
             Tdb.wraps = 0
     event.request.add_finished_callback(close_db)

@@ -5,13 +5,17 @@
 Helper functions included as top-level names in temlating system.
 """
 
-# dependancies
-from decimal import Decimal
+__all__ = [
+    'b64encode',
+    'environ',
+    'log',
+    'format_currency'
+]
 
-# utilities
+from os import environ
+from decimal import Decimal
 import logging
-from base64 import b64encode  # noqa: F401
-from os import environ  # noqa: F401
+from base64 import b64encode
 
 from .models import (
     Tdb,
@@ -22,6 +26,7 @@ environ = dict(environ)
 log = logging.getLogger(__name__)
 
 
+@Tdb.transaction()
 def format_currency(value, places=None, curr=None, sep=None, dp=None, pos=None,
                     neg=None, trailneg=None):
     """
