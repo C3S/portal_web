@@ -73,13 +73,13 @@
               <div class="btn-group cs-datatables-controls {%=o.ds.sel.base%}_controls"
                    role="group" aria-label="SequenceControls">
                 {% if (o.add && o.ds.actions.indexOf('add') != -1) { %}
-                  <button type="button" class="btn btn-default"
+                  <button type="button" class="btn btn-default btn-sequence-add"
                           data-toggle="modal" data-target="{%=o.ds.sel.modalAdd%}">
                     {%=o.ds.language.custom.add%}
                   </button>
                 {% } %}
                 {% if (o.create && o.ds.actions.indexOf('create') != -1) { %}
-                  <button type="button" class="btn btn-default"
+                  <button type="button" class="btn btn-default btn-sequence-create"
                           data-toggle="modal" data-target="{%=o.ds.sel.modalCreate%}">
                     {%=o.ds.language.custom.create%}
                   </button>
@@ -238,12 +238,12 @@
             <script type="text/x-tmpl" id="datatable_sequence_tpl_source_controls">
               <div class="btn-group-vertical cs-row-controls" role="group">
                 {% if (o.added) { %}
-                  <a href="#" role="button" class="btn btn-default btn-sm"
+                  <a href="#" role="button" class="btn btn-default btn-sm cs-datatables-btn-source-remove"
                      onclick="return {%=o.registry%}.removeRow({%=o.added.index()%});">
                       {%=o.language.custom.remove%}
                   </a>
                 {% } else { %}
-                  <a href="#" role="button" class="btn btn-default btn-sm"
+                  <a href="#" role="button" class="btn btn-default btn-sm cs-datatables-btn-source-add"
                      onclick="return {%=o.registry%}.addRow({%=o.meta.row%});">
                       {%=o.language.custom.add%}
                   </a>
