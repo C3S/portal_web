@@ -312,7 +312,7 @@ class BrowserHelper:
         options = FirefoxOptions()
         options.add_argument('--headless')
         options.add_argument('--verbose')
-        options.set_capability('loggingPrefs', {'browser': 'ALL'})
+        # options.set_capability('loggingPrefs', {'browser': 'ALL'})
         browser = Remote(
             command_executor='http://test_browser:4444/wd/hub',
             options=options

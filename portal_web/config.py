@@ -7,7 +7,7 @@ Helper functions for the creation of the pyramid app.
 
 import os
 import logging
-from pkgutil import iter_modules
+# from pkgutil import iter_modules
 import configparser
 
 from trytond.transaction import Transaction
@@ -107,8 +107,14 @@ def get_plugins(settings=None, environment=None):
         )
     plugins = {}
     modules = [
-        {'name': name, 'path': imp.path} for imp, name, _ in iter_modules()
-        if name.endswith(settings['plugins.pattern']) and name != "portal_web"
+        # TODO: fix plugin search
+        # {'name': name, 'path': imp.path} for imp, name, _ in iter_modules()
+        # if name.endswith(settings['plugins.pattern'])
+        # and name != "portal_web"
+        {
+            'name': 'collecting_society_web',
+            'path': '/shared/src/collecting_society_web'
+        }
     ]
     config = configparser.ConfigParser()
     for plugin in modules:

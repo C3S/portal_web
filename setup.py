@@ -21,7 +21,8 @@ service = str(os.environ.get('PYRAMID_SERVICE'))
 environment = str(os.environ.get('ENVIRONMENT'))
 
 install_requires = [
-    'c3s_collecting_society',
+    # TODO: readd, when pep517 for tryton modules is working?
+    # 'c3s_collecting_society',
     'colander',
     'cornice',
     'cornice_swagger',
@@ -33,7 +34,7 @@ install_requires = [
     'pyramid_chameleon',
     'pyramid_mailer',
     'python-magic',
-    'trytond<6.7',
+    'trytond<7.1',
     'waitress',
 ]
 if environment == "development":
