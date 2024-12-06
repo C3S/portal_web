@@ -10,8 +10,6 @@ import logging
 from logging.config import fileConfig
 
 from pyramid.config import Configurator
-from pyramid.authentication import AuthTktAuthenticationPolicy
-from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid_beaker import session_factory_from_settings
 
 from .config import (
@@ -19,10 +17,8 @@ from .config import (
     get_plugins,
     notfound
 )
-from .models import (
-    Tdb,
-    WebUser
-)
+from .security import SecurityPolicy
+from .models import Tdb
 from .resources import (
     WebRootFactory,
     ApiRootFactory
@@ -89,12 +85,8 @@ def main(global_config, **settings):
     config.set_session_factory(factory=session_factory_from_settings(settings))
 
     # configure policies
-    config.set_authorization_policy(policy=ACLAuthorizationPolicy())
-    config.set_authentication_policy(
-        policy=AuthTktAuthenticationPolicy(
-            secret=settings['authentication.secret'],
-            hashalg='sha512',
-            callback=WebUser.groupfinder))
+    config.set_security_policy(
+        SecurityPolicy(settings['authentication.secret']))
     config.set_default_permission('administrator')
 
     # configure subscribers
