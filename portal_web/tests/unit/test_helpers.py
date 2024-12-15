@@ -24,8 +24,15 @@ class TestHelpers:
         decimal = Decimal('-1234567.8901')
 
         currency = format_currency(decimal, curr='$', sep=',', dp='.')
+        assert currency == '- 1,234,567.89 $'
+        currency = format_currency(
+            decimal, curr='$', currpos='left', sep=',', dp='.')
         assert currency == '-$ 1,234,567.89'
 
         currency = format_currency(
             decimal, curr='$', sep=',', dp='.', neg='(', trailneg=')')
+        assert currency == '( 1,234,567.89) $'
+        currency = format_currency(
+            decimal, curr='$', currpos='left', sep=',', dp='.', neg='(',
+            trailneg=')')
         assert currency == '($ 1,234,567.89)'
