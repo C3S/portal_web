@@ -123,11 +123,24 @@
             if(!controls.length)
                 return;
             if(formcontrols === 0) {
+                var next = $(controls).first().find(".btnNext").first();
+                if (!next)
+                    next = next[0].outerHTML;
+                var previous = $(controls).last().find(".btnPrevious").first();
+                if (!previous)
+                    previous = previous[0].outerHTML;
+                var submit = $(controls).last().find("button[name='submit']").first();
+                if (!submit)
+                    submit = submit[0].outerHTML;
+                var back = $(controls).first().find("button[name='back']").first();
+                if (!back)
+                    back = back[0].outerHTML;
                 formcontrols = {
-                    btnNext: $(controls).first().find(".btnNext")[0].outerHTML,
-                    btnPrevious: $(controls).last().find(".btnPrevious")[0].outerHTML,
-                    btnSubmit: $(controls).last().find("button[type='submit']")[0].outerHTML,
-                };
+                    btnNext: next,
+                    btnPrevious: previous,
+                    btnSubmit: submit,
+                    btnBack: back,
+                }
             }
             visible = [];
             $(".cs-navform-item-menu:visible").each(function(){
@@ -141,12 +154,20 @@
             if(!visible.length)
                 return;
             if(visible.length == 1) {
-                $(first).append(formcontrols.btnSubmit);
+                if (!!formcontrols.btnBack)
+                    $(first).append(formcontrols.btnBack);
+                if (!!formcontrols.btnSubmit)
+                    $(first).append(formcontrols.btnSubmit);
                 return;
             }
-            $(first).append(formcontrols.btnNext);
-            $(last).append(formcontrols.btnPrevious);
-            $(last).append(formcontrols.btnSubmit);
+            if (!!formcontrols.btnBack)
+                $(first).append(formcontrols.btnBack);
+            if (!!formcontrols.btnNext)
+                $(first).append(formcontrols.btnNext);
+            if (!!formcontrols.btnPrevious)
+                $(last).append(formcontrols.btnPrevious);
+            if (!!formcontrols.btnSubmit)
+                $(last).append(formcontrols.btnSubmit);
             $('.btnNext').click(function(){
                 $('.nav-${navstyle} > .active').next('li:visible').find('a').trigger('click');
             });
