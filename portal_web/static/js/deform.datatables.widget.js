@@ -1346,6 +1346,7 @@ DatatableSequence.prototype = {
                         .attr('value', data[column.data]);
                     break;
 
+                case 'SelectWidget':
                 case 'Select2Widget':
                     var element = sequence
                         .children(".item-" + column.name)
@@ -1357,6 +1358,15 @@ DatatableSequence.prototype = {
                         .val();
                     if(option)
                         element.val(option).trigger('change');
+                    break;
+
+                case 'DateTimeWidget':
+                    var element = sequence.children(".item-" + column.name);
+                    var date = element.find("input[name='date']");
+                    var time = element.find("input[name='time']");
+                    var datetime = data[column.data].split("T");
+                    date.val(datetime[0]);
+                    time.val(datetime[1]);
                     break;
 
                 case 'DatatableSequenceWidget':
@@ -1404,6 +1414,7 @@ DatatableSequence.prototype = {
                         .val();
                     break;
 
+                case 'SelectWidget':
                 case 'Select2Widget':
                     element = form
                         .children(".item-" + column.name)
@@ -1413,6 +1424,15 @@ DatatableSequence.prototype = {
                     data[column.data] = element
                         .children("option:selected")
                         .text();
+                    break;
+
+                case 'DateTimeWidget':
+                    element = form.children(".item-" + column.name);
+                    if(element.length === 0)
+                        return;
+                    var date = element.find("input[name='date']");
+                    var time = element.find("input[name='time']");
+                    data[column.data] = date.val() + "T" + time.val()
                     break;
 
                 case 'DatatableSequenceWidget':
@@ -1492,12 +1512,34 @@ DatatableSequence.prototype = {
                     value = field.val();
                     break;
 
+                case 'SelectWidget':
                 case 'Select2Widget':
                     field = form
                         .find("select[name='" + column.name + "']")
                         .find("option:selected");
                     value = field.text();
                     break;
+
+                case 'DateTimeWidget':
+                    var date = group.find("input[name='date']");
+                    var dateGroup = date.closest(".input-group");
+                    var time = group.find("input[name='time']");
+                    var timeGroup = time.closest(".input-group");
+                    if(required.length > 0) {
+                        if (!date.val()) {
+                            valid = false;
+                            dateGroup.addClass('has-error');
+                        } else {
+                            dateGroup.removeClass('has-error');
+                        }
+                        if (!time.val()) {
+                            valid = false;
+                            timeGroup.addClass('has-error');
+                        } else {
+                            timeGroup.removeClass('has-error');
+                        }
+                    }
+                    return;
 
                 case 'DatatableSequenceWidget':
                     field = form

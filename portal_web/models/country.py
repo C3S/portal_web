@@ -22,6 +22,37 @@ class Country(Tdb, MixinSearchById, MixinSearchByCode, MixinSearchByName,
 
     __name__ = 'country.country'
 
+    @classmethod
+    def search_all(cls, active=True):
+        """
+        Fetches all Countries
+
+        Returns:
+          list: country
+          None: if no match is found
+        """
+        return cls.get().search([('active', 'in', (True, active))])
+
+    @classmethod
+    def search_by_code(cls, country_code, active=True):
+        """
+        Searches an country by country code
+
+        Args:
+          country_code (string): country.code
+
+        Returns:
+          obj: country
+          None: if no match is found
+        """
+        result = cls.get().search([
+            ('code', '=', country_code),
+            ('active', 'in', (True, active))
+        ])
+        if not result:
+            return None
+        return result[0]
+
 
 class Subdivision(Tdb, MixinSearchById, MixinSearchByCode, MixinSearchByName,
                   MixinSearchAll):
