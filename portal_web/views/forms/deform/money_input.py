@@ -2,7 +2,7 @@
 # Repository: https://github.com/C3S/portal_web
 
 import json
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 
 import colander
 from deform.widget import MoneyInputWidget as DeformMoneyInputWidget
