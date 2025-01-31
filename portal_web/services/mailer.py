@@ -8,8 +8,6 @@ import quopri
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
-from ..config import get_plugins
-
 log = logging.getLogger(__name__)
 
 
@@ -28,6 +26,7 @@ def get_template_paths(request):
     )
 
     # portal plugins
+    from ..config import get_plugins
     plugins = get_plugins(request.registry.settings)
     for priority in sorted(plugins):
         paths.append(
