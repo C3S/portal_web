@@ -137,7 +137,9 @@
                         <span class="glyphicon glyphicon-remove"></span>
                       </button>
                       {% if (o.pin) { %}
-                        <button type="button" class="close pin" aria-label="Pin"
+                        <button type="button"
+                                class="close pin {%=(o.pinActive?'pinned':'')%}"
+                                aria-label="Pin"
                                 onclick="return {%=o.ds.registry%}.pinModal(this);">
                           <span class="glyphicon glyphicon-pushpin"></span>
                         </button>

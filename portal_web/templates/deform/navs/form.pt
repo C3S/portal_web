@@ -92,7 +92,7 @@
                                         type="button" i18n:translate=""
                                         tal:condition="not repeat.child.end">Next</button>
                                 <tal:loop tal:repeat="button buttons">
-                                    <button tal:define="btn_disposition repeat.button.start
+                                    <button tal:define="btn_disposition repeat.button.end
                                                         and 'btn-primary' or 'btn-default';
                                                         btn_icon button.icon|None"
                                             tal:attributes="disabled button.disabled
@@ -102,8 +102,7 @@
                                             type="${button.type}"
                                             class="btn ${btn_disposition} ${button.css_class}"
                                             value="${button.value}"
-                                            tal:condition="repeat.child.end and
-                                                           button.name == 'submit'">
+                                            tal:condition="repeat.child.end">
                                         <i tal:condition="btn_icon" class="${btn_icon}"> </i>
                                         ${button.title}
                                     </button>
@@ -149,6 +148,8 @@
             });
             var first = $(visible[0]).find(".cs-navform-controls .btn-group");
             var last = $(visible[visible.length-1]).find(".cs-navform-controls .btn-group");
+            if (first[0] === last[0])
+                return;
             $(first).empty();
             $(last).empty();
             if(!visible.length)
