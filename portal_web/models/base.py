@@ -329,12 +329,27 @@ class Tdb():
           KeyError: if required field is missing
 
         Returns:
-          list: created devices
+          list: created objects
           None: if no object was created
         """
         log.debug('create database object:\n{}'.format(vlist))
         result = cls.get().create(vlist)
         return result or None
+
+    @classmethod
+    def delete(cls, vlist):
+        """
+        Deletes objects
+
+        Args:
+          vlist (list): list of objects::
+
+            [object1, object2, ...]
+
+        Returns:
+          ?
+        """
+        return cls.get().delete(vlist)
 
 
 class MixinSearchById(object):

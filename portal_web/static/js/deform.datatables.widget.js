@@ -58,6 +58,7 @@ if(typeof deform.datatableSequences == "undefined")
                     tpl: "<BASETEMPLATEID>",
                     actions: ['add', 'create', 'edit']
                     columns: [<DATATABLECOLUMNS>],
+                    pinActive: 'True' | 'False',
                 }
             </script>
         </tal:block>
@@ -65,7 +66,7 @@ if(typeof deform.datatableSequences == "undefined")
     Additional column attributes for custom columns:
 
         datatableSequence: {
-            posision:       "displayed" | "collapsed" | "invisible"
+            position:       "displayed" | "collapsed" | "invisible"
             widgetType:     string (deform widget type)
             footerSearch:   true | false (creates footer search field)
             createValue:    string (default: "")
@@ -111,6 +112,7 @@ var DatatableSequence = function(vars) {
     this.api = vars.api;
     this.apiPath = vars.apiPath;
     this.apiArgs = vars.apiArgs ? vars.apiArgs : false;
+    this.pinActive = vars.pinActive == "True" ? true : false;
 
     // selectors
     var base = "datatable_sequence_" + ds.oid;
@@ -272,6 +274,7 @@ DatatableSequence.prototype = {
                         title: ds.language.custom.add,
                         content: ds.tpl.source.table,
                         pin: true,
+                        pinActive: ds.pinActive,
                         ds: dsTmpl
                     })
                 );
