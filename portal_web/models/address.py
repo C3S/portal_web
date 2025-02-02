@@ -18,7 +18,7 @@ class Address(Tdb, MixinSearchByName):
     @classmethod
     def search_all(cls):
         """
-        Gets all parties.
+        Gets all party addresses.
 
         Returns:
             list (obj[party.address]): List of parties.
@@ -63,13 +63,13 @@ class Address(Tdb, MixinSearchByName):
     @classmethod
     def create(cls, vlist):
         """
-        Creates parties.
+        Creates party addresses.
 
         Args:
             vlist (list): List of dictionaries with attributes of a address.
                 [
                     {
-                        'name': str (required),
+                        'party': str (required),
                         ...
                     },
                     {
@@ -78,15 +78,15 @@ class Address(Tdb, MixinSearchByName):
                 ]
 
         Returns:
-            list (obj[party.address]): List of created parties.
+            list (obj[party.address]): List of created party addresses.
             None: If no object was created.
 
         Raises:
             KeyError: If required field is missing.
         """
         for values in vlist:
-            if 'name' not in values:
-                raise KeyError('name is missing')
+            if 'party' not in values:
+                raise KeyError('party is missing')
         log.debug('create address:\n{}'.format(vlist))
         result = cls.get().create(vlist)
         return result or None
