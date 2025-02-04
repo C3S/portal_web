@@ -195,8 +195,10 @@ class Tdb():
                             _db, _user, readonly=_readonly, context=_context,
                             close=False)
 
-                    transaction = Transaction().new_transaction(
-                        readonly=_readonly)
+                    transaction = Transaction()
+                    if transaction.readonly != _readonly:
+                        transaction = Transaction().new_transaction(
+                            readonly=_readonly)
                     try:
                         _tdbg(func, "CALL", "Try %s, Transaction %s" %
                               (_retry + 1 - count, id(transaction)))
