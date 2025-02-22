@@ -150,6 +150,9 @@ class FormController(object, metaclass=ABCMeta):
             if data:
                 _data += self.data.items()
             self.appstruct = self.form.validate(_data)
+            if self.request.registry.settings['debug.web.appstruct'] == 'true':
+                if self.appstruct:
+                    log.debug(self.appstruct)
             self.response = {self.name: self.form.render()}
             return True
         except deform.ValidationFailure as e:
