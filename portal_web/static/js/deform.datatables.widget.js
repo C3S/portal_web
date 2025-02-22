@@ -113,6 +113,10 @@ var DatatableSequence = function(vars) {
     this.apiPath = vars.apiPath;
     this.apiArgs = vars.apiArgs ? vars.apiArgs : false;
     this.pinActive = vars.pinActive == "True" ? true : false;
+    this.callbacks = Object.assign({}, vars.callbacks || {
+      onOpenCreate: function(ds, modal) {},
+      onOpenEdit: function(ds, modal) {},
+    });
 
     // selectors
     var base = "datatable_sequence_" + ds.oid;
@@ -1090,6 +1094,9 @@ DatatableSequence.prototype = {
                         var ce = jQuery.Event("change");
                         $('#deform').trigger(ce);
                     });
+                    // process custom callbacks
+                    if (ds.callbacks.onOpenCreate !== undefined)
+                      ds.callbacks.onOpenCreate(ds, modal);
                 });
             },
 
@@ -1128,6 +1135,18 @@ DatatableSequence.prototype = {
                                 break;
                         }
                     });
+                    // process deform callbacks
+                    $(deform.callbacks).each(function(num, item) {
+                        var oid = item[0];
+                        var callback = item[1];
+                        callback(oid);
+                    });
+                    deform.clearCallbacks();
+                    var ce = jQuery.Event("change");
+                    $('#deform').trigger(ce);
+                    // process custom callbacks
+                    if (ds.callbacks.onOpenEdit !== undefined)
+                      ds.callbacks.onOpenEdit(ds, modal);
                 });
             },
 
@@ -1424,9 +1443,16 @@ DatatableSequence.prototype = {
                         .children("select[name='" + column.name + "']");
                     if(element.length === 0)
                         return;
-                    data[column.data] = element
-                        .children("option:selected")
-                        .text();
+                    var selected = element.find("option:selected")
+                    if (selected.length === 0) {
+                      data[column.data] = '';
+                    } else if (selected.length === 1) {
+                      data[column.data] = selected.text();
+                    } else {
+                      data[column.data] = selected.map(function(index, item) {
+                        return $(item).text();
+                      }).get().join(", ");
+                    }
                     break;
 
                 case 'DateTimeWidget':
@@ -1519,7 +1545,7 @@ DatatableSequence.prototype = {
                 case 'Select2Widget':
                     field = form
                         .find("select[name='" + column.name + "']")
-                        .find("option:selected");
+                        .find("option:selected:not(:disabled)");
                     value = field.text();
                     break;
 

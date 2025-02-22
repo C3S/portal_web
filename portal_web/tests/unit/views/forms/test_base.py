@@ -90,6 +90,7 @@ class TestFormController:
         """
         post_dict = {"foo": "bar"}
         request = DummyRequest(post=post_dict)
+        request.registry.settings = {'debug.web.appstruc': 'false'}
         context = DummyResource()
 
         my_deform_form = DeformFormMockValidating()
@@ -110,6 +111,7 @@ class TestFormController:
         """
         post_dict = {"foo": "bar"}
         request = DummyRequest(post=post_dict)
+        request.registry.settings = {'debug.web.appstruc': 'false'}
         context = DummyResource()
 
         my_deform_form = DeformFormMockNonValidating()

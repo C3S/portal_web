@@ -656,9 +656,19 @@ class DatatableSequenceWidget(deform.widget.SequenceWidget):
             for item in subfield:
                 # use select text instead of value
                 if isinstance(item.widget, deform.widget.SelectWidget):
-                    for option in item.widget.values:
-                        if option[0] == row[item.name]:
-                            row[item.name] = item.translate(option[1])
+                    texts = []
+                    values = row[item.name]
+                    if isinstance(values, str):
+                        values = [values]
+                    for value in values:
+                        for option in item.widget.values:
+                            if isinstance(option, deform.widget.OptGroup):
+                                for option in option.options:
+                                    if option[0] == value:
+                                        texts.append(item.translate(option[1]))
+                            elif option[0] == value:
+                                texts.append(item.translate(option[1]))
+                    row[item.name] = ", ".join(texts)
             # provide rendered sequence
             row['sequence'] = subfield.render_template(
                 self.item_template, parent=field)
