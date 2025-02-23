@@ -169,10 +169,10 @@
                 $(last).append(formcontrols.btnPrevious);
             if (!!formcontrols.btnSubmit)
                 $(last).append(formcontrols.btnSubmit);
-            $('.btnNext').click(function(){
+            $('.btnNext').one("click", function(event){
                 $('.nav-${navstyle} > .active').next('li:visible').find('a').trigger('click');
             });
-            $('.btnPrevious').click(function(){
+            $('.btnPrevious').one("click", function(event){
                 $('.nav-${navstyle} > .active').prev('li:visible').find('a').trigger('click');
             });
         }
