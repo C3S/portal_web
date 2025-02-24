@@ -107,7 +107,9 @@ def send_mail(request, template, variables={}, *args, **kwargs):
                 "Error sending mail using class %s.\nError: %s\nContent:\n\n%s"
             ) % (
                 mailer.__class__.__name__, e,
-                quopri.decodestring(message.to_message().__str__())
+                quopri.decodestring(
+                    message.to_message().as_bytes()
+                ).decode('iso-8859-1')
             )
         )
         return
@@ -117,6 +119,8 @@ def send_mail(request, template, variables={}, *args, **kwargs):
             "Mail sent using class %s.\nContent:\n\n%s"
         ) % (
             mailer.__class__.__name__,
-            quopri.decodestring(message.to_message().__str__())
+            quopri.decodestring(
+                message.to_message().as_bytes()
+            ).decode('iso-8859-1')
         )
     )
