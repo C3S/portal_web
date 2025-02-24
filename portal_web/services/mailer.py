@@ -4,6 +4,7 @@
 import os
 import logging
 import quopri
+from email.utils import formatdate
 
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
@@ -88,6 +89,12 @@ def send_mail(request, template, variables={}, *args, **kwargs):
     # body
     if 'body' not in kwargs:
         kwargs['body'] = content['body']
+
+    # add date header
+    if 'extra_headers' not in kwargs:
+        kwargs['extra_headers'] = {}
+    if 'Date' not in kwargs['extra_headers']:
+        kwargs['extra_headers']['Date'] = formatdate(localtime=True)
 
     # create and send message
     message = Message(*args, **kwargs)
