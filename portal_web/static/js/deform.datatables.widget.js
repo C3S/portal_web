@@ -844,6 +844,7 @@ DatatableSequence.prototype = {
 
             /**
              * Prevents opening several modals, embeds content instead
+             * Adds also confirmation via enter
              */
             queueModals: function() {
                 modals = [];
@@ -877,6 +878,13 @@ DatatableSequence.prototype = {
                             return;
                         // e.stopImmediatePropagation();
                         ds.parentModal = false;
+                    });
+                    // Add enter confirmation
+                    $(modal).on('keypress', function(e) {
+                        if(e.which == 13) {
+                            console.log(e)
+                            $(e.currentTarget).find('.cs-datatables-apply').click();
+                        }
                     });
                 });
             },
