@@ -73,13 +73,13 @@
               <div class="btn-group cs-datatables-controls {%=o.ds.sel.base%}_controls"
                    role="group" aria-label="SequenceControls">
                 {% if (o.add && o.ds.actions.indexOf('add') != -1) { %}
-                  <button type="button" class="btn btn-default btn-sequence-add"
+                  <button type="button" class="btn btn-info btn-sequence-add"
                           data-toggle="modal" data-target="{%=o.ds.sel.modalAdd%}">
                     {%=o.ds.language.custom.add%}
                   </button>
                 {% } %}
                 {% if (o.create && o.ds.actions.indexOf('create') != -1) { %}
-                  <button type="button" class="btn btn-default btn-sequence-create"
+                  <button type="button" class="btn btn-info btn-sequence-create"
                           data-toggle="modal" data-target="{%=o.ds.sel.modalCreate%}">
                     {%=o.ds.language.custom.create%}
                   </button>

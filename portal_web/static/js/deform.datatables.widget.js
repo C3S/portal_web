@@ -882,7 +882,6 @@ DatatableSequence.prototype = {
                     // Add enter confirmation
                     $(modal).on('keypress', function(e) {
                         if(e.which == 13) {
-                            console.log(e)
                             $(e.currentTarget).find('.cs-datatables-apply').click();
                         }
                     });
