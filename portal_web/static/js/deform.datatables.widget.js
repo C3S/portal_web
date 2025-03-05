@@ -632,7 +632,7 @@ DatatableSequence.prototype = {
         if(ds.rowAdded(data))
             return false;
         // set data
-        data.mode = "add";
+        data.mode = !!data.mode ? data.mode : "add";
         data.errors = "";
         data.sequence = ds.newSequence(data).node;
         // set order number for orderable tables
@@ -645,7 +645,10 @@ DatatableSequence.prototype = {
             data.order = orderNum + 1;
         }
         // update table data
-        ds.target.table.row.add(data).draw();
+        row = ds.target.table.row.add(data)
+        row.draw();
+        if (data.mode === "edit" && !ds.validateForm(data.sequence))
+            $(row.node()).first().find('a.cs-datatables-row-edit').first().click();
         // close modal, if not pinned
         var pin = $(ds.sel.modalAdd + ' .pin').first();
         if(!pin || !pin.hasClass('pinned'))
