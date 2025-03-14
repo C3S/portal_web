@@ -234,9 +234,11 @@ class FileTmpStore(dict):
                 os.unlink(tmpfile)
 
     def __setitem__(self, name, cstruct):
-        tmpfile = TmpFile(source=cstruct['fp'], dir=self.path, delete=False)
-        cstruct['fp'].close()
-        cstruct['fp'] = tmpfile
+        if hasattr(self, 'path'):
+            tmpfile = TmpFile(
+                source=cstruct['fp'], dir=self.path, delete=False)
+            cstruct['fp'].close()
+            cstruct['fp'] = tmpfile
         super(FileTmpStore, self).__setitem__(name, cstruct)
 
     def preview_url(self, name):
