@@ -92,7 +92,7 @@
                                         type="button" i18n:translate=""
                                         tal:condition="not repeat.child.end">Next</button>
                                 <tal:loop tal:repeat="button buttons">
-                                    <button tal:define="btn_disposition repeat.button.start
+                                    <button tal:define="btn_disposition repeat.button.end
                                                         and 'btn-primary' or 'btn-default';
                                                         btn_icon button.icon|None"
                                             tal:attributes="disabled button.disabled
@@ -102,8 +102,7 @@
                                             type="${button.type}"
                                             class="btn ${btn_disposition} ${button.css_class}"
                                             value="${button.value}"
-                                            tal:condition="repeat.child.end and
-                                                           button.name == 'submit'">
+                                            tal:condition="repeat.child.end">
                                         <i tal:condition="btn_icon" class="${btn_icon}"> </i>
                                         ${button.title}
                                     </button>
@@ -123,11 +122,24 @@
             if(!controls.length)
                 return;
             if(formcontrols === 0) {
+                var next = $(controls).first().find(".btnNext").first();
+                if (!next)
+                    next = next[0].outerHTML;
+                var previous = $(controls).last().find(".btnPrevious").first();
+                if (!previous)
+                    previous = previous[0].outerHTML;
+                var submit = $(controls).last().find("button[name='submit']").first();
+                if (!submit)
+                    submit = submit[0].outerHTML;
+                var back = $(controls).first().find("button[name='back']").first();
+                if (!back)
+                    back = back[0].outerHTML;
                 formcontrols = {
-                    btnNext: $(controls).first().find(".btnNext")[0].outerHTML,
-                    btnPrevious: $(controls).last().find(".btnPrevious")[0].outerHTML,
-                    btnSubmit: $(controls).last().find("button[type='submit']")[0].outerHTML,
-                };
+                    btnNext: next,
+                    btnPrevious: previous,
+                    btnSubmit: submit,
+                    btnBack: back,
+                }
             }
             visible = [];
             $(".cs-navform-item-menu:visible").each(function(){
@@ -136,21 +148,31 @@
             });
             var first = $(visible[0]).find(".cs-navform-controls .btn-group");
             var last = $(visible[visible.length-1]).find(".cs-navform-controls .btn-group");
+            if (first[0] === last[0])
+                return;
             $(first).empty();
             $(last).empty();
             if(!visible.length)
                 return;
             if(visible.length == 1) {
-                $(first).append(formcontrols.btnSubmit);
+                if (!!formcontrols.btnBack)
+                    $(first).append(formcontrols.btnBack);
+                if (!!formcontrols.btnSubmit)
+                    $(first).append(formcontrols.btnSubmit);
                 return;
             }
-            $(first).append(formcontrols.btnNext);
-            $(last).append(formcontrols.btnPrevious);
-            $(last).append(formcontrols.btnSubmit);
-            $('.btnNext').click(function(){
+            if (!!formcontrols.btnBack)
+                $(first).append(formcontrols.btnBack);
+            if (!!formcontrols.btnNext)
+                $(first).append(formcontrols.btnNext);
+            if (!!formcontrols.btnPrevious)
+                $(last).append(formcontrols.btnPrevious);
+            if (!!formcontrols.btnSubmit)
+                $(last).append(formcontrols.btnSubmit);
+            $('.btnNext').one("click", function(event){
                 $('.nav-${navstyle} > .active').next('li:visible').find('a').trigger('click');
             });
-            $('.btnPrevious').click(function(){
+            $('.btnPrevious').one("click", function(event){
                 $('.nav-${navstyle} > .active').prev('li:visible').find('a').trigger('click');
             });
         }

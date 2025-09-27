@@ -150,6 +150,10 @@ class FormController(object, metaclass=ABCMeta):
             if data:
                 _data += self.data.items()
             self.appstruct = self.form.validate(_data)
+            debug = self.request.registry.settings.get(
+                'debug.web.appstruct', 'false')
+            if debug == 'true' and self.appstruct:
+                log.debug(self.appstruct)
             self.response = {self.name: self.form.render()}
             return True
         except deform.ValidationFailure as e:
@@ -230,9 +234,11 @@ class FileTmpStore(dict):
                 os.unlink(tmpfile)
 
     def __setitem__(self, name, cstruct):
-        tmpfile = TmpFile(source=cstruct['fp'], dir=self.path, delete=False)
-        cstruct['fp'].close()
-        cstruct['fp'] = tmpfile
+        if hasattr(self, 'path'):
+            tmpfile = TmpFile(
+                source=cstruct['fp'], dir=self.path, delete=False)
+            cstruct['fp'].close()
+            cstruct['fp'] = tmpfile
         super(FileTmpStore, self).__setitem__(name, cstruct)
 
     def preview_url(self, name):

@@ -135,6 +135,27 @@ class CheckboxChoiceWidgetElement(BasePageElement):
             self().click()
 
 
+class SelectWidgetElement(BasePageElement):
+    """
+    Deform SelectWidget
+    """
+    def __call__(self):
+        return self.browser.find_element(By.ID, self.locator)
+
+    def get(self):
+        for option in self():
+            if option.is_selected():
+                return option.get_attribute("value")
+
+    def getRo(self):
+        return self.get()
+
+    def set(self, val):
+        for option in self():
+            if option.get_attribute("value") == val:
+                option.click()
+
+
 class DateInputWidgetElement(TextInputWidgetElement):
     """
     Deform DateInputWidget

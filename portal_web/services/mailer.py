@@ -4,11 +4,10 @@
 import os
 import logging
 import quopri
+from email.utils import formatdate
 
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
-
-from ..config import get_plugins
 
 log = logging.getLogger(__name__)
 
@@ -28,6 +27,7 @@ def get_template_paths(request):
     )
 
     # portal plugins
+    from ..config import get_plugins
     plugins = get_plugins(request.registry.settings)
     for priority in sorted(plugins):
         paths.append(
@@ -90,6 +90,12 @@ def send_mail(request, template, variables={}, *args, **kwargs):
     if 'body' not in kwargs:
         kwargs['body'] = content['body']
 
+    # add date header
+    if 'extra_headers' not in kwargs:
+        kwargs['extra_headers'] = {}
+    if 'Date' not in kwargs['extra_headers']:
+        kwargs['extra_headers']['Date'] = formatdate(localtime=True)
+
     # create and send message
     message = Message(*args, **kwargs)
     try:
@@ -101,7 +107,9 @@ def send_mail(request, template, variables={}, *args, **kwargs):
                 "Error sending mail using class %s.\nError: %s\nContent:\n\n%s"
             ) % (
                 mailer.__class__.__name__, e,
-                quopri.decodestring(message.to_message().__str__())
+                quopri.decodestring(
+                    message.to_message().as_bytes()
+                ).decode('iso-8859-1')
             )
         )
         return
@@ -111,6 +119,8 @@ def send_mail(request, template, variables={}, *args, **kwargs):
             "Mail sent using class %s.\nContent:\n\n%s"
         ) % (
             mailer.__class__.__name__,
-            quopri.decodestring(message.to_message().__str__())
+            quopri.decodestring(
+                message.to_message().as_bytes()
+            ).decode('iso-8859-1')
         )
     )

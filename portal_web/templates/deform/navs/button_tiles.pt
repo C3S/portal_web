@@ -1,0 +1,56 @@
+<!--! For copyright / license terms, see COPYRIGHT.rst (top level of repository)
+      Repository: https://github.com/C3S/portal_web -->
+<!--!
+
+    Customized deform form rendering.
+    Button Tiling.
+
+-->
+<form tal:define="style style|field.widget.style;
+                  css_class css_class|string:${field.widget.css_class or field.css_class or ''};
+                  item_template item_template|field.widget.item_template;
+                  autocomplete autocomplete|field.autocomplete;
+                  title title|field.title;
+                  errormsg errormsg|field.errormsg;
+                  description description|field.description;
+                  buttons buttons|field.buttons;
+                  use_ajax use_ajax|field.use_ajax;
+                  ajax_options ajax_options|field.ajax_options;
+                  formid formid|field.formid;
+                  action action|field.action or None;
+                  method method|field.method;"
+      tal:attributes="autocomplete autocomplete;
+                      style style;
+                      class css_class;
+                      action action;"
+      id="${formid}"
+      method="${method}"
+      enctype="multipart/form-data"
+      accept-charset="utf-8"
+      i18n:domain="portal_web">
+
+    <fieldset class="deformFormFieldset">
+        <div class="container-fluid cs-button-tiles">
+            <input type="hidden" name="_charset_" />
+            <input type="hidden" name="__formid__" value="${formid}"/>
+            <tal:loop tal:repeat="button buttons">
+                <div class="cs-button-tile">
+                    <button tal:define="letter button.icon|None"
+                            tal:attributes="disabled button.disabled
+                                            if button.disabled else None"
+                            id="${formid+button.name}"
+                            name="${button.name}"
+                            type="${button.type}"
+                            class="btn ${button.css_class}"
+                            value="${button.value}">
+                        <div tal:condition="letter" class="cs-button-tile-letter">
+                            ${letter}
+                        </div>
+                        <div>${button.title}<div>
+                    </button>
+                </div>
+            </tal:loop>
+        </div>
+    </fieldset>
+
+</form>

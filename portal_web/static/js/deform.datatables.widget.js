@@ -58,6 +58,7 @@ if(typeof deform.datatableSequences == "undefined")
                     tpl: "<BASETEMPLATEID>",
                     actions: ['add', 'create', 'edit']
                     columns: [<DATATABLECOLUMNS>],
+                    pinActive: 'True' | 'False',
                 }
             </script>
         </tal:block>
@@ -65,7 +66,7 @@ if(typeof deform.datatableSequences == "undefined")
     Additional column attributes for custom columns:
 
         datatableSequence: {
-            posision:       "displayed" | "collapsed" | "invisible"
+            position:       "displayed" | "collapsed" | "invisible"
             widgetType:     string (deform widget type)
             footerSearch:   true | false (creates footer search field)
             createValue:    string (default: "")
@@ -111,6 +112,11 @@ var DatatableSequence = function(vars) {
     this.api = vars.api;
     this.apiPath = vars.apiPath;
     this.apiArgs = vars.apiArgs ? vars.apiArgs : false;
+    this.pinActive = vars.pinActive == "True" ? true : false;
+    this.callbacks = Object.assign({}, vars.callbacks || {
+      onOpenCreate: function(ds, modal) {},
+      onOpenEdit: function(ds, modal) {},
+    });
 
     // selectors
     var base = "datatable_sequence_" + ds.oid;
@@ -272,6 +278,7 @@ DatatableSequence.prototype = {
                         title: ds.language.custom.add,
                         content: ds.tpl.source.table,
                         pin: true,
+                        pinActive: ds.pinActive,
                         ds: dsTmpl
                     })
                 );
@@ -625,7 +632,7 @@ DatatableSequence.prototype = {
         if(ds.rowAdded(data))
             return false;
         // set data
-        data.mode = "add";
+        data.mode = !!data.mode ? data.mode : "add";
         data.errors = "";
         data.sequence = ds.newSequence(data).node;
         // set order number for orderable tables
@@ -638,7 +645,10 @@ DatatableSequence.prototype = {
             data.order = orderNum + 1;
         }
         // update table data
-        ds.target.table.row.add(data).draw();
+        row = ds.target.table.row.add(data)
+        row.draw();
+        if (data.mode === "edit" && !ds.validateForm(data.sequence))
+            $(row.node()).first().find('a.cs-datatables-row-edit').first().click();
         // close modal, if not pinned
         var pin = $(ds.sel.modalAdd + ' .pin').first();
         if(!pin || !pin.hasClass('pinned'))
@@ -837,6 +847,7 @@ DatatableSequence.prototype = {
 
             /**
              * Prevents opening several modals, embeds content instead
+             * Adds also confirmation via enter
              */
             queueModals: function() {
                 modals = [];
@@ -870,6 +881,12 @@ DatatableSequence.prototype = {
                             return;
                         // e.stopImmediatePropagation();
                         ds.parentModal = false;
+                    });
+                    // Add enter confirmation
+                    $(modal).on('keypress', function(e) {
+                        if(e.which == 13) {
+                            $(e.currentTarget).find('.cs-datatables-apply').click();
+                        }
                     });
                 });
             },
@@ -1087,6 +1104,9 @@ DatatableSequence.prototype = {
                         var ce = jQuery.Event("change");
                         $('#deform').trigger(ce);
                     });
+                    // process custom callbacks
+                    if (ds.callbacks.onOpenCreate !== undefined)
+                      ds.callbacks.onOpenCreate(ds, modal);
                 });
             },
 
@@ -1125,6 +1145,18 @@ DatatableSequence.prototype = {
                                 break;
                         }
                     });
+                    // process deform callbacks
+                    $(deform.callbacks).each(function(num, item) {
+                        var oid = item[0];
+                        var callback = item[1];
+                        callback(oid);
+                    });
+                    deform.clearCallbacks();
+                    var ce = jQuery.Event("change");
+                    $('#deform').trigger(ce);
+                    // process custom callbacks
+                    if (ds.callbacks.onOpenEdit !== undefined)
+                      ds.callbacks.onOpenEdit(ds, modal);
                 });
             },
 
@@ -1346,6 +1378,7 @@ DatatableSequence.prototype = {
                         .attr('value', data[column.data]);
                     break;
 
+                case 'SelectWidget':
                 case 'Select2Widget':
                     var element = sequence
                         .children(".item-" + column.name)
@@ -1357,6 +1390,15 @@ DatatableSequence.prototype = {
                         .val();
                     if(option)
                         element.val(option).trigger('change');
+                    break;
+
+                case 'DateTimeWidget':
+                    var element = sequence.children(".item-" + column.name);
+                    var date = element.find("input[name='date']");
+                    var time = element.find("input[name='time']");
+                    var datetime = data[column.data].split("T");
+                    date.val(datetime[0]);
+                    time.val(datetime[1]);
                     break;
 
                 case 'DatatableSequenceWidget':
@@ -1404,15 +1446,32 @@ DatatableSequence.prototype = {
                         .val();
                     break;
 
+                case 'SelectWidget':
                 case 'Select2Widget':
                     element = form
                         .children(".item-" + column.name)
                         .children("select[name='" + column.name + "']");
                     if(element.length === 0)
                         return;
-                    data[column.data] = element
-                        .children("option:selected")
-                        .text();
+                    var selected = element.find("option:selected")
+                    if (selected.length === 0) {
+                      data[column.data] = '';
+                    } else if (selected.length === 1) {
+                      data[column.data] = selected.text();
+                    } else {
+                      data[column.data] = selected.map(function(index, item) {
+                        return $(item).text();
+                      }).get().join(", ");
+                    }
+                    break;
+
+                case 'DateTimeWidget':
+                    element = form.children(".item-" + column.name);
+                    if(element.length === 0)
+                        return;
+                    var date = element.find("input[name='date']");
+                    var time = element.find("input[name='time']");
+                    data[column.data] = date.val() + "T" + time.val()
                     break;
 
                 case 'DatatableSequenceWidget':
@@ -1492,12 +1551,34 @@ DatatableSequence.prototype = {
                     value = field.val();
                     break;
 
+                case 'SelectWidget':
                 case 'Select2Widget':
                     field = form
                         .find("select[name='" + column.name + "']")
-                        .find("option:selected");
+                        .find("option:selected:not(:disabled)");
                     value = field.text();
                     break;
+
+                case 'DateTimeWidget':
+                    var date = group.find("input[name='date']");
+                    var dateGroup = date.closest(".input-group");
+                    var time = group.find("input[name='time']");
+                    var timeGroup = time.closest(".input-group");
+                    if(required.length > 0) {
+                        if (!date.val()) {
+                            valid = false;
+                            dateGroup.addClass('has-error');
+                        } else {
+                            dateGroup.removeClass('has-error');
+                        }
+                        if (!time.val()) {
+                            valid = false;
+                            timeGroup.addClass('has-error');
+                        } else {
+                            timeGroup.removeClass('has-error');
+                        }
+                    }
+                    return;
 
                 case 'DatatableSequenceWidget':
                     field = form

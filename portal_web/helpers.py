@@ -8,8 +8,10 @@ Helper functions included as top-level names in temlating system.
 __all__ = [
     'b64encode',
     'environ',
+    'format_currency',
     'log',
-    'format_currency'
+    'utc_to_timezone',
+    'timezone_to_utc',
 ]
 
 from os import environ
@@ -17,6 +19,10 @@ from decimal import Decimal
 import logging
 from base64 import b64encode
 
+from .services.timezone import (
+    utc_to_timezone,
+    timezone_to_utc,
+)
 from .models import (
     Tdb,
     Company
@@ -27,8 +33,8 @@ log = logging.getLogger(__name__)
 
 
 @Tdb.transaction()
-def format_currency(value, places=None, curr=None, sep=None, dp=None, pos=None,
-                    neg=None, trailneg=None):
+def format_currency(value, places=None, curr=None, currpos=None, sep=None,
+                    dp=None, pos=None, neg=None, trailneg=None):
     """
     Convert Decimal to a money formatted string.
 
@@ -36,7 +42,8 @@ def format_currency(value, places=None, curr=None, sep=None, dp=None, pos=None,
 
     Args:
         places:  required number of places after the decimal point
-        curr:    optional currency symbol before the sign (may be blank)
+        curr:    optional currency symbol before/after the sign (may be blank)
+        currpos: optional currency symbol position (before or after)
         sep:     optional grouping separator (comma, period, space, or blank)
         dp:      decimal point indicator (comma or period)
                  only specify as blank when places is zero
@@ -64,9 +71,12 @@ def format_currency(value, places=None, curr=None, sep=None, dp=None, pos=None,
 
     _places = places or currency.digits
     _curr = curr or currency.symbol
+    if not _curr:
+        _curr = "€"
+    _currpos = currpos or 'right'
     _sep = sep or "."
     _dp = dp or ","
-    _pos = pos or "+"
+    _pos = pos or " "
     _neg = neg or "-"
     _trailneg = trailneg or ''
 
@@ -75,6 +85,9 @@ def format_currency(value, places=None, curr=None, sep=None, dp=None, pos=None,
     result = []
     digits = list(map(str, digits))
     build, next = result.append, digits.pop
+    if _currpos == 'right':
+        build(_curr)
+        build(' ')
     if sign:
         build(_trailneg)
     for i in range(_places):
@@ -90,6 +103,9 @@ def format_currency(value, places=None, curr=None, sep=None, dp=None, pos=None,
             i = 0
             build(_sep)
     build(' ')
-    build(_curr)
+    if _currpos == 'left':
+        build(_curr)
     build(_neg if sign else _pos)
+    while None in result:
+        result.remove(None)
     return ''.join(reversed(result))

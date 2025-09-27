@@ -195,8 +195,10 @@ class Tdb():
                             _db, _user, readonly=_readonly, context=_context,
                             close=False)
 
-                    transaction = Transaction().new_transaction(
-                        readonly=_readonly)
+                    transaction = Transaction()
+                    if transaction.readonly != _readonly:
+                        transaction = Transaction().new_transaction(
+                            readonly=_readonly)
                     try:
                         _tdbg(func, "CALL", "Try %s, Transaction %s" %
                               (_retry + 1 - count, id(transaction)))
@@ -329,12 +331,27 @@ class Tdb():
           KeyError: if required field is missing
 
         Returns:
-          list: created devices
+          list: created objects
           None: if no object was created
         """
         log.debug('create database object:\n{}'.format(vlist))
         result = cls.get().create(vlist)
         return result or None
+
+    @classmethod
+    def delete(cls, vlist):
+        """
+        Deletes objects
+
+        Args:
+          vlist (list): list of objects::
+
+            [object1, object2, ...]
+
+        Returns:
+          ?
+        """
+        return cls.get().delete(vlist)
 
 
 class MixinSearchById(object):

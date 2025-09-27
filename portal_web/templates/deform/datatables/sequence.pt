@@ -15,6 +15,9 @@
                        orderable orderable|field.schema.orderable
                                           |field.widget.orderable
                                           |0;
+                       pin_active pin_active|field.schema.pin_active
+                                            |field.widget.pin_active
+                                            |False;
                        prototype field.widget.prototype(field);
                        errormsg field.errormsg">
 
@@ -46,6 +49,7 @@
                 proto: "${prototype}",
                 errormsg: "${errormsg}",
                 api: "${api}",
+                pinActive: "${pin_active}",
             }, datatableSequenceSettings);
         </script>
 

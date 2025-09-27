@@ -207,20 +207,22 @@ def add_locale(event):
     # default locale
     current = default
 
+    # check browser for language
+    browser = event.request.accept_language.lookup(
+        list(LANGUAGE_MAPPING.keys()), default=default)
+    if browser and browser in LANGUAGE_MAPPING:
+        current = LANGUAGE_MAPPING.get(browser, default)
+
     # cookie locale
     cookie = event.request.cookies.get('_LOCALE_')
-    if cookie:
-        event.request._LOCALE_ = cookie
-
-    # check browser for language, if no cookie present
-    browser = event.request.accept_language
-    if not cookie and browser in LANGUAGE_MAPPING:
-        current = LANGUAGE_MAPPING.get(browser)
+    if cookie and cookie in LANGUAGE_MAPPING:
+        current = LANGUAGE_MAPPING.get(cookie, default)
+        event.request._LOCALE_ = current
 
     # language request
     request = event.request.params.get('_LOCALE_')
     if request and request in LANGUAGE_MAPPING:
-        current = LANGUAGE_MAPPING.get(request)
+        current = LANGUAGE_MAPPING.get(request, default)
         event.request.response = HTTPFound(location=event.request.path_url)
 
     event.request._LOCALE_ = current
